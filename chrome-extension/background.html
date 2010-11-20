@@ -1,0 +1,312 @@
+<html><head>
+<script src="jquery-1.4.4.min.js"></script>
+<script src="socket.io.js"></script>
+<script src="underscore-min.js"></script>
+
+<script>
+/*
+DepthJS
+Copyright (C) 2010 Aaron Zinman, Doug Fritz, Roy Shilkrot
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+console.log('background.html Starting DepthJS');
+var DepthJS = {
+  __VERSION__: '0.1',
+  backend: {},
+  eventHandlers: {},
+  cv: {},
+  tools: {},
+  imageListeners: [],
+  eventListeners: [],
+  depthListeners: []
+};
+
+console.log('Making loader');
+
+
+DepthJS.init = function () {
+  console.log("Connecting WebSocket");
+  if (!DepthJS.backend.connect()) {
+    console.log("Couldn't connect... aborting");
+    return;
+  }
+
+  // Private collections
+  var tab_cache = {};
+  var window_cache = {};
+  var focused_window_id;
+
+  // Go through all existing tabs/windows and add to cache
+  chrome.windows.getAll({populate: true}, function(windows) {
+    for (var i = 0; i < windows.length; ++i) {
+      var window = windows[i];
+      if (window.focused == true) {
+        focused_window = window.id;
+      }
+
+      console.log('Adding existing window '+ obj_repr(window, 'Window'));
+      for (var j = 0; j < window.tabs.length; ++j) {
+        var tab = window.tabs[j];
+        tab.windowId = window.id;
+        console.log('Adding existing tab ' + obj_repr(tab, 'Tab'));
+        tab_cache[tab.id] = tab;
+
+        if (tab.status == 'complete') {
+          // We should add this already loaded tab
+          DepthJS.eventHandlers.onNewTab(tab.url, tab.title, window.id, tab.id);
+        }
+      }
+      delete window.tabs; // Unnecessary... it'll be too stale to do anything with.
+      window_cache[window.id] = window;
+    }
+  });
+
+  // Subscribe to event handlers
+  var obj_repr = DepthJS.tools.obj_repr;
+  chrome.tabs.onCreated.addListener(function(tab) {
+    // console.log('new tab created: ' + obj_repr(tab, 'Tab'));
+    tab_cache[tab.id] = tab;
+  });
+
+  chrome.tabs.onAttached.addListener(function(tabId, attachInfo) {
+    // console.log('tab attached: id=' + tabId + ', attachInfo=' + obj_repr(attachInfo));
+  });
+
+  chrome.tabs.onDetached.addListener(function(tabId, detachInfo) {
+    // console.log('tab detached: id=' + tabId + ', detachInfo=' + obj_repr(detachInfo));
+  });
+
+  chrome.tabs.onMoved.addListener(function(tabId, moveInfo) {
+    // console.log('tab moved: id=' + tabId + ', moveInfo=' + obj_repr(moveInfo));
+  });
+
+  chrome.tabs.onRemoved.addListener(function(tabId) {
+    // console.log('tab removed: id=' + tabId);
+    // Close page
+    var cachedTab = tab_cache[tabId];
+    if (!cachedTab) {
+      console.log('Could not find tabId ' + tabId + ' in cache: ' + cachedTab);
+      return;
+    }
+    DepthJS.eventHandlers.onClosedTab(cachedTab.url, cachedTab.windowId, cachedTab.id);
+    delete tab_cache[tabId];
+  });
+
+  chrome.tabs.onSelectionChanged.addListener(function(tabId, selectInfo) {
+    // console.log('tab selection changed: id=' + tabId + ', selectInfo=' + obj_repr(selectInfo));
+  });
+
+
+  chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+    var cachedTab = tab_cache[tabId];
+    if (!cachedTab) {
+      console.log('Could not find tabId ' + tabId + ' in cache: ' + cachedTab);
+      return;
+    }
+
+    if (changeInfo.status == 'complete' && cachedTab.status == 'loading') {
+      console.log('tab loaded: changeInfo=' + obj_repr(changeInfo) +
+                  ", tab=" + obj_repr(tab, 'Tab') +
+                  ", tabInCache=" + obj_repr(tab_cache[tab.id], 'Tab'));
+      DepthJS.eventHandlers.onNewTab(tab.url, tab.title, tab.windowId, tab.id);
+    } else if (tab.url != cachedTab.url) {
+      console.log('URL CHANGED IN onUpdated: changeInfo=' + obj_repr(changeInfo) +
+                  ", tab=" + obj_repr(tab, 'Tab') +
+                  ", tabInCache=" + obj_repr(tab_cache[tab.id], 'Tab'));
+      DepthJS.eventHandlers.onClosedTab(cachedTab.url, cachedTab.windowId, cachedTab.id);
+      if (tab.status == 'complete') {
+        // Never the case?
+        DepthJS.eventHandlers.onNewTab(tab.url, tab.title, tab.windowId, tab.id);
+      }
+    }
+    // Save state
+    delete tab_cache[tabId]; // help GC
+    tab_cache[tabId] = tab;
+  });
+
+  chrome.windows.onCreated.addListener(function(window) {
+    // console.log('new window created: ' + obj_repr(window, 'Window'));
+  });
+
+  chrome.windows.onFocusChanged.addListener(function(windowId) {
+    // console.log('window focus changed: id=' + windowId);
+  });
+
+  chrome.windows.onRemoved.addListener(function(windowId) {
+    // console.log('window removed: id=' + windowId);
+  });
+
+  chrome.browserAction.onClicked.addListener(function(tab) {
+    // console.log('broswerAction clicked');
+  });
+
+};
+
+DepthJS.tools.obj_repr = function (obj, className) {
+  var buf = [];
+  if (className === undefined) {
+    buf.push('[Object ');
+  } else {
+    buf.push('[' + className + ' ');
+  }
+  for (var key in obj) {
+    buf.push(key + '=' + obj[key]);
+    buf.push(', ');
+  }
+  buf.pop();
+  buf.push(']');
+  return buf.join('');
+};
+
+DepthJS.backend.eventsWs = null;
+DepthJS.backend.imageWs = null;
+DepthJS.backend.depthWs = null;
+DepthJS.backend.host = "localhost";
+DepthJS.backend.eventsPort = 14444;
+DepthJS.backend.imagePort = 14445;
+DepthJS.backend.depthPort = 14446;
+
+DepthJS.backend.connect = function() {
+  return _.all(_.map(["events", "image", "depth"], function(stream) {
+    var port = DepthJS.backend[stream+"Port"];
+    console.log("Connecting to " + stream + " stream on " +
+      DepthJS.backend.host + ":" + port);
+    if (DepthJS.backend[stream+"Ws"] != null) {
+      console.log("Already connected or connecting");
+      return false;
+    }
+    var socket = new io.Socket(DepthJS.backend.host, {
+      transports: ["websocket"],
+      port: port
+    });
+    socket.connect();
+    DepthJS.backend[stream+"Ws"] = socket;
+
+    socket.on('message', function(data){
+      DepthJS.backend.onMessage(stream, data);
+    });
+
+    socket.on("disconnect", function() {
+      DepthJS.backend.onDisconnect(stream);
+    });
+
+    socket.on("connect", function() {
+      DepthJS.backend.onConnect(stream);
+    });
+
+    return true;
+  }));
+};
+
+DepthJS.backend.onMessage = function (stream, data) {
+  if (stream == "events") {
+    if (data === undefined || data.data == null) {
+      return;
+    }
+
+    var msg = JSON.parse(data.data);
+    if (!$.isPlainObject(msg)) {
+      console.log('Unknown message: ' + data);
+      return;
+    }
+    var handler = DepthJS.eventHandlers["on"+msg.type];
+    if (handler != null) {
+      handler(msg.data);
+    }
+
+    msg.jsonRep = data.data;
+    _.each(DepthJS.eventListeners, function(port) {
+      port.postMessage(msg);
+    });
+  } else if (stream == "image") {
+    DepthJS.eventHandlers.onImageMsg(data);
+  } else if (stream == "depth") {
+    DepthJS.eventHandlers.onDepthMsg(data);
+  }
+};
+
+DepthJS.backend.onDisconnect = function (stream) {
+  console.log("Disconnected on " + stream + " stream");
+};
+
+
+DepthJS.eventHandlers.onNewTab = function(url, title, windowId, tabNum) {
+};
+
+DepthJS.eventHandlers.onClosedTab = function(url, windowId, tabNum) {
+};
+
+DepthJS.eventHandlers.onReaccessedTab = function(url, windowId, tabNum) {
+};
+
+(function() {
+  // WebSockets have frames of a limited size (<32k seems to work best)
+  // Buffer the data until we have a complete frame
+  function makeImageBuffer(listeners, bytes) {
+    var w = 640;
+    var h = 480;
+    var data = [];
+
+    return function(frameData) {
+      if (data.length + frameData.length < w*h*bytes) {
+        data.concat(frameData);
+      } else {
+        var rem = (data.length + frameData.length) - w*h*bytes;
+        var remData = frameData.splice(frameData.length - rem - 1);
+        if (remData.length > 0) data.concat(remData);
+        _.each(listeners, function(port) {
+            port.postMessage({data: data});
+        });
+        data = remData;
+      }
+    };
+  }
+  DepthJS.eventHandlers.onDepthMsg = makeImageBuffer(DepthJS.depthListeners, 1);
+  DepthJS.eventHandlers.onImageMsg = makeImageBuffer(DepthJS.imageListeners, 3);
+})();
+
+console.log('Defined DepthJS... launching init');
+DepthJS.init();
+
+console.log("Setting up message passing listener");
+chrome.extension.onConnect.addListener(function(port) {
+  var name = port.name;
+  console.assert(name == "event" || name == "image" || name == "depth");
+  console.log(name + " port connected");
+  var listeners =  DepthJS[name + "Listeners"];
+  listeners.push(port);
+
+  port.onDisconnect.addListener(function (e) {
+    console.log(name + " port disconnected");
+    DepthJS[name + "Listeners"] = _.reject(
+      listeners, function(el) { el === port; });
+  });
+});
+
+function sendTestEvent() {
+  console.log("Sending out random TestEvent");
+  _.each(DepthJS.eventListeners, function(port) {
+    var msg = {type: "TestEvent", data: {x:0, y:0}};
+    msg.jsonRep = JSON.stringify(msg);
+    port.postMessage(msg);
+  });
+  setTimeout(sendTestEvent, 5000);
+}
+setTimeout(sendTestEvent, 5000);
+
+</script>
+</head></html>

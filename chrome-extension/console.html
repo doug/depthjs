@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>DepthJS Console</title>
+  <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+  <script type="text/javascript">google.load("jquery", "1");</script>
+</head>
+<body>
+
+<div style="float: left;">
+  <canvas id="DepthJS_image" width="640" height="480">
+    Canvas/Plugin not loaded. This shouldn't be.
+  </canvas>
+</div>
+
+<div style="float: left; margin-left: 10px;">
+  <canvas id="DepthJS_depth" width="640" height="480">
+    Canvas/Plugin not loaded. This shouldn't be.
+  </canvas>
+</div>
+
+<script>
+function init() {
+  var $DepthJS_eventPort = $("#DepthJS_eventPort");
+
+  var makeEventHandler = function(callback) {
+    return function() {
+      var jsonRep = $DepthJS_eventPort.text();
+      var msg = JSON.parse(jsonRep);
+      callback(msg.data);
+    };
+  };
+
+  if ($DepthJS_eventPort.length > 0) {
+    console.log("Binding to eventPort");
+    $DepthJS_eventPort.bind("TestEvent", makeEventHandler(function(data) {
+      console.log(["console.html got TestEvent with data ", data]);
+    }));
+  } else {
+    // This is created on document_end, so it may/may not be avail the first time
+    setTimeout(init, 100);
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>
