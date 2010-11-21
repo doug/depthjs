@@ -27,8 +27,8 @@
 
 COMPILER_OPTIMIZATION = -march=native -mtune=native -O3 -finline-functions -funroll-all-loops -funroll-loops -fomit-frame-pointer -ffast-math -ftree-vectorize -fopenmp
 EXCLUDE_FROM_SOURCE="bin,.xcodeproj,obj"
-USER_CFLAGS = -I/usr/include/libusb-1.0 -I src/ofxKinect/src
-USER_LD_FLAGS = -lusb-1.0
+USER_CFLAGS = -I/usr/include/libusb-1.0 -I src/ofxKinect/src -I src/ofxWebSocket/src
+USER_LD_FLAGS = -lusb-1.0 -lzmq -lPocoFoundation -lPocoNet -lPocoUtil
 USER_LIBS = 
 OTHER_ADDONS_PATH = src/
 

@@ -2,3 +2,4 @@
 *.d
 *.tmp
 *.swp
+app/bin/*
