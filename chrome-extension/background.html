@@ -261,6 +261,7 @@ DepthJS.backend.onDisconnect = function (stream) {
 
 
 DepthJS.eventHandlers.onNewTab = function(url, title, windowId, tabId) {
+  // test();
 };
 
 DepthJS.eventHandlers.onClosedTab = function(url, windowId, tabId) {
@@ -271,6 +272,7 @@ DepthJS.eventHandlers.onClosedTab = function(url, windowId, tabId) {
 };
 
 DepthJS.eventHandlers.onReaccessedTab = function(url, windowId, tabId) {
+  // test();
 };
 
 (function() {
@@ -313,41 +315,31 @@ chrome.extension.onConnect.addListener(function(port) {
   var tabId = port.sender.tab.id;
   var tabPorts = DepthJS.portsByTabId[tabId];
   if (tabPorts == null) {
-    tabPorts = DepthJS.portsByTabId[tabId] = {};
+    tabPorts = {}; DepthJS.portsByTabId[tabId] = tabPorts;
   }
   tabPorts[name] = port;
 
   port.onDisconnect.addListener(function (e) {
-    console.log(name + " port disconnected");
+    console.log(name + " port disconnected on tab " + tabId);
     DepthJS[name + "Listeners"] = _.reject(
       listeners, function(el) { el === port; });
-    var tabPorts = DepthJS.portsByTabId[tabId];
-    delete tabPorts[name];
-    if (_.isEmpty(tabPorts)) {
-      delete tabPorts[tabId];
+    var _tabPorts = DepthJS.portsByTabId[tabId];
+    if (_tabPorts) {
+      delete _tabPorts[name];
+      if (_.isEmpty(_tabPorts)) {
+        console.log("for all ports on this tab");
+        delete DepthJS.portsByTabId[tabId];
+      }
     }
   });
 });
 
-function sendTestEvent() {
-  console.log("Sending out random TestEvent");
-  var msg = {};
-  if (Math.random() < 0.2) {
-    msg = {type: "TestEvent", data: {x:0, y:0}};
-  } else if (Math.random() < 0.5) {
-    msg = {type: "SwipeUp", data: {}};
-  } else if (Math.random() < 0.5) {
-    msg = {type: "SwipeDown", data: {}};
-  } else if (Math.random() < 0.5) {
-    msg = {type: "SwipeRight", data: {}};
-  } else if (Math.random() < 0.5) {
-    msg = {type: "SwipeLeft", data: {}};
-  }
-
+function sendTestEvent(msg, callback) {
+  console.log("Sending out test event " + msg.type);
   msg.jsonRep = JSON.stringify(msg);
 
   chrome.tabs.getSelected(null, function (tab) {
-    if (msg.type == undefined) return;
+    console.assert(msg.type != undefined);
     var tabId = tab.id;
     var tabPorts = DepthJS.portsByTabId[tabId];
     if (tabPorts == null) {
@@ -359,11 +351,48 @@ function sendTestEvent() {
       console.log("Could not find event port for tabId " + tabId);
       return;
     }
+    console.log([msg, " send to ", eventPort]);
     eventPort.postMessage(msg);
+    callback();
   });
-  setTimeout(sendTestEvent, 5000);
 }
-// setTimeout(sendTestEvent, 5000);
+
+function makeTestEvents() {
+  return [
+    {type: "TestEvent", data: {x:0, y:0}},
+    {type: "SwipeDown", data: {}},
+    {type: "SwipeUp", data: {}},
+    {type: "SwipeRight", data: {}},
+    {type: "SwipeLeft", data: {}},
+    {type:"Register", data:{}},
+    {type:"Unregister", data:{}},
+    {type:"Register", data:{}},
+    {type:"Move", data:{x: 15, y: 15}},
+    {type:"Move", data:{x: -15, y: 15}},
+    {type:"Move", data:{x: 40, y: 80}},
+    {type:"Push", data:{}},
+    {type:"Pull", data:{}}
+  ].reverse();
+}
+
+var currentTest = [];
+
+function test() {
+  console.log("Starting new test sequence");
+  // Cancel all other ones
+  for (var i = 0; i < 20; i++) { currentTest.pop(); }
+  // Make new test with closure
+  var local = currentTest = makeTestEvents();
+  function next() {
+    var event = local.pop();
+    if (event != undefined) {
+      sendTestEvent(event, function() {
+        setTimeout(next, 3000);
+      });
+    }
+  }
+  next();
+}
 
 </script>
 </head></html>

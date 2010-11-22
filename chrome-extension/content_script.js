@@ -20,7 +20,172 @@ var DepthJS = {
   verbose: true,
   eventHandlers: {},
   canvasLink: {},
-  eventLink: {}
+  eventLink: {},
+  selectorBox: {},
+  MAX_HANDPLANE_WIDTH: 100,
+  MAX_HANDPLANE_HEIGHT: 100
+};
+
+// EVENT HANDLERS ----------------------------------------------------------------------------------
+
+/**
+ * DepthJS here maps gestures to interactions with this web page.
+ *
+ * Users interact with the system in two different "modes".
+ *
+ * 1) Lazy gestures
+ * 2) Virtual pointer
+ *
+ * LAZY GESTURES:
+ * By default, the user can lazily make swiping motions with their whole hand:
+ * up, down, left and right.
+ *
+ * The user does not leave her hand still in the air, but instead rests it hand out of frame.
+ *
+ * The swipes provide basic level navigation--moving forward and backward in history and
+ * moving the web page up and down.
+ *
+ * VIRTUAL POINTER:
+ * Once the hand is registered, the user manipulates a cursor along a parallel 2D plane to the monitor.
+ *
+ * The cursor can be moved, "pushed", and "pulled". Moving the cursor moves a visible selection box
+ * around the web page. Pushing and pulling activate (click) any links below the selection box.
+ **/
+DepthJS.state = null;
+
+DepthJS.eventHandlers.onSwipeLeft = function() {
+  // We interpret as "back".
+  history.go(-1);
+};
+
+DepthJS.eventHandlers.onSwipeRight = function() {
+  // We interpret as "forward".
+  history.go(1);
+};
+
+DepthJS.eventHandlers.onSwipeDown = function() {
+  // We interpret as "scroll down 75% of window".
+  var scrollAmount = Math.floor($(window).height() * 0.75);
+  $("html, body").animate({
+    scrollTop: ($(document).scrollTop() + scrollAmount)
+  });
+};
+
+DepthJS.eventHandlers.onSwipeUp = function() {
+  // We interpret as "scroll up 75% of window".
+  var scrollAmount = Math.floor($(window).height() * 0.75);
+  $("html, body").animate({
+    scrollTop: ($(document).scrollTop() - scrollAmount)
+  });
+};
+
+// Occurs when the user puts their hand out flat onto a plane
+DepthJS.eventHandlers.onRegister = function() {
+  console.log("DepthJS: User registered their hand");
+  DepthJS.state = "neutral";
+  DepthJS.selectorBox.show();
+};
+
+DepthJS.eventHandlers.onUnregister = function() {
+  console.log("DepthJS. User removed their hand");
+  DepthJS.state = null;
+  DepthJS.selectorBox.hide();
+};
+
+DepthJS.eventHandlers.onPush = function() {
+  if (DepthJS.state != "neutral") {
+    console.log("onPush requires neutral position; ignoring");
+    return;
+  }
+  DepthJS.state = "pushed";
+  DepthJS.selectorBox.activate();
+};
+
+// Right now users can either push or pull
+DepthJS.eventHandlers.onPull = DepthJS.eventHandlers.onPull;
+
+DepthJS.eventHandlers.onMove = function(data) {
+  if (data.x == null || data.y == null) {
+    console.log(["Could not understand data", data]);
+    return;
+  }
+  DepthJS.selectorBox.move(data.x * $(window).width() / 100,
+                           data.y * $(window).height() / 100);
+}
+
+// SELECTOR BOX ------------------------------------------------------------------------------------
+
+DepthJS.selectorBox.init = function() {
+  var $box = $("<div id='DepthJS_box'></div>");
+  $box.css("height", "100px")
+      .css("width", "100px")
+      .css("border", "2px solid #586F82")
+      .css("background-color", "#B8FF71")
+      .css("opacity", "0.5")
+      .css("z-index", "100000")
+      .css("position", "fixed")
+      .css("left", "0")
+      .css("top", "0")
+      .appendTo("body").hide();
+  DepthJS.selectorBox.$box = $box;
+};
+
+DepthJS.selectorBox.show = function() {
+  DepthJS.selectorBox.$box.show();
+};
+
+DepthJS.selectorBox.hide = function() {
+  DepthJS.selectorBox.$box.hide();
+};
+
+DepthJS.selectorBox.move = function(x, y) {
+  var $box = DepthJS.selectorBox.$box;
+   // Constrain to window
+  if (x < 0) x = 0;
+  if (y < 0) y = 0;
+  x = Math.min(x, $(window).width() - $box.width());
+  y = Math.min(y, $(window).height() - $box.height());
+
+  if (x != $box.css("left") || y != $box.css("top")) {
+    $box.animate({
+      left: x,
+      top: y
+    });
+  }
+};
+
+DepthJS.selectorBox.activate = function() {
+  console.log("DepthJS: Activating underneath selectorBox");
+  // Lame code for now...
+
+  var $intersectingLinks = $("a").filter(function() {
+    var $a = $(this);
+    var ax = $a.offset().left + $(window).scrollLeft();
+    var aw = $a.width();
+    var ay = $a.offset().top + $(window).scrollTop();
+    var ah = $a.height();
+
+    var $box = DepthJS.selectorBox.$box;
+    var bx = $box.position().left;
+    var by = $box.position().top;
+    var bw = $box.width();
+    var bh = $box.height();
+
+    if (by > ay + ah || // box-top is lower than link-bottom
+        by + bh < ay || // box-bottom is higher than link-top
+        bx > ax + aw || // box-left is right of link right
+        bx + bw < aw) { // box-right is left of link left
+      return false;
+    }
+    return true;
+  });
+
+  console.log("Got " + $intersectingLinks.length + " links");
+  if ($intersectingLinks.length > 0) {
+    // Trigger a click on them
+    console.log($intersectingLinks);
+    $intersectingLinks.eq(0).click();
+  }
 };
 
 // EVENT LINK --------------------------------------------------------------------------------------
@@ -31,7 +196,7 @@ DepthJS.eventLink.initPort = function() {
   $DepthJS_eventPort.appendTo("body");
   var port = chrome.extension.connect({name: "event"});
   port.onMessage.addListener(DepthJS.eventLink.onEvent);
-}
+};
 
 DepthJS.eventLink.onEvent = function (msg) {
   if (DepthJS.verbose) console.log("DepthJS: event " + msg.type);
@@ -45,35 +210,6 @@ DepthJS.eventLink.onEvent = function (msg) {
   $("#DepthJS_eventPort").text(msg.jsonRep);
   $("#DepthJS_eventPort").get(0).dispatchEvent(event);
 };
-
-// EVENT HANDLERS ----------------------------------------------------------------------------------
-
-DepthJS.eventHandlers.onSwipeLeft = function() {
-  // We interpret as "back".
-  history.go(-1);
-}
-
-DepthJS.eventHandlers.onSwipeRight = function() {
-  // We interpret as "forward".
-  history.go(1);
-}
-
-DepthJS.eventHandlers.onSwipeDown = function() {
-  // We interpret as "scroll down 75% of window".
-  var scrollAmount = Math.floor($(window).height() * 0.75);
-  $("html, body").animate({
-    scrollTop: ($(document).scrollTop() + scrollAmount)
-  });
-}
-
-
-DepthJS.eventHandlers.onSwipeUp = function() {
-  // We interpret as "scroll up 75% of window".
-  var scrollAmount = Math.floor($(window).height() * 0.75);
-  $("html, body").animate({
-    scrollTop: ($(document).scrollTop() - scrollAmount)
-  });
-}
 
 // CANVAS LINK -------------------------------------------------------------------------------------
 
@@ -147,10 +283,11 @@ DepthJS.canvasLink.initImage = function () {
     }
     c.putImageData(imageData, 0, 0);
   }
-}
+};
 
 
 // Do the initialization
+DepthJS.selectorBox.init();
 DepthJS.eventLink.initPort();
 DepthJS.canvasLink.initDepth();
 DepthJS.canvasLink.initImage();
