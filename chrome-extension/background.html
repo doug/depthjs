@@ -326,14 +326,11 @@ chrome.extension.onConnect.addListener(function(port) {
       if (req.type == "getThumbnailUrls") {
         chrome.windows.getAll({populate: true}, function(windows) {
           var finishedWindows = 0;
-          urls = [];
           _.each(windows, function(window) {
             console.log("Capturing windowId" + window.id);
             chrome.tabs.captureVisibleTab(window.id, null, function(dataUrl) {
               if (dataUrl !== undefined && dataUrl != null) {
                 window.dataUrl = dataUrl;
-                //urls.push(split(dataUrl, 12)[0]);
-                urls.push(dataUrl.slice(0));
               } else {
                 console.log("Ignoring window " + window.id + " without dataUrl");
                 // Because windows is closured in this function
@@ -346,9 +343,8 @@ chrome.extension.onConnect.addListener(function(port) {
               }
               finishedWindows++;
               if (finishedWindows == windows.length) {
-                console.log(["All thumbnails taken", windows, urls]);
-                console.log(urls[0]);
-                port.postMessage({type: "ThumbnailUrls", data:{x: urls[0], windows:windows}});
+                console.log(["All thumbnails taken", windows]);
+                port.postMessage({type: "ThumbnailUrls", data:{windows:windows}});
               }
             });
           });
@@ -420,33 +416,33 @@ function sendTestEvent(msg, callback) {
 
 function makeTestEvents() {
   // Depthose test
-  return [
-    {type:"Register", data:{}},
-    {type:"Pull", data:{}},
-    {type:"Move", data:{x: 15, y: 15}},
-    {type:"Unregister", data:{}},
-    {type:"Register", data:{}},
-    {type:"Pull", data:{}},
-    {type:"Move", data:{x: -15, y: 15}},
-    {type:"Move", data:{x: 40, y: 80}},
-    {type:"Push", data:{}}
-  ].reverse();
+  /*return [*/
+    /*{type:"Register", data:{}},*/
+    /*{type:"Pull", data:{}}*/
+    /*{type:"Move", data:{x: 15, y: 15}},*/
+    /*{type:"Unregister", data:{}},*/
+    /*{type:"Register", data:{}},*/
+    /*{type:"Pull", data:{}},*/
+    /*{type:"Move", data:{x: -15, y: 15}},*/
+    /*{type:"Move", data:{x: 40, y: 80}},*/
+    /*{type:"Push", data:{}}*/
+  /*].reverse();*/
 
   // Selector box & nav test
   return [
-    {type: "TestEvent", data: {x:0, y:0}},
-    {type: "SwipeDown", data: {}},
-    {type: "SwipeUp", data: {}},
-    {type: "SwipeRight", data: {}},
-    {type: "SwipeLeft", data: {}},
-    {type:"Register", data:{}},
-    {type:"Unregister", data:{}},
+    //{type: "TestEvent", data: {x:0, y:0}},
+    //{type: "SwipeDown", data: {}},
+    //{type: "SwipeUp", data: {}},
+    //{type: "SwipeRight", data: {}},
+    //{type: "SwipeLeft", data: {}},
+    //{type:"Register", data:{}},
+    //{type:"Unregister", data:{}},
     {type:"Register", data:{}},
     {type:"Move", data:{x: 15, y: 15}},
     {type:"Move", data:{x: -15, y: 15}},
     {type:"Move", data:{x: 40, y: 80}},
     {type:"Push", data:{}},
-    {type:"Pull", data:{}}
+    //{type:"Pull", data:{}}
   ].reverse();
 }
 

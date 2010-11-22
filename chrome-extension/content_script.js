@@ -83,19 +83,21 @@ DepthJS.eventHandlers.onSwipeUp = function() {
 // Occurs when the user puts their hand out flat onto a plane
 DepthJS.eventHandlers.onRegister = function() {
   console.log("DepthJS: User registered their hand");
-  DepthJS.state = "selectionBox";
+  $(window).trigger("touchstart");
+  DepthJS.state = "selectorBox";
   DepthJS.selectorBox.show();
 };
 
 DepthJS.eventHandlers.onUnregister = function() {
   console.log("DepthJS. User removed their hand");
+  $(window).trigger("touchend");
   DepthJS.state = null;
   DepthJS.selectorBox.hide();
   DepthJS.depthose.hide();
 };
 
 DepthJS.eventHandlers.onPush = function() {
-  if (DepthJS.state == "selectionBox") {
+  if (DepthJS.state == "selectorBox") {
     DepthJS.selectorBox.activate();
   } else if (DepthJS.state == "depthose") {
     DepthJS.depthose.select();
@@ -116,11 +118,14 @@ DepthJS.eventHandlers.onMove = function(data) {
     console.log(["Could not understand data", data]);
     return;
   }
+
   if (DepthJS.state == "depthose") {
     DepthJS.depthose.move(data.x, data.y);
   } else if (DepthJS.state == "selectorBox") {
     DepthJS.selectorBox.move(data.x * $(window).width() / 100,
                              data.y * $(window).height() / 100);
+  } else {
+    console.log("Ignoring move in state " + DepthJS.state);
   }
 }
 
@@ -150,6 +155,7 @@ DepthJS.selectorBox.hide = function() {
 };
 
 DepthJS.selectorBox.move = function(x, y) {
+  console.log("move");
   var $box = DepthJS.selectorBox.$box;
    // Constrain to window
   if (x < 0) x = 0;
@@ -331,14 +337,22 @@ DepthJS.depthose.show = function() {
       .css("width", "100%")
       .css("height", "100%")
       .css("background-color", "#333")
+      .css("z-index", "10000")
+      .css("top", "0")
+      .css("left", "0")
       .addClass("zflow")
       .appendTo("body");
 
   $div.append("<div class='centering'><div id='DepthJS_tray' class='tray'></div></div>");
   var images = _.pluck(DepthJS.depthose.windows, "dataUrl");
-  console.log(images);
+  images = _.reject(images, function(el) { el == null; });
+  console.log("after filtering we have " + images.length + " done.");
   if (images.length > 0) {
+    console.log("starting zflow");
     zflow(images, "#DepthJS_tray");
+
+  } else {
+    console.log("Not showing Depthose--no windows to show");
   }
 };
 
