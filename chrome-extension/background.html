@@ -261,7 +261,7 @@ DepthJS.backend.onDisconnect = function (stream) {
 
 
 DepthJS.eventHandlers.onNewTab = function(url, title, windowId, tabId) {
-  // test();
+  test();
 };
 
 DepthJS.eventHandlers.onClosedTab = function(url, windowId, tabId) {
@@ -272,7 +272,7 @@ DepthJS.eventHandlers.onClosedTab = function(url, windowId, tabId) {
 };
 
 DepthJS.eventHandlers.onReaccessedTab = function(url, windowId, tabId) {
-  // test();
+  test();
 };
 
 (function() {
@@ -305,6 +305,7 @@ console.log('Defined DepthJS... launching init');
 DepthJS.init();
 
 console.log("Setting up message passing listener");
+var urls = [];
 chrome.extension.onConnect.addListener(function(port) {
   var name = port.name;
   console.assert(name == "event" || name == "image" || name == "depth");
@@ -318,6 +319,40 @@ chrome.extension.onConnect.addListener(function(port) {
     tabPorts = {}; DepthJS.portsByTabId[tabId] = tabPorts;
   }
   tabPorts[name] = port;
+
+
+  if (name == "event") {
+    port.onMessage.addListener(function (req) {
+      if (req.type == "getThumbnailUrls") {
+        chrome.windows.getAll({populate: true}, function(windows) {
+          var finishedWindows = 0;
+          _.each(windows, function(window) {
+            console.log("Capturing windowId" + window.id);
+            chrome.tabs.captureVisibleTab(window.id, null, function(dataUrl) {
+              if (dataUrl !== undefined && dataUrl != null) {
+                window.dataUrl = dataUrl;
+              } else {
+                console.log("Ignoring window " + window.id + " without dataUrl");
+                // Because windows is closured in this function
+                for (var i = 0; i < windows.length; ++i) {
+                  if (windows[i].id == window.id) {
+                    windows.splice(i, 1);
+                    break;
+                  }
+                }
+              }
+              finishedWindows++;
+              if (finishedWindows == windows.length) {
+                console.log(["All thumbnails taken", windows]);
+                port.postMessage({type: "ThumbnailUrls", data:{windows:windows}});
+              }
+            });
+          });
+        });
+      }
+    });
+  }
+
 
   port.onDisconnect.addListener(function (e) {
     console.log(name + " port disconnected on tab " + tabId);
@@ -333,6 +368,28 @@ chrome.extension.onConnect.addListener(function(port) {
     }
   });
 });
+
+function split(str, size) {
+  var splits = [];
+  var lastEnd = 0;
+  while (true) {
+    if (lastEnd + size > str.length) {
+      if (lastEnd != str.length) splits.push(str.slice(lastEnd));
+      break;
+    } else {
+      splits.push(str.slice(lastEnd, lastEnd+size));
+      lastEnd += size;
+    }
+  }
+  return splits;
+}
+
+chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
+  console.log(sender.tab ?
+              "from a content script:" + sender.tab.url :
+              "from the extension");
+});
+
 
 function sendTestEvent(msg, callback) {
   console.log("Sending out test event " + msg.type);
@@ -358,20 +415,34 @@ function sendTestEvent(msg, callback) {
 }
 
 function makeTestEvents() {
+  // Depthose test
+  /*return [*/
+    /*{type:"Register", data:{}},*/
+    /*{type:"Pull", data:{}}*/
+    /*{type:"Move", data:{x: 15, y: 15}},*/
+    /*{type:"Unregister", data:{}},*/
+    /*{type:"Register", data:{}},*/
+    /*{type:"Pull", data:{}},*/
+    /*{type:"Move", data:{x: -15, y: 15}},*/
+    /*{type:"Move", data:{x: 40, y: 80}},*/
+    /*{type:"Push", data:{}}*/
+  /*].reverse();*/
+
+  // Selector box & nav test
   return [
-    {type: "TestEvent", data: {x:0, y:0}},
-    {type: "SwipeDown", data: {}},
-    {type: "SwipeUp", data: {}},
-    {type: "SwipeRight", data: {}},
-    {type: "SwipeLeft", data: {}},
-    {type:"Register", data:{}},
-    {type:"Unregister", data:{}},
+    //{type: "TestEvent", data: {x:0, y:0}},
+    //{type: "SwipeDown", data: {}},
+    //{type: "SwipeUp", data: {}},
+    //{type: "SwipeRight", data: {}},
+    //{type: "SwipeLeft", data: {}},
+    //{type:"Register", data:{}},
+    //{type:"Unregister", data:{}},
     {type:"Register", data:{}},
     {type:"Move", data:{x: 15, y: 15}},
     {type:"Move", data:{x: -15, y: 15}},
     {type:"Move", data:{x: 40, y: 80}},
     {type:"Push", data:{}},
-    {type:"Pull", data:{}}
+    //{type:"Pull", data:{}}
   ].reverse();
 }
 
