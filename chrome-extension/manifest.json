@@ -14,7 +14,11 @@
 
   "content_scripts": [
     { "matches": ["http://*/*"],
-      "js": ["jquery-1.4.4.min.js", "content_script.js"],
+      "css": ["vfx/zflow/zflow.css"],
+      "js": ["jquery-1.4.4.min.js",
+             "underscore-min.js",
+             "vfx/zflow/zflow.js",
+             "content_script.js"],
       "run_at": "document_end" }
   ],
 

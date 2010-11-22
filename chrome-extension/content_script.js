@@ -22,6 +22,7 @@ var DepthJS = {
   canvasLink: {},
   eventLink: {},
   selectorBox: {},
+  depthose: {},
   MAX_HANDPLANE_WIDTH: 100,
   MAX_HANDPLANE_HEIGHT: 100
 };
@@ -82,7 +83,7 @@ DepthJS.eventHandlers.onSwipeUp = function() {
 // Occurs when the user puts their hand out flat onto a plane
 DepthJS.eventHandlers.onRegister = function() {
   console.log("DepthJS: User registered their hand");
-  DepthJS.state = "neutral";
+  DepthJS.state = "selectionBox";
   DepthJS.selectorBox.show();
 };
 
@@ -90,27 +91,37 @@ DepthJS.eventHandlers.onUnregister = function() {
   console.log("DepthJS. User removed their hand");
   DepthJS.state = null;
   DepthJS.selectorBox.hide();
+  DepthJS.depthose.hide();
 };
 
 DepthJS.eventHandlers.onPush = function() {
-  if (DepthJS.state != "neutral") {
-    console.log("onPush requires neutral position; ignoring");
-    return;
+  if (DepthJS.state == "selectionBox") {
+    DepthJS.selectorBox.activate();
+  } else if (DepthJS.state == "depthose") {
+    DepthJS.depthose.select();
   }
-  DepthJS.state = "pushed";
-  DepthJS.selectorBox.activate();
+
+  // They are now "unregistered"
+  setTimeout(DepthJS.eventHandlers.onUnregister, 200);
 };
 
 // Right now users can either push or pull
-DepthJS.eventHandlers.onPull = DepthJS.eventHandlers.onPull;
+DepthJS.eventHandlers.onPull = function() {
+  DepthJS.state = "depthose";
+  DepthJS.depthose.start();
+}
 
 DepthJS.eventHandlers.onMove = function(data) {
   if (data.x == null || data.y == null) {
     console.log(["Could not understand data", data]);
     return;
   }
-  DepthJS.selectorBox.move(data.x * $(window).width() / 100,
-                           data.y * $(window).height() / 100);
+  if (DepthJS.state == "depthose") {
+    DepthJS.depthose.move(data.x, data.y);
+  } else if (DepthJS.state == "selectorBox") {
+    DepthJS.selectorBox.move(data.x * $(window).width() / 100,
+                             data.y * $(window).height() / 100);
+  }
 }
 
 // SELECTOR BOX ------------------------------------------------------------------------------------
@@ -196,6 +207,7 @@ DepthJS.eventLink.initPort = function() {
   $DepthJS_eventPort.appendTo("body");
   var port = chrome.extension.connect({name: "event"});
   port.onMessage.addListener(DepthJS.eventLink.onEvent);
+  DepthJS.eventLink.port = port;
 };
 
 DepthJS.eventLink.onEvent = function (msg) {
@@ -285,6 +297,65 @@ DepthJS.canvasLink.initImage = function () {
   }
 };
 
+
+
+
+// DEPTHOSE
+
+DepthJS.depthose.$div = null;
+DepthJS.depthose.windows = null;
+DepthJS.depthose.start = function() {
+  DepthJS.eventLink.port.postMessage({type: "getThumbnailUrls"});
+};
+DepthJS.eventHandlers.onThumbnailUrls = function(response) {
+  console.log(["REPSONE", response]);
+  var windows = response.windows;
+  DepthJS.depthose.windows = windows; // Make a local copy in case these objects are reused
+  console.log(["got windows", windows]);
+  DepthJS.depthose.show();
+};
+
+
+DepthJS.depthose.show = function() {
+  if (DepthJS.depthose.windows == null) {
+    DepthJS.depthose.start();
+    return;
+  }
+
+  console.log("DepthJS: Entering Depthose");
+  console.log(["Starting depthose with", DepthJS.depthose.windows]);
+  $("#DepthJS_depthose").remove();
+  DepthJS.depthose.$div = $("<div id='DepthJS_depthose'></div>");
+  var $div = DepthJS.depthose.$div;
+  $div.css("position", "fixed")
+      .css("width", "100%")
+      .css("height", "100%")
+      .css("background-color", "#333")
+      .addClass("zflow")
+      .appendTo("body");
+
+  $div.append("<div class='centering'><div id='DepthJS_tray' class='tray'></div></div>");
+  var images = _.pluck(DepthJS.depthose.windows, "dataUrl");
+  console.log(images);
+  if (images.length > 0) {
+    zflow(images, "#DepthJS_tray");
+  }
+};
+
+DepthJS.depthose.hide = function() {
+  if (DepthJS.depthose.$div == null) return;
+  console.log("DepthJS: Exiting Depthose");
+  DepthJS.depthose.$div.remove();
+  DepthJS.depthose.$div = null;
+};
+
+DepthJS.depthose.move = function(x, y) {
+  console.log("DepthJS: Move depthose");
+}
+
+DepthJS.depthose.select = function() {
+  console.log("DepthJS: Selecting");
+}
 
 // Do the initialization
 DepthJS.selectorBox.init();
