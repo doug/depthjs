@@ -46,6 +46,35 @@ DepthJS.eventLink.onEvent = function (msg) {
   $("#DepthJS_eventPort").get(0).dispatchEvent(event);
 };
 
+// EVENT HANDLERS ----------------------------------------------------------------------------------
+
+DepthJS.eventHandlers.onSwipeLeft = function() {
+  // We interpret as "back".
+  history.go(-1);
+}
+
+DepthJS.eventHandlers.onSwipeRight = function() {
+  // We interpret as "forward".
+  history.go(1);
+}
+
+DepthJS.eventHandlers.onSwipeDown = function() {
+  // We interpret as "scroll down 75% of window".
+  var scrollAmount = Math.floor($(window).height() * 0.75);
+  $("html, body").animate({
+    scrollTop: ($(document).scrollTop() + scrollAmount)
+  });
+}
+
+
+DepthJS.eventHandlers.onSwipeUp = function() {
+  // We interpret as "scroll up 75% of window".
+  var scrollAmount = Math.floor($(window).height() * 0.75);
+  $("html, body").animate({
+    scrollTop: ($(document).scrollTop() - scrollAmount)
+  });
+}
+
 // CANVAS LINK -------------------------------------------------------------------------------------
 
 DepthJS.canvasLink.initDepth = function() {

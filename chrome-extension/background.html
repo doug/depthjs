@@ -30,6 +30,7 @@ var DepthJS = {
   eventHandlers: {},
   cv: {},
   tools: {},
+  portsByTabId: {},
   imageListeners: [],
   eventListeners: [],
   depthListeners: []
@@ -229,8 +230,23 @@ DepthJS.backend.onMessage = function (stream, data) {
     }
 
     msg.jsonRep = data.data;
-    _.each(DepthJS.eventListeners, function(port) {
-      port.postMessage(msg);
+    // Don't send to all--send to only the current tab.
+    // _.each(DepthJS.eventListeners, function(port) {
+    //   port.postMessage(msg);
+    // });
+    chrome.tabs.getSelected(null, function (tab) {
+      var tabPorts = DepthJS.portsByTabId[tabId];
+      if (tabPorts == null) {
+        console.log("Could not find ports for tabId " + tabId);
+        return;
+      }
+      var eventPort = tabPorts.event;
+      if (eventPort == null) {
+        console.log("Could not find event port for tabId " + tabId);
+        return;
+      }
+
+      eventPort.postMessage(msg);
     });
   } else if (stream == "image") {
     DepthJS.eventHandlers.onImageMsg(data);
@@ -244,13 +260,17 @@ DepthJS.backend.onDisconnect = function (stream) {
 };
 
 
-DepthJS.eventHandlers.onNewTab = function(url, title, windowId, tabNum) {
+DepthJS.eventHandlers.onNewTab = function(url, title, windowId, tabId) {
 };
 
-DepthJS.eventHandlers.onClosedTab = function(url, windowId, tabNum) {
+DepthJS.eventHandlers.onClosedTab = function(url, windowId, tabId) {
+  if (DepthJS.portsByTabId[tabId] != null) {
+    console.log("Had ports by closed tab laying around, deleting");
+    delete DepthJS.portsByTabId[tabId];
+  }
 };
 
-DepthJS.eventHandlers.onReaccessedTab = function(url, windowId, tabNum) {
+DepthJS.eventHandlers.onReaccessedTab = function(url, windowId, tabId) {
 };
 
 (function() {
@@ -290,23 +310,60 @@ chrome.extension.onConnect.addListener(function(port) {
   var listeners =  DepthJS[name + "Listeners"];
   listeners.push(port);
 
+  var tabId = port.sender.tab.id;
+  var tabPorts = DepthJS.portsByTabId[tabId];
+  if (tabPorts == null) {
+    tabPorts = DepthJS.portsByTabId[tabId] = {};
+  }
+  tabPorts[name] = port;
+
   port.onDisconnect.addListener(function (e) {
     console.log(name + " port disconnected");
     DepthJS[name + "Listeners"] = _.reject(
       listeners, function(el) { el === port; });
+    var tabPorts = DepthJS.portsByTabId[tabId];
+    delete tabPorts[name];
+    if (_.isEmpty(tabPorts)) {
+      delete tabPorts[tabId];
+    }
   });
 });
 
 function sendTestEvent() {
   console.log("Sending out random TestEvent");
-  _.each(DepthJS.eventListeners, function(port) {
-    var msg = {type: "TestEvent", data: {x:0, y:0}};
-    msg.jsonRep = JSON.stringify(msg);
-    port.postMessage(msg);
+  var msg = {};
+  if (Math.random() < 0.2) {
+    msg = {type: "TestEvent", data: {x:0, y:0}};
+  } else if (Math.random() < 0.5) {
+    msg = {type: "SwipeUp", data: {}};
+  } else if (Math.random() < 0.5) {
+    msg = {type: "SwipeDown", data: {}};
+  } else if (Math.random() < 0.5) {
+    msg = {type: "SwipeRight", data: {}};
+  } else if (Math.random() < 0.5) {
+    msg = {type: "SwipeLeft", data: {}};
+  }
+
+  msg.jsonRep = JSON.stringify(msg);
+
+  chrome.tabs.getSelected(null, function (tab) {
+    if (msg.type == undefined) return;
+    var tabId = tab.id;
+    var tabPorts = DepthJS.portsByTabId[tabId];
+    if (tabPorts == null) {
+      console.log("Could not find ports for tabId " + tabId);
+      return;
+    }
+    var eventPort = tabPorts.event;
+    if (eventPort == null) {
+      console.log("Could not find event port for tabId " + tabId);
+      return;
+    }
+    eventPort.postMessage(msg);
   });
   setTimeout(sendTestEvent, 5000);
 }
-setTimeout(sendTestEvent, 5000);
+// setTimeout(sendTestEvent, 5000);
 
 </script>
 </head></html>
