@@ -1,6 +1,5 @@
 <html><head>
 <script src="jquery-1.4.4.min.js"></script>
-<script src="socket.io.js"></script>
 <script src="underscore-min.js"></script>
 
 <script>
@@ -177,37 +176,30 @@ DepthJS.backend.eventsWs = null;
 DepthJS.backend.imageWs = null;
 DepthJS.backend.depthWs = null;
 DepthJS.backend.host = "localhost";
-DepthJS.backend.eventsPort = 14444;
-DepthJS.backend.imagePort = 14445;
-DepthJS.backend.depthPort = 14446;
+DepthJS.backend.port = 8000;
 
 DepthJS.backend.connect = function() {
   return _.all(_.map(["events", "image", "depth"], function(stream) {
-    var port = DepthJS.backend[stream+"Port"];
-    console.log("Connecting to " + stream + " stream on " +
-      DepthJS.backend.host + ":" + port);
+    var path = "ws://" + DepthJS.backend.host + ":" + DepthJS.backend.port + "/" + stream;
+    console.log("Connecting to " + stream + " stream on " + path);
     if (DepthJS.backend[stream+"Ws"] != null) {
       console.log("Already connected or connecting");
       return false;
     }
-    var socket = new io.Socket(DepthJS.backend.host, {
-      transports: ["websocket"],
-      port: port
-    });
-    socket.connect();
+    var socket = new WebSocket(path);
     DepthJS.backend[stream+"Ws"] = socket;
 
-    socket.on('message', function(data){
+    socket.onmessage = function(data){
       DepthJS.backend.onMessage(stream, data);
-    });
+    };
 
-    socket.on("disconnect", function() {
+    socket.onclose = function() {
       DepthJS.backend.onDisconnect(stream);
-    });
+    };
 
-    socket.on("connect", function() {
+    socket.onopen = function() {
       DepthJS.backend.onConnect(stream);
-    });
+    };
 
     return true;
   }));
@@ -259,6 +251,9 @@ DepthJS.backend.onDisconnect = function (stream) {
   console.log("Disconnected on " + stream + " stream");
 };
 
+DepthJS.backend.onConnect = function (stream) {
+  console.log("Connect on " + stream + " stream");
+};
 
 DepthJS.eventHandlers.onNewTab = function(url, title, windowId, tabId) {
   test();
