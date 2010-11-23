@@ -344,15 +344,19 @@ int main(int argc, char **argv)
 						if (appear.x - blb[0] > 100) {
 							cout << "right"<<endl; appear.x = -1;
 							send_event("SwipeRight", "");
+							update_bg_model = true;
 						} else if (appear.x - blb[0] < -100) {
 							cout << "left" <<endl; appear.x = -1;
 							send_event("SwipeLeft", "");
+							update_bg_model = true;
 						} else if (appear.y - blb[1] > 150) {
 							cout << "up" << endl; appear.x = -1;
 							send_event("SwipeUp", "");
+							update_bg_model = true;
 						} else if (appear.y - blb[1] < -150) {
 							cout << "down" << endl; appear.x = -1;
 							send_event("SwipeDown", "");
+							update_bg_model = true;
 						}
 					}
 					if(timediff >= 1.0) {
@@ -370,9 +374,10 @@ int main(int argc, char **argv)
 			register_ctr = MAX((register_ctr - 1),0);
 		}
 
-		if (register_ctr == 0 && registered) {
+		if (register_ctr <= 40 && registered) {
 			midBlob.x = midBlob.y = -1;
 			registered = false;
+			update_bg_model = true;
 			cout << "unregister" << endl;
 			send_event("Unregister", "");
 		}
