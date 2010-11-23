@@ -423,61 +423,53 @@ function sendTestEvent(msg, callback) {
   });
 }
 
-function makeTestEvents() {
-  // *************** No tests by default. ****************
-  return [];
+function testDepthose() {
+  return [
+    {type:"Register", data:{}},
+    {type:"Pull", data:{}},
+    {type:"Move", data:{x: 15, y: 15}},
+    {type:"Unregister", data:{}},
+    {type:"Register", data:{}},
+    {type:"Pull", data:{}},
+    {type:"Move", data:{x: -15, y: 15}},
+    {type:"Move", data:{x: 40, y: 80}},
+    {type:"Push", data:{}}
+  ].reverse();
+}
 
-  // Depthose test
-  /*return [*/
-    /*{type:"Register", data:{}},*/
-    /*{type:"Pull", data:{}},*/
-    /*{type:"Move", data:{x: 15, y: 15}},*/
-    /*{type:"Unregister", data:{}},*/
-    /*{type:"Register", data:{}},*/
-    /*{type:"Pull", data:{}},*/
-    /*{type:"Move", data:{x: -15, y: 15}},*/
-    /*{type:"Move", data:{x: 40, y: 80}},*/
-    /*{type:"Push", data:{}}*/
-  /*].reverse();*/
-
-  // Selector box & nav test
-  // return [
-  //   {type: "TestEvent", data: {x:0, y:0}},
-  //   {type: "SwipeDown", data: {}},
-  //   {type: "SwipeUp", data: {}},
-  //   {type: "SwipeRight", data: {}},
-  //   {type: "SwipeLeft", data: {}},
-  //   {type:"Register", data:{}},
-  //   {type:"Unregister", data:{}},
-  //   {type:"Register", data:{}},
-  //   {type:"Move", data:{x: 15, y: 15}},
-  //   {type:"Move", data:{x: -15, y: 15}},
-  //   {type:"Move", data:{x: 40, y: 80}},
-  //   {type:"Push", data:{}},
-  //   {type:"Pull", data:{}}
-  // ].reverse();
-
-  //panner test
+function testPanner() {
   return [
     {type:"Register", data:{}},
     {type:"HandOpen", data:{}},
     {type:"Move", data:{x: 10, y: 30}},
     {type:"Move", data:{x: 40, y: 50}},
     {type:"Unregister", data:{}},
-    //{type: "TestEvent", data: {x:0, y:0}},
-    //{type: "SwipeDown", data: {}},
-    //{type: "SwipeUp", data: {}},
-    //{type: "SwipeRight", data: {}},
-    //{type: "SwipeLeft", data: {}},
-    //{type:"Register", data:{}},
-    //{type:"Unregister", data:{}},
-    /*{type:"Register", data:{}},*/
-    /*{type:"Move", data:{x: 15, y: 15}},*/
-    /*{type:"Move", data:{x: -15, y: 15}},*/
-    /*{type:"Move", data:{x: 40, y: 80}},*/
-    /*{type:"Push", data:{}},*/
-    //{type:"Pull", data:{}}
   ].reverse();
+}
+
+function testSelectorBox() {
+  return [
+     {type:"Register", data:{}},
+     {type:"Move", data:{x: 50, y: 50}},
+     {type:"Push", data:{}},
+     {type:"Move", data:{x: 60, y: 0}},
+     {type:"Move", data:{x: 60, y: 15}},
+     {type:"Move", data:{x: 60, y: 25}},
+     {type:"Move", data:{x: 60, y: 35}},
+     {type:"Move", data:{x: 60, y: 45}},
+     {type:"Move", data:{x: 60, y: 55}},
+     {type:"Move", data:{x: 60, y: 65}},
+     {type:"Move", data:{x: 60, y: 75}},
+     {type:"Move", data:{x: 60, y: 85}},
+     {type:"Move", data:{x: 60, y: 95}},
+     {type:"Move", data:{x: 60, y: 100}},
+     {type: "SwipeLeft", data: {}},
+     {type:"Unregister", data:{}},
+   ].reverse();
+}
+
+function makeTestEvents() {
+  return[];
 }
 
 var currentTest = [];
@@ -492,7 +484,7 @@ function test() {
     var event = local.pop();
     if (event != undefined) {
       sendTestEvent(event, function() {
-        setTimeout(next, 3000);
+        setTimeout(next, 1000);
       });
     }
   }

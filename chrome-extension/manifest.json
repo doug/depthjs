@@ -14,7 +14,7 @@
 
   "content_scripts": [
     { "matches": ["http://*/*"],
-      "css": ["vfx/zflow/zflow.css"],
+      "css": ["vfx/zflow/zflow.css","selectorBox.css"],
       "js": ["jquery-1.4.4.min.js",
              "underscore-min.js",
              "vfx/zflow/zflow.js",

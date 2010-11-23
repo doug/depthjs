@@ -22,6 +22,7 @@ var DepthJS = {
   canvasLink: {},
   eventLink: {},
   selectorBox: {},
+  selectorBoxPopup: {},
   panner: {},
   depthose: {},
   MAX_HANDPLANE_WIDTH: 100,
@@ -58,8 +59,11 @@ var DepthJS = {
 DepthJS.state = null;
 
 DepthJS.eventHandlers.onSwipeLeft = function() {
-  // We interpret as "back".
-  history.go(-1);
+  if (DepthJS.state == "selectorBoxPopup") {
+    DepthJS.selectorBoxPopup.openHighlightedLink();
+  } else{
+    history.go(-1);
+  }
 };
 
 DepthJS.eventHandlers.onSwipeRight = function() {
@@ -96,7 +100,7 @@ DepthJS.eventHandlers.onSwipeUp = function() {
   });
 };
 
-// Occurs when the user puts their hand out flat onto a plane
+// POINTER -----------------------------------------------------------------------------------------
 DepthJS.eventHandlers.onRegister = function() {
   console.log("DepthJS: User registered their hand");
   $(window).trigger("touchstart");
@@ -109,6 +113,7 @@ DepthJS.eventHandlers.onUnregister = function() {
   DepthJS.state = null;
   DepthJS.panner.hide();
   DepthJS.selectorBox.hide();
+  DepthJS.selectorBoxPopup.hide();
   DepthJS.depthose.hide();
 };
 
@@ -120,7 +125,7 @@ DepthJS.eventHandlers.onPush = function() {
   }
 
   // They are now "unregistered"
-  setTimeout(DepthJS.eventHandlers.onUnregister, 200);
+  // setTimeout(DepthJS.eventHandlers.onUnregister, 200);
 };
 
 // Right now users can either push or pull
@@ -136,16 +141,14 @@ DepthJS.eventHandlers.onMove = function(data) {
   }
 
   if (DepthJS.state == "panner"){
-    // DepthJS.panner.move(data.x, data.y);
-    // This is probably what Greg really wants.
-    // --Aaron
-    DepthJS.panner.move(data.x * $(window).width() / 100,
-                        data.y * $(window).height() / 100);
+    DepthJS.panner.move(data.x, data.y);
   } else if (DepthJS.state == "depthose") {
     DepthJS.depthose.move(data.x, data.y);
   } else if (DepthJS.state == "selectorBox") {
     DepthJS.selectorBox.move(data.x * $(window).width() / 100,
                              data.y * $(window).height() / 100);
+   } else if (DepthJS.state == "selectorBoxPopup") {
+     DepthJS.selectorBoxPopup.move(data.x, data.y);
   } else {
     console.log("Ignoring move in state " + DepthJS.state);
   }
@@ -171,17 +174,17 @@ DepthJS.panner.show = function() {
 
 DepthJS.panner.hide = function() {
   if ($("body").css("-webkit-transform") == "none") return;
-  $("body").css({"-webkit-transform":"scale(1)","-webkit-transition-duration":".25s"});
+  $("body").css({"-webkit-transform":"scale(1)","-webkit-transition-duration":"1s"});
   // Reset it to whatever the page had before
   setTimeout(function() {
     $("body").css({"-webkit-transform": DepthJS.panner.initTransform,
                    "-webkit-transition-duration": DepthJS.panner.initTransition});
-  }, 250);
+  }, 1000);
 }
 
 DepthJS.panner.move = function(x, y) {
-  // Greg had - here on the x & y, but I don't think thats what he wanted
-  // --Aaron
+  var x = data.x * $(window).width() / 100;
+  var y = data.y * $(window).height() / 100;
   $("body").css({"-webkit-transform":"scale(1.55) translate(" + x + "px, " + y + "px)",
                  "-webkit-transition-duration":".25s"})
 }
@@ -212,11 +215,11 @@ DepthJS.selectorBox.hide = function() {
 };
 
 DepthJS.selectorBox.move = function(x, y) {
-  console.log("move");
-  var $box = DepthJS.selectorBox.$box;
+  console.log("move selector box");
    // Constrain to window
   if (x < 0) x = 0;
   if (y < 0) y = 0;
+  var $box = DepthJS.selectorBox.$box;
   x = Math.min(x, $(window).width() - $box.width());
   y = Math.min(y, $(window).height() - $box.height());
 
@@ -255,12 +258,79 @@ DepthJS.selectorBox.activate = function() {
   });
 
   console.log("Got " + $intersectingLinks.length + " links");
+  console.log($intersectingLinks);
   if ($intersectingLinks.length > 0) {
-    // Trigger a click on them
-    console.log($intersectingLinks);
-    $intersectingLinks.eq(0).click();
+    DepthJS.selectorBoxPopup.$links = $intersectingLinks;
+    DepthJS.selectorBoxPopup.activate();
   }
 };
+
+
+// SELECTOR BOX POPUP ------------------------------------------------------------------------------
+DepthJS.selectorBoxPopup.activate = function(){
+  var $links = DepthJS.selectorBoxPopup.$links;
+  DepthJS.state = "selectorBoxPopup";
+  var $box = DepthJS.selectorBox.$box;
+  var position = "top:" + $box.position().top + "px; left:" + $box.position().left + "px";
+  $("body").append("<div id='depthjs_selectorBoxPopup' style='" + position + "'></div>");
+  var popupContent = "";
+  var popupItemIndex = 0;
+  for(var i = 0; i < $links.length; i++){
+    var linkText = $($links[i]).text();
+
+    if (linkText.length <= 0) continue;
+
+    if (linkText.indexOf("<img") > 0){
+      popupContent += "<div id='depthjs_popupItem" + popupItemIndex +
+      "' class='depthjs_selectorBoxPopupItem'>" +
+      linkText.substring(0,70) + "</div>";
+    } else{
+      popupContent += "<div id='depthjs_popupItem" + popupItemIndex +
+      "' class='depthjs_selectorBoxPopupItem'>" +
+      $($links[i]).html() + "</div>";
+    }
+    popupItemIndex += 1;
+  }
+  DepthJS.selectorBox.$box.hide();
+  $("#depthjs_selectorBoxPopup").html(popupContent);
+}
+
+DepthJS.selectorBoxPopup.move = function(x, y) {
+  console.log("move selector box popup (" + x + ", " + y + ")");
+  if (y == 0) y = 1;
+
+  var $links = DepthJS.selectorBoxPopup.$links;
+  var popupHeight = $("#depthjs_selectorBoxPopup").height();
+  y = (y * popupHeight / 100) / (popupHeight / $links.length);
+  var closestLinkIndex = Math.round(y);
+  console.log("Closest link is " + closestLinkIndex);
+
+  var $lastHighlightedLink = DepthJS.selectorBoxPopup.$lastHighlightedLink;
+  console.log($lastHighlightedLink);
+  if ($lastHighlightedLink != null){
+    $lastHighlightedLink.removeClass("depthjs_selectorBoxPopupItemHighlight");
+  }
+  var $closestLink = $("#depthjs_popupItem" + closestLinkIndex);
+  $closestLink.addClass("depthjs_selectorBoxPopupItemHighlight");
+  DepthJS.selectorBoxPopup.lastHighlightedLinkIndex = closestLinkIndex;
+  DepthJS.selectorBoxPopup.$lastHighlightedLink = $closestLink;
+}
+
+DepthJS.selectorBoxPopup.openHighlightedLink = function(){
+  var $links = DepthJS.selectorBoxPopup.$links;
+  var lastHighlightedLinkIndex = DepthJS.selectorBoxPopup.lastHighlightedLinkIndex;
+  var $linkToOpen = $links.eq(lastHighlightedLinkIndex);
+
+  var evt = document.createEvent("MouseEvents");
+  evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+  $linkToOpen[0].dispatchEvent(evt);
+}
+
+DepthJS.selectorBoxPopup.hide = function(){
+  $("#depthjs_selectorBoxPopup").fadeOut(300, function(){
+    $("#depthjs_selectorBoxPopup").remove();
+  });
+}
 
 // EVENT LINK --------------------------------------------------------------------------------------
 
