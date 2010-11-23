@@ -279,20 +279,21 @@ DepthJS.eventHandlers.onReaccessedTab = function(url, windowId, tabId) {
     var h = 480;
     var dataArray = [];
     var dataLength = 0;
-
+    var frameSize = w*h*bytes;
     return function(frameEvent) {
       var frameData = atob(frameEvent.data);
-      if (dataLength + frameData.length < w*h*bytes) {
+      if (dataLength + frameData.length < frameSize) {
         dataArray.push(frameData);
         dataLength += frameData.length;
+        console.log("got " + frameData.length + " bytes, need " + (frameSize - dataLength) + "more");
       } else {
-        var rem = (dataLength + frameData.length) - w*h*bytes;
-        var dataTail = frameData.substring(0,frameData.length - rem - 1);
-        var remData = frameData.substring(frameData.length - rem);
+        var rem = (dataLength + frameData.length) - frameSize;
+        var dataTail = frameData.substring(0,frameData.length - rem);
+        var remData = frameData.substring(frameData.length - rem + 1);
+        dataArray.push(dataTail);
         var data = dataArray.join("");
-        console.log(listeners);
         _.each(listeners, function(port) {
-            console.log("sending data");
+            console.log("sending image or depth data");
             port.postMessage({data: data});
         });
         dataArray = [];
@@ -444,11 +445,11 @@ function makeTestEvents() {
     //{type: "SwipeLeft", data: {}},
     //{type:"Register", data:{}},
     //{type:"Unregister", data:{}},
-    {type:"Register", data:{}},
-    {type:"Move", data:{x: 15, y: 15}},
-    {type:"Move", data:{x: -15, y: 15}},
-    {type:"Move", data:{x: 40, y: 80}},
-    {type:"Push", data:{}},
+    /*{type:"Register", data:{}},*/
+    /*{type:"Move", data:{x: 15, y: 15}},*/
+    /*{type:"Move", data:{x: -15, y: 15}},*/
+    /*{type:"Move", data:{x: 40, y: 80}},*/
+    /*{type:"Push", data:{}},*/
     //{type:"Pull", data:{}}
   ].reverse();
 }

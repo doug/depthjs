@@ -244,13 +244,14 @@ DepthJS.canvasLink.initDepth = function() {
     var imageData = c.createImageData(w, h);
 
     var port = chrome.extension.connect({name: "depth"});
-    port.onMessage.addListener(function(depthData) {
+    port.onMessage.addListener(function(msg) {
+      var depthData = msg.data;
       // depthData is 255-valued depth repeated 640x480 times
       var imgPtr = 0;
       for (var ptr = 0; ptr < depthData.length; ptr++) {
-        imageData.data[imgPtr++] = depthData[ptr]; // R
-        imageData.data[imgPtr++] = depthData[ptr]; // G
-        imageData.data[imgPtr++] = depthData[ptr]; // B
+        imageData.data[imgPtr++] = depthData.charCodeAt(ptr); // R
+        imageData.data[imgPtr++] = depthData.charCodeAt(ptr); // G
+        imageData.data[imgPtr++] = depthData.charCodeAt(ptr); // B
         imageData.data[imgPtr++] = 0xFF; // Alpha
       }
       c.putImageData(imageData, 0, 0);
@@ -271,29 +272,31 @@ DepthJS.canvasLink.initImage = function () {
   var $imageCanvas = $("canvas#DepthJS_image");
   if ($imageCanvas.length > 0) {
     console.log("DepthJS: Will write to image canvas");
-    var imageCanvas = $imageCanvas.get(0);
-    var c = imageCanvas.getContext("2d");
 
     // read the width and height of the canvas
     var w = 640;
     var h = 480;
+    var imageCanvas = $imageCanvas.get(0);
+    var c = imageCanvas.getContext("2d");
     var imageData = c.createImageData(w, h);
 
     var port = chrome.extension.connect({name: "image"});
-    port.onMessage.addListener(function(rawData) {
-      console.log(rawData);
+    port.onMessage.addListener(function(msg) {
+      var rawData = msg.data;
       // rawData is RGB repeated 640x480 times
       var imgPtr = 0;
-      for (var ptr = 0; i < rawData; i+=3) {
-        imageData.data[imgPtr++] = rawData[ptr+0]; // R
-        imageData.data[imgPtr++] = rawData[ptr+1]; // G
-        imageData.data[imgPtr++] = rawData[ptr+2]; // B
+      for (var ptr = 0; ptr < rawData.length; ptr+=3) {
+        imageData.data[imgPtr++] = rawData.charCodeAt(ptr+0); // R
+        imageData.data[imgPtr++] = rawData.charCodeAt(ptr+1); // G
+        imageData.data[imgPtr++] = rawData.charCodeAt(ptr+2); // B
         imageData.data[imgPtr++] = 0xFF; // Alpha
       }
       c.putImageData(imageData, 0, 0);
     });
 
     // Start with all blue
+    var c = imageCanvas.getContext("2d");
+    var imageData = c.createImageData(w, h);
     for (var i = 0; i < imageData.data.length; i+=4) {
       imageData.data[i+0] = 0; // R
       imageData.data[i+1] = 0; // G
@@ -351,7 +354,14 @@ DepthJS.depthose.show = function() {
   if (images.length > 0) {
     console.log("starting zflow");
     zflow(images, "#DepthJS_tray");
+    //var e = $.Event("touch");
+    //e.type = "touchstart";
 
+    var e = document.createEvent("Event");
+    e.initEvent("touchstart");
+    e.touches = [{pageX: $(window).width()/2,
+                  pageY: $(window).height()/2}];
+    document.getElementById("DepthJS_tray").dispatchEvent(e);
   } else {
     console.log("Not showing Depthose--no windows to show");
   }
