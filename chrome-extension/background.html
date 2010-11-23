@@ -336,6 +336,7 @@ chrome.extension.onConnect.addListener(function(port) {
           var finishedWindows = 0;
           _.each(windows, function(window) {
             console.log("Capturing windowId" + window.id);
+            console.log(window);
             chrome.tabs.captureVisibleTab(window.id, null, function(dataUrl) {
               if (dataUrl !== undefined && dataUrl != null) {
                 window.dataUrl = dataUrl;
@@ -423,10 +424,13 @@ function sendTestEvent(msg, callback) {
 }
 
 function makeTestEvents() {
+  // No tests by default.
+  // return [];
+
   // Depthose test
   /*return [*/
     /*{type:"Register", data:{}},*/
-    /*{type:"Pull", data:{}}*/
+    /*{type:"Pull", data:{}},*/
     /*{type:"Move", data:{x: 15, y: 15}},*/
     /*{type:"Unregister", data:{}},*/
     /*{type:"Register", data:{}},*/
@@ -455,6 +459,7 @@ function makeTestEvents() {
 
   //panner test
   return [
+    {type:"Register", data:{}},
     {type:"HandOpen", data:{}},
     {type:"Move", data:{x: 10, y: 30}},
     {type:"Move", data:{x: 40, y: 50}},

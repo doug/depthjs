@@ -1,10 +1,10 @@
 /*
     Copyright (C) 2008, 2009 Charles Ying. All Rights Reserved.
-    
+
     This distribution is released under the BSD license.
 
     http://css-vfx.googlecode.com/
-    
+
     See the README for documentation and license.
 */
 
@@ -37,7 +37,7 @@ function utils_setxy(elem, x, y)
 }
 
 /*
-    TrayController is a horizontal touch event controller that tracks cumulative offsets and passes events to a delegate. 
+    TrayController is a horizontal touch event controller that tracks cumulative offsets and passes events to a delegate.
 */
 
 TrayController = function ()
@@ -51,30 +51,39 @@ TrayController.prototype.init = function (elem)
     this.elem = elem;
 }
 
-TrayController.prototype.touchstart = function (event)
+TrayController.prototype.depthstart = function (e)
 {
-    this.startX = event.touches[0].pageX - this.currentX;
+    console.log(["depthstart", e]);
+    this.startX = e.pageX - this.currentX;
     this.touchMoved = false;
 
-    window.addEventListener("touchmove", this, true);
-    window.addEventListener("touchend", this, true);
+    window.addEventListener("depthmove", this, true);
+    window.addEventListener("depthend", this, true);
 
     this.elem.style.webkitTransitionDuration = "0s";
 }
 
-TrayController.prototype.touchmove = function (e)
+TrayController.prototype.depthmove = function (e)
 {
+    console.log(["depthmove", e]);
     this.touchMoved = true;
     this.lastX = this.currentX;
     this.lastMoveTime = new Date();
-    this.currentX = event.touches[0].pageX - this.startX;
+    this.currentX = e.pageX - this.startX;
     this.delegate.update(this.currentX);
 }
 
-TrayController.prototype.touchend = function (e)
+TrayController.prototype.depthselect = function (e)
 {
-    window.removeEventListener("touchmove", this, true);
-    window.removeEventListener("touchend", this, true);
+    console.log(["depthselect", e]);
+    this.delegate.clicked(this.currentX);
+}
+
+TrayController.prototype.depthend = function (e)
+{
+    console.log(["depthend", e]);
+    window.removeEventListener("depthmove", this, true);
+    window.removeEventListener("depthend", this, true);
 
     this.elem.style.webkitTransitionDuration = "0.4s";
 
@@ -87,10 +96,6 @@ TrayController.prototype.touchend = function (e)
 
         this.currentX = this.currentX + delta * 200 / dt;
         this.delegate.updateTouchEnd(this);
-    }
-    else
-    {
-        this.delegate.clicked(this.currentX);
     }
 }
 
@@ -122,9 +127,10 @@ FlowDelegate = function ()
     this.transforms = new Array();
 }
 
-FlowDelegate.prototype.init = function (elem)
+FlowDelegate.prototype.init = function (elem, imageObjs)
 {
     this.elem = elem;
+    this.imageObjs = imageObjs;
 }
 
 FlowDelegate.prototype.updateTouchEnd = function (controller)
@@ -141,6 +147,10 @@ FlowDelegate.prototype.updateTouchEnd = function (controller)
 FlowDelegate.prototype.clicked = function (currentX)
 {
     var i = - Math.round(currentX / CGAP);
+
+    this.imageObjs[i].selectCallback();
+    return; // skip rest as not needed for Depthose.
+
     var cell = this.cells[i];
 
     var transform = this.transformForCell(cell, i, currentX);
@@ -169,7 +179,7 @@ FlowDelegate.prototype.getFocusedCell = function (currentX)
 
 FlowDelegate.prototype.transformForCell = function (cell, i, offset)
 {
-    /* 
+    /*
         This function needs to be fast, so we avoid function calls, divides, Math.round,
         and precalculate any invariants we can.
     */
@@ -217,19 +227,19 @@ FlowDelegate.prototype.update = function (currentX)
     }
 }
 
-global.zflow = function (images, selector)
+global.zflow = function (imageObjs, selector)
 {
     var controller = new TrayController();
     var delegate = new FlowDelegate();
     var tray = document.querySelector(selector);
 
     controller.init(tray);
-    delegate.init(tray);
+    delegate.init(tray, imageObjs);
 
     controller.delegate = delegate;
 
-    var imagesLeft = images.length;
-    
+    var imagesLeft = imageObjs.length;
+
     var cellCSS = {
         top: Math.round(-CSIZE * 0.65) + "px",
         left: Math.round(-CSIZE / 2) + "px",
@@ -238,7 +248,7 @@ global.zflow = function (images, selector)
         opacity: 0,
     }
 
-    images.forEach(function (url, i)
+    imageObjs.forEach(function (obj, i)
     {
         var cell = document.createElement("div");
         var image = document.createElement("img");
@@ -248,7 +258,7 @@ global.zflow = function (images, selector)
         cell.appendChild(image);
         cell.appendChild(canvas);
 
-        image.src = url;
+        image.src = obj.url;
 
         image.addEventListener("load", function ()
         {
@@ -256,9 +266,9 @@ global.zflow = function (images, selector)
 
             var iwidth = image.width;
             var iheight = image.height;
-            
+
             var ratio = Math.min(CSIZE / iheight, CSIZE / iwidth);
-            
+
             iwidth *= ratio;
             iheight *= ratio;
 
@@ -287,24 +297,24 @@ global.zflow = function (images, selector)
         });
     });
 
-    tray.addEventListener('touchstart', controller, false);
+    tray.addEventListener('depthstart', controller, false);
 
-	/* Limited keyboard support for now */
-	window.addEventListener('keydown', function (e)
-	{
-		if (e.keyCode == 37)
-		{
-			/* Left Arrow */
-			controller.currentX += CGAP;
-			delegate.updateTouchEnd(controller);
-		}
-		else if (e.keyCode == 39)
-		{
-			/* Right Arrow */
-			controller.currentX -= CGAP;
-			delegate.updateTouchEnd(controller);
-		}
-	});
+    /* Limited keyboard support for now */
+    window.addEventListener('keydown', function (e)
+    {
+        if (e.keyCode == 37)
+        {
+            /* Left Arrow */
+            controller.currentX += CGAP;
+            delegate.updateTouchEnd(controller);
+        }
+        else if (e.keyCode == 39)
+        {
+            /* Right Arrow */
+            controller.currentX -= CGAP;
+            delegate.updateTouchEnd(controller);
+        }
+    });
 }
 
 function reflect(image, iwidth, iheight, canvas)
@@ -327,7 +337,7 @@ function reflect(image, iwidth, iheight, canvas)
     var gradient = ctx.createLinearGradient(0, 0, 0, iheight / 2);
     gradient.addColorStop(1, "rgba(255, 255, 255, 1.0)");
     gradient.addColorStop(0, "rgba(255, 255, 255, 0.5)");
-    
+
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, iwidth, iheight / 2);
 }

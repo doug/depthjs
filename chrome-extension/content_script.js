@@ -85,11 +85,7 @@ DepthJS.eventHandlers.onHandOpen = function(){
   console.log("DepthJS. Hand Open");
   DepthJS.eventHandlers.onUnregister();
   DepthJS.state = "panner";
-
-  var centerPoint = $(window).height()/2 + $(window).scrollTop();
-  $("body").css({"-webkit-transform":"scale(1.55) translate(0px,0px)",
-                 "-webkit-transition-duration":"1s",
-                 "-webkit-transform-origin":"50% " + centerPoint + "px"});
+  DepthJS.panner.show();
 }
 
 DepthJS.eventHandlers.onSwipeUp = function() {
@@ -110,9 +106,8 @@ DepthJS.eventHandlers.onRegister = function() {
 
 DepthJS.eventHandlers.onUnregister = function() {
   console.log("DepthJS. User removed their hand");
-  $("body").css({"-webkit-transform":"scale(1)","-webkit-transition-duration":"1s"});
-  $(window).trigger("touchend");
   DepthJS.state = null;
+  DepthJS.panner.hide();
   DepthJS.selectorBox.hide();
   DepthJS.depthose.hide();
 };
@@ -141,8 +136,11 @@ DepthJS.eventHandlers.onMove = function(data) {
   }
 
   if (DepthJS.state == "panner"){
-    $("body").css({"-webkit-transform":"scale(1.55) translate(" + -data.x + "px," + -data.y + "px)",
-                   "-webkit-transition-duration":".25s"})
+    // DepthJS.panner.move(data.x, data.y);
+    // This is probably what Greg really wants.
+    // --Aaron
+    DepthJS.panner.move(data.x * $(window).width() / 100,
+                        data.y * $(window).height() / 100);
   } else if (DepthJS.state == "depthose") {
     DepthJS.depthose.move(data.x, data.y);
   } else if (DepthJS.state == "selectorBox") {
@@ -151,6 +149,41 @@ DepthJS.eventHandlers.onMove = function(data) {
   } else {
     console.log("Ignoring move in state " + DepthJS.state);
   }
+}
+
+// PANNER ------------------------------------------------------------------------------------------
+
+DepthJS.panner.initTransform = null;
+DepthJS.panner.initTransition = null;
+
+DepthJS.panner.show = function() {
+  if (DepthJS.panner.initTransform == null) {
+    DepthJS.panner.initTransform = $("body").css("-webkit-transform");
+  }
+  if (DepthJS.panner.initTransition == null) {
+    DepthJS.panner.initTransition = $("body").css("-webkit-transition-duration");
+  }
+  var centerPoint = $(window).height()/2 + $(window).scrollTop();
+  $("body").css({"-webkit-transform":"scale(1.55) translate(0px,0px)",
+                 "-webkit-transition-duration":"1s",
+                 "-webkit-transform-origin":"50% " + centerPoint + "px"});
+}
+
+DepthJS.panner.hide = function() {
+  if ($("body").css("-webkit-transform") == "none") return;
+  $("body").css({"-webkit-transform":"scale(1)","-webkit-transition-duration":".25s"});
+  // Reset it to whatever the page had before
+  setTimeout(function() {
+    $("body").css({"-webkit-transform": DepthJS.panner.initTransform,
+                   "-webkit-transition-duration": DepthJS.panner.initTransition});
+  }, 250);
+}
+
+DepthJS.panner.move = function(x, y) {
+  // Greg had - here on the x & y, but I don't think thats what he wanted
+  // --Aaron
+  $("body").css({"-webkit-transform":"scale(1.55) translate(" + x + "px, " + y + "px)",
+                 "-webkit-transition-duration":".25s"})
 }
 
 // SELECTOR BOX ------------------------------------------------------------------------------------
@@ -361,30 +394,39 @@ DepthJS.depthose.show = function() {
   $("#DepthJS_depthose").remove();
   DepthJS.depthose.$div = $("<div id='DepthJS_depthose'></div>");
   var $div = DepthJS.depthose.$div;
-  $div.css("position", "fixed")
-      .css("width", "100%")
-      .css("height", "100%")
-      .css("background-color", "#333")
-      .css("z-index", "10000")
-      .css("top", "0")
-      .css("left", "0")
+  $div.css({"position": "fixed",
+            "width": "100%",
+            "height": "100%",
+            "background-color": "#333",
+            "z-index": "10000",
+            "top": "0",
+            "left": "0"})
       .addClass("zflow")
       .appendTo("body");
 
   $div.append("<div class='centering'><div id='DepthJS_tray' class='tray'></div></div>");
-  var images = _.pluck(DepthJS.depthose.windows, "dataUrl");
-  images = _.reject(images, function(el) { el == null; });
-  console.log("after filtering we have " + images.length + " done.");
-  if (images.length > 0) {
-    console.log("starting zflow");
-    zflow(images, "#DepthJS_tray");
-    //var e = $.Event("touch");
-    //e.type = "touchstart";
+  // var images = _.pluck(DepthJS.depthose.windows, "dataUrl");
+  var imageObjs = _.reject(DepthJS.depthose.windows,
+                           function(el) { el.dataUrl == null; });
+  console.log("after filtering we have " + imageObjs.length + " done.");
 
+  imageObjs = _.map(imageObjs, function(window) {
+    return {
+      url: window.dataUrl,
+      label: "im stupid",
+      selectCallback: function() {
+        console.log("selecting window id " + window.id);
+      }
+    };
+  });
+
+  if (imageObjs.length > 0) {
+    console.log("starting zflow");
+    zflow(imageObjs, "#DepthJS_tray");
     var e = document.createEvent("Event");
-    e.initEvent("touchstart");
-    e.touches = [{pageX: $(window).width()/2,
-                  pageY: $(window).height()/2}];
+    e.initEvent("depthstart");
+    e.pageX = $(window).width()/2;
+    e.pageY = $(window).height()/2;
     document.getElementById("DepthJS_tray").dispatchEvent(e);
   } else {
     console.log("Not showing Depthose--no windows to show");
@@ -394,16 +436,27 @@ DepthJS.depthose.show = function() {
 DepthJS.depthose.hide = function() {
   if (DepthJS.depthose.$div == null) return;
   console.log("DepthJS: Exiting Depthose");
+  var e = document.createEvent("Event");
+  e.initEvent("depthend");
+  document.getElementById("DepthJS_tray").dispatchEvent(e);
   DepthJS.depthose.$div.remove();
   DepthJS.depthose.$div = null;
 };
 
 DepthJS.depthose.move = function(x, y) {
   console.log("DepthJS: Move depthose");
+  var e = document.createEvent("Event");
+  e.initEvent("depthmove");
+  e.pageX = x * $(window).width() / 100;
+  e.pageY = y * $(window).height() / 100;
+  document.getElementById("DepthJS_tray").dispatchEvent(e);
 }
 
 DepthJS.depthose.select = function() {
   console.log("DepthJS: Selecting");
+  var e = document.createEvent("Event");
+  e.initEvent("depthselect");
+  document.getElementById("DepthJS_tray").dispatchEvent(e);
 }
 
 // Do the initialization
