@@ -1,6 +1,5 @@
 <html><head>
 <script src="jquery-1.4.4.min.js"></script>
-<script src="socket.io.js"></script>
 <script src="underscore-min.js"></script>
 
 <script>
@@ -177,37 +176,30 @@ DepthJS.backend.eventsWs = null;
 DepthJS.backend.imageWs = null;
 DepthJS.backend.depthWs = null;
 DepthJS.backend.host = "localhost";
-DepthJS.backend.eventsPort = 14444;
-DepthJS.backend.imagePort = 14445;
-DepthJS.backend.depthPort = 14446;
+DepthJS.backend.port = 8000;
 
 DepthJS.backend.connect = function() {
   return _.all(_.map(["events", "image", "depth"], function(stream) {
-    var port = DepthJS.backend[stream+"Port"];
-    console.log("Connecting to " + stream + " stream on " +
-      DepthJS.backend.host + ":" + port);
+    var path = "ws://" + DepthJS.backend.host + ":" + DepthJS.backend.port + "/" + stream;
+    console.log("Connecting to " + stream + " stream on " + path);
     if (DepthJS.backend[stream+"Ws"] != null) {
       console.log("Already connected or connecting");
       return false;
     }
-    var socket = new io.Socket(DepthJS.backend.host, {
-      transports: ["websocket"],
-      port: port
-    });
-    socket.connect();
+    var socket = new WebSocket(path);
     DepthJS.backend[stream+"Ws"] = socket;
 
-    socket.on('message', function(data){
+    socket.onmessage = function(data){
       DepthJS.backend.onMessage(stream, data);
-    });
+    };
 
-    socket.on("disconnect", function() {
+    socket.onclose = function() {
       DepthJS.backend.onDisconnect(stream);
-    });
+    };
 
-    socket.on("connect", function() {
+    socket.onopen = function() {
       DepthJS.backend.onConnect(stream);
-    });
+    };
 
     return true;
   }));
@@ -235,6 +227,7 @@ DepthJS.backend.onMessage = function (stream, data) {
     //   port.postMessage(msg);
     // });
     chrome.tabs.getSelected(null, function (tab) {
+      var tabId = tab.id;
       var tabPorts = DepthJS.portsByTabId[tabId];
       if (tabPorts == null) {
         console.log("Could not find ports for tabId " + tabId);
@@ -259,6 +252,9 @@ DepthJS.backend.onDisconnect = function (stream) {
   console.log("Disconnected on " + stream + " stream");
 };
 
+DepthJS.backend.onConnect = function (stream) {
+  console.log("Connect on " + stream + " stream");
+};
 
 DepthJS.eventHandlers.onNewTab = function(url, title, windowId, tabId) {
   test();
@@ -281,19 +277,31 @@ DepthJS.eventHandlers.onReaccessedTab = function(url, windowId, tabId) {
   function makeImageBuffer(listeners, bytes) {
     var w = 640;
     var h = 480;
-    var data = [];
-
-    return function(frameData) {
-      if (data.length + frameData.length < w*h*bytes) {
-        data.concat(frameData);
+    var dataArray = [];
+    var dataLength = 0;
+    var frameSize = w*h*bytes;
+    return function(frameEvent) {
+      var frameData = atob(frameEvent.data);
+      if (dataLength + frameData.length < frameSize) {
+        dataArray.push(frameData);
+        dataLength += frameData.length;
+        console.log("got " + frameData.length + " bytes, need " + (frameSize - dataLength) + "more");
       } else {
-        var rem = (data.length + frameData.length) - w*h*bytes;
-        var remData = frameData.splice(frameData.length - rem - 1);
-        if (remData.length > 0) data.concat(remData);
+        var rem = (dataLength + frameData.length) - frameSize;
+        var dataTail = frameData.substring(0,frameData.length - rem);
+        var remData = frameData.substring(frameData.length - rem + 1);
+        dataArray.push(dataTail);
+        var data = dataArray.join("");
         _.each(listeners, function(port) {
+            console.log("sending image or depth data");
             port.postMessage({data: data});
         });
-        data = remData;
+        dataArray = [];
+        dataLength = 0;
+        if (remData.length > 0) {
+          dataArray.push(remData);
+          dataLength += remData.length;
+        }
       }
     };
   }
@@ -450,8 +458,20 @@ function makeTestEvents() {
     {type:"HandOpen", data:{}},
     {type:"Move", data:{x: 10, y: 30}},
     {type:"Move", data:{x: 40, y: 50}},
-// {type:"Move", data:{x: 100, y: 100}},
     {type:"Unregister", data:{}},
+    //{type: "TestEvent", data: {x:0, y:0}},
+    //{type: "SwipeDown", data: {}},
+    //{type: "SwipeUp", data: {}},
+    //{type: "SwipeRight", data: {}},
+    //{type: "SwipeLeft", data: {}},
+    //{type:"Register", data:{}},
+    //{type:"Unregister", data:{}},
+    /*{type:"Register", data:{}},*/
+    /*{type:"Move", data:{x: 15, y: 15}},*/
+    /*{type:"Move", data:{x: -15, y: 15}},*/
+    /*{type:"Move", data:{x: 40, y: 80}},*/
+    /*{type:"Push", data:{}},*/
+    //{type:"Pull", data:{}}
   ].reverse();
 }
 

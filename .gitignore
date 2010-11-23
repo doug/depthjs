@@ -3,3 +3,6 @@
 *.d
 *.tmp
 *.swp
+app/bin/*
+*.pyc
+
