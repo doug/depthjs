@@ -281,6 +281,7 @@ DepthJS.canvasLink.initImage = function () {
 
     var port = chrome.extension.connect({name: "image"});
     port.onMessage.addListener(function(rawData) {
+      console.log(rawData);
       // rawData is RGB repeated 640x480 times
       var imgPtr = 0;
       for (var ptr = 0; i < rawData; i+=3) {
