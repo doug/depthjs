@@ -9,7 +9,11 @@
 
 #include "bg_fg_blobs.h"
 
- void refineSegments(const Mat& img, Mat& mask, Mat& dst)
+ Scalar refineSegments(const Mat& img, 
+					   Mat& mask, 
+					   Mat& dst, 
+					   vector<Point>& contour,
+					   Point2i& previous)
 {
     int niters = 3;
     
@@ -18,9 +22,11 @@
     
     Mat temp;
     
-    dilate(mask, temp, Mat(), Point(-1,-1), niters);
-    erode(temp, temp, Mat(), Point(-1,-1), niters*2);
-    dilate(temp, temp, Mat(), Point(-1,-1), niters);
+//    dilate(mask, temp, Mat(), Point(-1,-1), niters);
+//    erode(temp, temp, Mat(), Point(-1,-1), niters*2);
+//    dilate(temp, temp, Mat(), Point(-1,-1), niters);
+	blur(mask, temp, Size(25,25));
+	temp = temp > 50.0;
     
     findContours( temp, contours, /*hierarchy,*/ CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE );
 	
@@ -30,7 +36,7 @@
 		dst.setTo(Scalar(0));
     
     if( contours.size() == 0 )
-        return;
+        return Scalar(-1,-1);
 	
     // iterate through all the top-level contours,
     // draw each connected component with its own random color
@@ -41,7 +47,9 @@
 	for (idx=0; idx<contours.size(); idx++)
     {
         const vector<Point>& c = contours[idx];
-        double area = fabs(contourArea(Mat(c)));
+		Scalar _mean = mean(Mat(contours[idx]));
+        double area = fabs(contourArea(Mat(c))) * 
+						((previous.x >- 1) ? 1.0 / (1.0 + norm(Point(_mean[0],_mean[1])-previous)) : 1.0);	//consider distance from last blob
         if( area > maxArea )
         {
             maxArea = area;
@@ -49,7 +57,7 @@
         }
     }
     Scalar color( 255 );
-	cout << "largest cc " << largestComp << endl;
+//	cout << "largest cc " << largestComp << endl;
  //   drawContours( dst, contours, largestComp, color, CV_FILLED); //, 8, hierarchy );
 //	for (idx=0; idx<contours[largestComp].size()-1; idx++) {
 //		line(dst, contours[largestComp][idx], contours[largestComp][idx+1], color, 2);
@@ -57,6 +65,16 @@
 	int num = contours[largestComp].size();
 	Point* pts = &(contours[largestComp][0]);
 	fillPoly(dst, (const Point**)(&pts), &num, 1, color);
+	
+	Scalar b = mean(Mat(contours[largestComp]));
+	b[3] = maxArea;
+	
+	contour.clear();
+	contour = contours[largestComp];
+	
+	previous.x = b[0]; previous.y = b[1];
+	
+	return b;
 }
 
  void makePointsFromMask(Mat& maskm,vector<Point2f>& points, bool _add = false) {//, Mat& out) {
@@ -84,7 +102,7 @@ void drawPoint(Mat& out,vector<Point2f>& points,Scalar color, Mat* maskm = NULL)
 	}
 }
 
-
+/*
 //this is a sample for foreground detection functions
 int bgfg_main(int argc, char** argv)
 {
@@ -143,7 +161,9 @@ int bgfg_main(int argc, char** argv)
 //        cvShowImage("FG", bg_model->foreground);
 		
 		Mat tmp_bg_fg(bg_model->foreground);
-		refineSegments(frameMat,tmp_bg_fg,out);
+		
+		vector<Point> c();
+		refineSegments(frameMat,tmp_bg_fg,out,c);
 		
 		if (fr%5 == 0) {
 			makePointsFromMask(out, prevPts,(fr%25 != 0));
@@ -206,3 +226,4 @@ int bgfg_main(int argc, char** argv)
 	
     return 0;
 }
+*/
