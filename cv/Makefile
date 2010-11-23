@@ -15,3 +15,4 @@ $(EXECUTABLE): $(OBJECTS)
 
 clean:
 	@rm -rf $(EXECUTABLE)
+	@rm -rf *.o

@@ -107,6 +107,16 @@ extern  Scalar refineSegments(const Mat& img,
 extern void makePointsFromMask(Mat& maskm,vector<Point2f>& points, bool _add = false);
 extern void drawPoint(Mat& out,vector<Point2f>& points,Scalar color, Mat* maskm = NULL);
 
+zmq::context_t context (1);
+zmq::socket_t socket (context, ZMQ_PUB);
+
+void send_event(const string& etype, const string& edata) {
+	s_sendmore (socket, "event");
+	stringstream ss;
+	ss << "{\"type\":\"" << etype << "\",\"data\":{" << edata << "}}";
+	s_send (socket, ss.str());	
+}
+
 int main(int argc, char **argv)
 {
 	int res;
@@ -114,6 +124,17 @@ int main(int argc, char **argv)
 //	cvtColor(rgbMat, rgbMat, CV_RGB2BGR);
 //	namedWindow("rgb");
 //	namedWindow("depth");
+	
+	
+	try {
+		socket.bind ("tcp://*:14444");
+		s_sendmore (socket, "event");
+        s_send (socket, "{type:\"up\"}");
+	}
+	catch (zmq::error_t e) {
+		cerr << "Cannot bind to socket: " <<e.what() << endl;
+		return -1;
+	}
 	
 	printf("Kinect camera test\n");
 	
@@ -302,6 +323,7 @@ int main(int argc, char **argv)
 				registered = true;
 				appear.x = -1;
 				cout << "register" << endl;
+				send_event("Register", "");				
 			}
 			
 			if(registered) {
@@ -320,12 +342,16 @@ int main(int argc, char **argv)
 						//enough time passed from appearence
 						if (appear.x - blb[0] > 100) {
 							cout << "right"<<endl; appear.x = -1;
+							send_event("SwipeRight", "");
 						} else if (appear.x - blb[0] < -100) {
 							cout << "left" <<endl; appear.x = -1;
-						} else if (appear.y - blb[1] > 100) {
+							send_event("SwipeLeft", "");
+						} else if (appear.y - blb[1] > 150) {
 							cout << "up" << endl; appear.x = -1;
-						} else if (appear.y - blb[1] < -100) {
+							send_event("SwipeUp", "");
+						} else if (appear.y - blb[1] < -150) {
 							cout << "down" << endl; appear.x = -1;
+							send_event("SwipeDown", "");
 						}						
 					}
 					if(timediff >= 1.0) {
@@ -346,6 +372,7 @@ int main(int argc, char **argv)
 			midBlob.x = midBlob.y = -1;
 			registered = false;
 			cout << "unregister" << endl;
+			send_event("Unregister", "");
 		}
 
 		
@@ -415,6 +442,10 @@ int main(int argc, char **argv)
         if( k == 27 ) break;
         if( k == ' ' )
             update_bg_model = !update_bg_model;
+		if (k=='s') {
+			cout << "send test event" << endl;
+			send_event("TestEvent", "");
+		}
 	}
 	
 	printf("-- done!\n");
