@@ -227,6 +227,7 @@ DepthJS.backend.onMessage = function (stream, data) {
     //   port.postMessage(msg);
     // });
     chrome.tabs.getSelected(null, function (tab) {
+      var tabId = tab.id;
       var tabPorts = DepthJS.portsByTabId[tabId];
       if (tabPorts == null) {
         console.log("Could not find ports for tabId " + tabId);

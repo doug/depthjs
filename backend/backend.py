@@ -14,35 +14,28 @@ import multiprocessing as mp
 import subprocess
 
 define("port", default=8000, help="port")
-define("source", default="localhost", help="data source host")
-define("event_port", default=14444, type=int, help="data event port")
-define("image_port", default=14445, type=int, help="data image port")
-define("depth_port", default=14446, type=int, help="data depth port")
+define("source", default="tcp://127.0.0.1:14444", help="data source host")
 
 context = zmq.Context()
 loop = ioloop.IOLoop.instance()
 
 # ZEROMQ
 class Forwarder(object):
-  def __init__(self,source,source_port,socktype,loop):
-    self.socktype = socktype
+  def __init__(self,source,loop):
     self.datasocket = context.socket(zmq.SUB)
-    address = "tcp://%s:%i"%(source,source_port)
-    print(address)
-    self.datasocket.connect(address)
+    self.datasocket.connect(source)
     self.datasocket.setsockopt(zmq.SUBSCRIBE,'')
     loop.add_handler(self.datasocket, self.read_data, zmq.POLLIN)
   def read_data(self, sock, events):
-    if websockets.has_key(self.socktype):
-      clients = websockets[self.socktype]
-      if clients.empty() == false:
-        data = sock.recv()
-        for s in clients:
-          s.write_message(data)
+    t, data = sock.recv_multipart()
+    print("got a %s" % (t,))
+    clients = websockets.get(t,[])
+    if len(clients) != 0:
+      print("forwarding")
+      for s in clients:
+        s.write_message(data)
 
-Forwarder(options.source, options.event_port, "events", loop)
-Forwarder(options.source, options.image_port, "image", loop)
-Forwarder(options.source, options.depth_port, "depth", loop)
+Forwarder(options.source, loop)
 
 # SOCKETS
 websockets = {}
