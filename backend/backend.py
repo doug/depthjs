@@ -4,7 +4,7 @@ from zmq.eventloop import ioloop
 import tornado.httpserver
 import tornado.web
 import tornado.websocket
-from tornado.options import define, options
+from tornado.options import define, options, parse_command_line
 
 from random import random
 import json
@@ -16,8 +16,6 @@ import subprocess
 define("port", default=8000, help="port")
 define("source", default="tcp://127.0.0.1:14444", help="data source host")
 
-context = zmq.Context()
-loop = ioloop.IOLoop.instance()
 
 # ZEROMQ
 class Forwarder(object):
@@ -34,8 +32,6 @@ class Forwarder(object):
       print("forwarding")
       for s in clients:
         s.write_message(data)
-
-Forwarder(options.source, loop)
 
 # SOCKETS
 websockets = {}
@@ -60,13 +56,17 @@ settings = {
 }
 
 application = tornado.web.Application([
-  (r"/events", gen_socket("events")),
+  (r"/event", gen_socket("event")),
   (r"/image", gen_socket("image")),
   (r"/depth", gen_socket("depth")),
 ], **settings)
 
 if __name__ == "__main__":
+  parse_command_line()
+  context = zmq.Context()
+  loop = ioloop.IOLoop.instance()
+  Forwarder(options.source, loop)
   http_server = tornado.httpserver.HTTPServer(application, io_loop=loop)
-  http_server.listen(options.port)
-  print "starting %s:%i" % ("localhost", options.port)
+  http_server.listen(int(options.port))
+  print "starting %s:%s" % ("localhost", options.port)
   loop.start()

@@ -11,12 +11,12 @@ def main():
   bind_to = "tcp://127.0.0.1:14444"
   print bind_to
   s.bind(bind_to)
-  types = ["events","image","depth"]
+  types = ["event","image","depth"]
   try:
-    #for t in itertools.cycle(["events","image"]):
+    #for t in itertools.cycle(["event","image"]):
     for t in itertools.cycle(["image"]):
       msg = ""
-      if t == "events":
+      if t == "event":
         msg = """{"type":"TestEvent", "data":{}}"""
       else:
         msg = []
