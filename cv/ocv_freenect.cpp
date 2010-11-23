@@ -317,9 +317,9 @@ int main(int argc, char **argv)
 			circle(outC, Point(blb[0],blb[1]), 50, Scalar(255,0,0), 3);
 
 			imshow("blob",outC);
-			register_ctr = MIN((register_ctr + 1),60);
+			register_ctr = MIN((register_ctr + 1),160);
 
-			if (register_ctr > 40 && !registered) {
+			if (register_ctr > 140 && !registered) {
 				registered = true;
 				appear.x = -1;
 				cout << "register" << endl;
@@ -333,6 +333,7 @@ int main(int argc, char **argv)
 				if(appear.x<0) {
 					//first appearence of blob
 					appear = midBlob;
+					update_bg_model = false;
 					appearTS = getTickCount();
 					cout << "appear ("<<appearTS<<") " << appear.x << "," << appear.y << endl;
 				} else {
@@ -356,6 +357,7 @@ int main(int argc, char **argv)
 					}
 					if(timediff >= 1.0) {
 						cout << "a ghost..."<<endl;
+						update_bg_model = true;
 						//a second passed from appearence - reset 1st appear
 						appear.x = -1;
 						appearTS = -1;
