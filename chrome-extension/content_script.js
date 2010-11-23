@@ -22,6 +22,7 @@ var DepthJS = {
   canvasLink: {},
   eventLink: {},
   selectorBox: {},
+  panner: {},
   depthose: {},
   MAX_HANDPLANE_WIDTH: 100,
   MAX_HANDPLANE_HEIGHT: 100
@@ -52,6 +53,8 @@ var DepthJS = {
  * The cursor can be moved, "pushed", and "pulled". Moving the cursor moves a visible selection box
  * around the web page. Pushing and pulling activate (click) any links below the selection box.
  **/
+
+
 DepthJS.state = null;
 
 DepthJS.eventHandlers.onSwipeLeft = function() {
@@ -72,6 +75,23 @@ DepthJS.eventHandlers.onSwipeDown = function() {
   });
 };
 
+DepthJS.eventHandlers.onHandPointer = function(){
+  console.log("DepthJS. Hand Pointer");
+  DepthJS.eventHandlers.onUnregister();
+  DepthJS.state = "selectorBox";
+}
+
+DepthJS.eventHandlers.onHandOpen = function(){
+  console.log("DepthJS. Hand Open");
+  DepthJS.eventHandlers.onUnregister();
+  DepthJS.state = "panner";
+
+  var centerPoint = $(window).height()/2 + $(window).scrollTop();
+  $("body").css({"-webkit-transform":"scale(1.55) translate(0px,0px)",
+                 "-webkit-transition-duration":"1s",
+                 "-webkit-transform-origin":"50% " + centerPoint + "px"});
+}
+
 DepthJS.eventHandlers.onSwipeUp = function() {
   // We interpret as "scroll up 75% of window".
   var scrollAmount = Math.floor($(window).height() * 0.75);
@@ -90,6 +110,7 @@ DepthJS.eventHandlers.onRegister = function() {
 
 DepthJS.eventHandlers.onUnregister = function() {
   console.log("DepthJS. User removed their hand");
+  $("body").css({"-webkit-transform":"scale(1)","-webkit-transition-duration":"1s"});
   $(window).trigger("touchend");
   DepthJS.state = null;
   DepthJS.selectorBox.hide();
@@ -119,7 +140,10 @@ DepthJS.eventHandlers.onMove = function(data) {
     return;
   }
 
-  if (DepthJS.state == "depthose") {
+  if (DepthJS.state == "panner"){
+    $("body").css({"-webkit-transform":"scale(1.55) translate(" + -data.x + "px," + -data.y + "px)",
+                   "-webkit-transition-duration":".25s"})
+  } else if (DepthJS.state == "depthose") {
     DepthJS.depthose.move(data.x, data.y);
   } else if (DepthJS.state == "selectorBox") {
     DepthJS.selectorBox.move(data.x * $(window).width() / 100,

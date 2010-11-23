@@ -429,20 +429,29 @@ function makeTestEvents() {
   /*].reverse();*/
 
   // Selector box & nav test
+  // return [
+  //   {type: "TestEvent", data: {x:0, y:0}},
+  //   {type: "SwipeDown", data: {}},
+  //   {type: "SwipeUp", data: {}},
+  //   {type: "SwipeRight", data: {}},
+  //   {type: "SwipeLeft", data: {}},
+  //   {type:"Register", data:{}},
+  //   {type:"Unregister", data:{}},
+  //   {type:"Register", data:{}},
+  //   {type:"Move", data:{x: 15, y: 15}},
+  //   {type:"Move", data:{x: -15, y: 15}},
+  //   {type:"Move", data:{x: 40, y: 80}},
+  //   {type:"Push", data:{}},
+  //   {type:"Pull", data:{}}
+  // ].reverse();
+
+  //panner test
   return [
-    //{type: "TestEvent", data: {x:0, y:0}},
-    //{type: "SwipeDown", data: {}},
-    //{type: "SwipeUp", data: {}},
-    //{type: "SwipeRight", data: {}},
-    //{type: "SwipeLeft", data: {}},
-    //{type:"Register", data:{}},
-    //{type:"Unregister", data:{}},
-    {type:"Register", data:{}},
-    {type:"Move", data:{x: 15, y: 15}},
-    {type:"Move", data:{x: -15, y: 15}},
-    {type:"Move", data:{x: 40, y: 80}},
-    {type:"Push", data:{}},
-    //{type:"Pull", data:{}}
+    {type:"HandOpen", data:{}},
+    {type:"Move", data:{x: 10, y: 30}},
+    {type:"Move", data:{x: 40, y: 50}},
+// {type:"Move", data:{x: 100, y: 100}},
+    {type:"Unregister", data:{}},
   ].reverse();
 }
 
