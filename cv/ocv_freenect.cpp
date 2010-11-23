@@ -269,7 +269,7 @@ int main(int argc, char **argv)
         cvUpdateBGStatModel( &rgbIplI, bg_model, update_bg_model ? -1 : 0 );
         t = (double)cvGetTickCount() - t;
 
-//		if(fr == 125) update_bg_model = false;
+		if(fr == 50) update_bg_model = true;
 
 		//        printf( "%d. %.1f\n", fr, t/(cvGetTickFrequency()*1000.) );
 		//        cvShowImage("BG", bg_model->background);
@@ -317,13 +317,14 @@ int main(int argc, char **argv)
 			circle(outC, Point(blb[0],blb[1]), 50, Scalar(255,0,0), 3);
 
 			imshow("blob",outC);
-			register_ctr = MIN((register_ctr + 1),160);
+			register_ctr = MIN((register_ctr + 1),60);
 
-			if (register_ctr > 140 && !registered) {
+			if (register_ctr > 30 && !registered) {
 				registered = true;
 				appear.x = -1;
 				cout << "register" << endl;
 				send_event("Register", "");
+				update_bg_model = false;
 			}
 
 			if(registered) {
@@ -333,33 +334,37 @@ int main(int argc, char **argv)
 				if(appear.x<0) {
 					//first appearence of blob
 					appear = midBlob;
-					update_bg_model = false;
+//					update_bg_model = false;
 					appearTS = getTickCount();
 					cout << "appear ("<<appearTS<<") " << appear.x << "," << appear.y << endl;
 				} else {
 					//blob was seen before, how much time passed
 					double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
-					if (timediff > .1 && timediff < 1.0) {
+					if (timediff > .1 && timediff < .7) {
 						//enough time passed from appearence
 						if (appear.x - blb[0] > 100) {
 							cout << "right"<<endl; appear.x = -1;
 							send_event("SwipeRight", "");
 							update_bg_model = true;
+							register_ctr = 0;
 						} else if (appear.x - blb[0] < -100) {
 							cout << "left" <<endl; appear.x = -1;
 							send_event("SwipeLeft", "");
 							update_bg_model = true;
+							register_ctr = 0;
 						} else if (appear.y - blb[1] > 150) {
 							cout << "up" << endl; appear.x = -1;
 							send_event("SwipeUp", "");
 							update_bg_model = true;
+							register_ctr = 0;
 						} else if (appear.y - blb[1] < -150) {
 							cout << "down" << endl; appear.x = -1;
 							send_event("SwipeDown", "");
 							update_bg_model = true;
+							register_ctr = 0;
 						}
 					}
-					if(timediff >= 1.0) {
+					if(timediff >= 0.7) {
 						cout << "a ghost..."<<endl;
 						update_bg_model = true;
 						//a second passed from appearence - reset 1st appear
@@ -374,7 +379,7 @@ int main(int argc, char **argv)
 			register_ctr = MAX((register_ctr - 1),0);
 		}
 
-		if (register_ctr <= 40 && registered) {
+		if (register_ctr <= 10 && registered) {
 			midBlob.x = midBlob.y = -1;
 			registered = false;
 			update_bg_model = true;
