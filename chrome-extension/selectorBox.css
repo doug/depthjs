@@ -1,4 +1,4 @@
-#depthjs_selectorBox{
+#DepthJS_selectorBox{
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#5170f7', endColorstr='#264ef3'); /* for IE */
   background: -webkit-gradient(linear, left top, left bottom, from(#5170f7), to(#264ef3)); /* for webkit browsers */
   background: -moz-linear-gradient(top,  #5170f7,  #264ef3); /* for firefox 3.6+ */
@@ -20,7 +20,7 @@
 }
 
 
-#depthjs_selectorBoxPopup{
+#DepthJS_selectorBoxPopup{
   position:absolute;
   z-index:100;
   width:400px;
@@ -44,7 +44,7 @@
   filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
 }
 
-.depthjs_selectorBoxPopupItem{
+.DepthJS_selectorBoxPopupItem{
   font-size:15px;
   font-weight:bold;
   padding:10px;
@@ -52,14 +52,14 @@
   border-bottom:1px solid #e3e3e3;
 }
 
-.depthjs_selectorBoxPopupItemHighlight{
+.DepthJS_selectorBoxPopupItemHighlight{
   color:#fff;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#5170f7', endColorstr='#264ef3'); /* for IE */
   background: -webkit-gradient(linear, left top, left bottom, from(#5170f7), to(#264ef3)); /* for webkit browsers */
   background: -moz-linear-gradient(top,  #5170f7,  #264ef3); /* for firefox 3.6+ */
 }
 
-#depthjs_selectorBoxPopup a:link{color:#666; font-weight:bold;}
-#depthjs_selectorBoxPopup a:visited{color:#888; font-weight:bold;}
-#depthjs_selectorBoxPopup a:hover{color:orange; font-weight:bold;}
+#DepthJS_selectorBoxPopup a:link{color:#666; font-weight:bold;}
+#DepthJS_selectorBoxPopup a:visited{color:#888; font-weight:bold;}
+#DepthJS_selectorBoxPopup a:hover{color:orange; font-weight:bold;}
 

@@ -262,7 +262,7 @@ global.zflow = function (imageObjs, selector)
         cell.appendChild(image);
         cell.appendChild(canvas);
 
-        image.src = obj.url;
+        image.src = obj.dataUrl;
 
         image.addEventListener("load", function ()
         {
