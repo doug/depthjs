@@ -122,10 +122,10 @@ void send_image(const Mat& img) {
 	
 	Mat _img;
 	if(img.type() == CV_8UC1) {
-		Mat _tmp; resize(img, _tmp,Size(320,240)); //better to resize the gray data and not RGB
+		Mat _tmp; resize(img, _tmp,Size(160,120)); //better to resize the gray data and not RGB
 		cvtColor(_tmp, _img, CV_GRAY2RGB);
 	} else {
-		resize(img, _img, Size(320,240));
+		resize(img, _img, Size(160,120));
 	}
 	
 	s_send(socket, (const char*)_img.data);
