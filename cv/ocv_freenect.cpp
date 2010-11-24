@@ -263,7 +263,7 @@ int main(int argc, char **argv)
 	
 //	int hc_ctr = 0;
 	int hcr_ctr = -1;
-	vector<int> hc_stack(100); int hc_stack_ptr = 0;
+	vector<int> hc_stack(20); int hc_stack_ptr = 0;
 	
 	while (!die) {
 		fr++;
@@ -402,6 +402,8 @@ int main(int argc, char **argv)
 				send_event("Move", ss.str());
 //				lastMove.x = blb[0]; lastMove.y = blb[1];
 				
+				
+				//---------------------- fist detection ---------------------
 				//calc laplacian of curve
 				vector<Point> approxCurve;	//approximate curve
 				approxPolyDP(curve, approxCurve, 10.0, true);
@@ -421,8 +423,8 @@ int main(int argc, char **argv)
 				}
 				
 				
-				hc_stack.assign(hc_stack_ptr,hcr_ctr);
-				hc_stack_ptr = (hc_stack_ptr + 1) % 100;
+				hc_stack.at(hc_stack_ptr) = hcr_ctr;
+				hc_stack_ptr = (hc_stack_ptr + 1) % hc_stack.size();
 				
 				Scalar _avg = mean(Mat(hc_stack));
 				if ((_avg[0] - (double)hcr_ctr) > 5.0) { //a big drop in curvature
