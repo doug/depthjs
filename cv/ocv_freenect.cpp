@@ -209,6 +209,7 @@ int main(int argc, char **argv)
 	Point2i appear(-1,-1); double appearTS = -1;
 
 	Point2i midBlob(-1,-1);
+	Point2i lastMove(-1,-1);
 
 	while (!die) {
 		fr++;
@@ -275,6 +276,7 @@ int main(int argc, char **argv)
             continue;
         }
 
+		//Background-forground model
 //        double t = (double)cvGetTickCount();
 //        cvUpdateBGStatModel( &rgbIplI, bg_model, update_bg_model ? -1 : 0 );
 //        t = (double)cvGetTickCount() - t;
@@ -286,7 +288,7 @@ int main(int argc, char **argv)
 		//        cvShowImage("FG", bg_model->foreground);
 		imshow("foreground", bg_model->foreground);
 
-		Mat tmp_bg_fg = depthf < 255; //(bg_model->foreground) & (depthf < 255);
+		Mat tmp_bg_fg = depthf < 255; //(bg_model->foreground) & (depthf < 255); //not using bg-fg anymore
 		vector<Point> ctr;
 		Scalar blb = refineSegments(Mat(),tmp_bg_fg,out,ctr,midBlob); //find contours in the foreground, choose biggest
 
@@ -338,10 +340,15 @@ int main(int argc, char **argv)
 				cout << "register" << endl;
 				send_event("Register", "");
 				update_bg_model = false;
+				
+				lastMove.x = blb[0]; lastMove.y = blb[1];
 			}
 
 			if(registered) {
 				cout << "move: " << blb[0] << "," << blb[1] << endl;
+				stringstream ss; ss << "\"x\":" << lastMove.x - blb[0] << ",\"y\":" << lastMove.y - blb[1] << endl;
+				send_event("Move", ss.str());
+				lastMove.x = blb[0]; lastMove.y = blb[1];
 			} else {
 				//not registered, look for gestures
 				if(appear.x<0) {
