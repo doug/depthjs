@@ -214,10 +214,7 @@ DepthJS.selectorBox.move = function(x, y) {
   y = Math.min(y, $(window).height() - $box.height());
   console.log("move selector box to " + x + ", " + y);
   if (x != $box.css("left") || y != $box.css("top")) {
-    $box.animate({
-      left: x,
-      top: y
-    });
+    $box.css({left: x, top: y});
   }
 };
 
