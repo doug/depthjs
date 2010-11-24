@@ -409,12 +409,12 @@ int main(int argc, char **argv)
 				approxPolyDP(curve, approxCurve, 10.0, true);
 				Mat approxCurveM(approxCurve);
 				
-				Mat curve_lap; 
+				Mat curve_lap;
 				calc_laplacian(approxCurveM, curve_lap);	//calc laplacian
 				
 				hcr_ctr = 0;
 				for (int i=0; i<approxCurve.size(); i++) {
-					double n = norm(curve_lap.at<Point2d>(i));
+					double n = norm(((Point2d*)(curve_lap.data))[i]);
 					if (n > 5.0) {
 						//high curvature point
 						circle(outC, approxCurve[i], 3, Scalar(50,155,255), 2);
