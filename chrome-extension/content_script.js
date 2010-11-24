@@ -319,6 +319,9 @@ DepthJS.selectorBoxPopup.move = function(x, y) {
 DepthJS.selectorBoxPopup.openHighlightedLink = function(){
   var $links = DepthJS.selectorBoxPopup.$links;
   var lastHighlightedLinkIndex = DepthJS.selectorBoxPopup.lastHighlightedLinkIndex;
+  
+  if (lastHighlightedLinkIndex <= 0) return;
+  
   var $linkToOpen = $links.eq(lastHighlightedLinkIndex);
 
   var evt = document.createEvent("MouseEvents");
