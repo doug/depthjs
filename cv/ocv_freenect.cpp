@@ -214,7 +214,17 @@ int main(int argc, char **argv)
 		fr++;
 
 //		imshow("rgb", rgbMat);
-		depthMat.convertTo(depthf, CV_8UC1, 255.0/2048.0);
+		//Linear interpolation
+		{
+			Mat _tmp = (depthMat - 400.0);					//minimum observed value is ~440. so shift a bit
+			_tmp.setTo(Scalar(2048), depthMat > 600.0);		//cut off at 600 to create a "box" where the user interacts
+			_tmp.convertTo(depthf, CV_8UC1, 255.0/1648.0);
+		}
+//		{
+//			stringstream ss; ss << "depth_"<<fr<<".png";
+//			imwrite(ss.str(), depthf);
+//		}
+		//Logarithm interpolcation
 //		{
 //			Mat tmp,tmp1;
 //			depthMat.convertTo(tmp, CV_32FC1);
@@ -265,9 +275,9 @@ int main(int argc, char **argv)
             continue;
         }
 
-        double t = (double)cvGetTickCount();
-        cvUpdateBGStatModel( &rgbIplI, bg_model, update_bg_model ? -1 : 0 );
-        t = (double)cvGetTickCount() - t;
+//        double t = (double)cvGetTickCount();
+//        cvUpdateBGStatModel( &rgbIplI, bg_model, update_bg_model ? -1 : 0 );
+//        t = (double)cvGetTickCount() - t;
 
 		if(fr == 50) update_bg_model = true;
 
@@ -276,7 +286,7 @@ int main(int argc, char **argv)
 		//        cvShowImage("FG", bg_model->foreground);
 		imshow("foreground", bg_model->foreground);
 
-		Mat tmp_bg_fg = (bg_model->foreground) & (depthf < 255);
+		Mat tmp_bg_fg = depthf < 255; //(bg_model->foreground) & (depthf < 255);
 		vector<Point> ctr;
 		Scalar blb = refineSegments(Mat(),tmp_bg_fg,out,ctr,midBlob); //find contours in the foreground, choose biggest
 
@@ -312,9 +322,12 @@ int main(int argc, char **argv)
 //			cout << "point: " << maxLoc.x << "," << maxLoc.y << endl;
 //			circle(outC, Point(ctr[maxLoc.y].x,ctr[maxLoc.y].y), 5, Scalar(0,0,255), 3);
 
-			circle(outC, Point(blb[0],blb[1]), 5, Scalar(0,255,0), 3);
 			//ellipse(outC, Point(blb[0],blb[1]), Size(100,50), angle*180, 0.0, 360.0, Scalar(255,0,0), 2);
 			circle(outC, Point(blb[0],blb[1]), 50, Scalar(255,0,0), 3);
+			Point minLoc; double minval;
+			minMaxLoc(depthMat, &minval, NULL, &minLoc, NULL, out);
+			circle(outC, minLoc, 5, Scalar(0,255,0), 3);
+//			cout << "min depth " << minval << endl;
 
 			imshow("blob",outC);
 			register_ctr = MIN((register_ctr + 1),60);
