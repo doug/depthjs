@@ -25,8 +25,8 @@
 //    dilate(mask, temp, Mat(), Point(-1,-1), niters);
 //    erode(temp, temp, Mat(), Point(-1,-1), niters*2);
 //    dilate(temp, temp, Mat(), Point(-1,-1), niters);
-	blur(mask, temp, Size(25,25));
-	temp = temp > 50.0;
+	blur(mask, temp, Size(21,21));
+	temp = temp > 85.0;
     
     findContours( temp, contours, /*hierarchy,*/ CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE );
 	
