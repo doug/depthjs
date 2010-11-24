@@ -431,11 +431,10 @@ int main(int argc, char **argv)
 					cout << "Hand click!" << endl;
 					send_event("HandClick", "");
 				}
-				{
-					stringstream ss; ss << "high curve pts " << hcr_ctr << ", avg " << _avg[0];
-					putText(outC, ss.str(), Point(50,50), CV_FONT_HERSHEY_PLAIN, 2.0,Scalar(0,0,255), 2);
-				}
-				
+//				{
+//					stringstream ss; ss << "high curve pts " << hcr_ctr << ", avg " << _avg[0];
+//					putText(outC, ss.str(), Point(50,50), CV_FONT_HERSHEY_PLAIN, 2.0,Scalar(0,0,255), 2);
+//				}				
 			} else {
 				//not registered, look for gestures
 				if(appear.x<0) {
