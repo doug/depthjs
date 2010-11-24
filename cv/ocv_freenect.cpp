@@ -117,6 +117,56 @@ void send_event(const string& etype, const string& edata) {
 	s_send (socket, ss.str());
 }
 
+Mat laplacian_mtx(int N, bool closed_poly) {
+	Mat A = Mat::zeros(N, N, CV_64FC1);
+	Mat d = Mat::zeros(N, 1, CV_64FC1);
+    
+    //## endpoints
+	//if(closed_poly) {
+	A.at<double>(0,1) = 1;
+	d.at<double>(0,0) = 1;
+	
+	A.at<double>(N-1,N-2) = 1;
+	d.at<double>(N-1,0) = 1;
+	//} else {
+	//      A.at<double>(0,1) = 1;
+	//      d.at<double>(0,0) = 1;
+	//}
+    
+    //## interior points
+	for(int i = 1; i <= N-2; i++) {
+        A.at<double>(i, i-1) = 1;
+        A.at<double>(i, i+1) = 1;
+        
+        d.at<double>(i,0) = 0.5;
+	}
+    
+	Mat Dinv = Mat::diag( d );
+    
+	return Mat::eye(N,N,CV_64FC1) - Dinv * A;
+}
+
+void calc_laplacian(Mat& X, Mat& Xlap) {
+	static Mat lapX = laplacian_mtx(X.rows,false);
+	if(lapX.rows != X.rows) lapX = laplacian_mtx(X.rows,false);
+	
+	Mat _X;
+	if (X.type() != CV_64FC2) {
+		X.convertTo(_X, CV_64FC2);
+	} else {
+		_X = X;
+	}
+
+	
+	vector<Mat> v; split(_X,v);
+	v[0] = v[0].t() * lapX.t();
+	v[1] = v[1].t() * lapX.t();
+	cv::merge(v,Xlap);
+	
+	Xlap = Xlap.t();
+}
+
+
 int main(int argc, char **argv)
 {
 	int res;
@@ -189,7 +239,7 @@ int main(int argc, char **argv)
 
 	Mat depthf; //(depthMat.size(),CV_32FC1,Scalar(0));
 
-	CvBGStatModel* bg_model = 0;
+//	CvBGStatModel* bg_model = 0;
 	Mat frameMat(rgbMat);
 	Mat out(frameMat.size(),CV_8UC1),
 		outC(frameMat.size(),CV_8UC3);
@@ -200,7 +250,7 @@ int main(int argc, char **argv)
 	vector<uchar> statusv;
 	vector<float> errv;
 	Rect cursor(frameMat.cols/2,frameMat.rows/2,10,10);
-	int nmfr = 0; //non-motion frames counter
+//	int nmfr = 0; //non-motion frames counter
 	bool update_bg_model = true;
 	int fr = 1;
 	int register_ctr = 0;
@@ -210,7 +260,11 @@ int main(int argc, char **argv)
 
 	Point2i midBlob(-1,-1);
 	Point2i lastMove(-1,-1);
-
+	
+//	int hc_ctr = 0;
+	int hcr_ctr = -1;
+	vector<int> hc_stack(20); int hc_stack_ptr = 0;
+	
 	while (!die) {
 		fr++;
 
@@ -234,6 +288,7 @@ int main(int argc, char **argv)
 //		}
 //		imshow("depth",depthf);
 
+		/*
 		//Mix grayscale and depth for bg-fg model
 //		Mat rgbAndDepth,gray; cvtColor(rgbMat, gray, CV_BGR2GRAY);
 //		equalizeHist(gray, gray);
@@ -252,10 +307,10 @@ int main(int argc, char **argv)
 //        {
 //			CvGaussBGStatModelParams params;
 
-//#define CV_BGFG_MOG_BACKGROUND_THRESHOLD     0.7     /* threshold sum of weights for background test */
-//#define CV_BGFG_MOG_STD_THRESHOLD            2.5     /* lambda=2.5 is 99% */
-//#define CV_BGFG_MOG_WINDOW_SIZE              200     /* Learning rate; alpha = 1/CV_GBG_WINDOW_SIZE */
-//#define CV_BGFG_MOG_NGAUSSIANS               5       /* = K = number of Gaussians in mixture */
+//#define CV_BGFG_MOG_BACKGROUND_THRESHOLD     0.7     /* threshold sum of weights for background test /
+//#define CV_BGFG_MOG_STD_THRESHOLD            2.5     /* lambda=2.5 is 99% /
+//#define CV_BGFG_MOG_WINDOW_SIZE              200     /* Learning rate; alpha = 1/CV_GBG_WINDOW_SIZE /
+//#define CV_BGFG_MOG_NGAUSSIANS               5       /* = K = number of Gaussians in mixture /
 //#define CV_BGFG_MOG_WEIGHT_INIT              0.05
 //#define CV_BGFG_MOG_SIGMA_INIT               30
 //#define CV_BGFG_MOG_MINAREA                  15.f
@@ -288,7 +343,8 @@ int main(int argc, char **argv)
 		//        cvShowImage("BG", bg_model->background);
 		//        cvShowImage("FG", bg_model->foreground);
 		//imshow("foreground", bg_model->foreground);
-
+*/
+		
 		Mat tmp_bg_fg = depthf < 255; //(bg_model->foreground) & (depthf < 255); //not using bg-fg anymore
 		vector<Point> ctr;
 		Scalar blb = refineSegments(Mat(),tmp_bg_fg,out,ctr,midBlob); //find contours in the foreground, choose biggest
@@ -305,30 +361,17 @@ int main(int argc, char **argv)
 			//draw contour
 			Scalar color(0,0,255);
 			for (int idx=0; idx<ctr.size()-1; idx++)
-				line(outC, ctr[idx], ctr[idx+1], color, 2);
-			line(outC, ctr[ctr.size()-1], ctr[0], color, 2);
+				line(outC, ctr[idx], ctr[idx+1], color, 1);
+			line(outC, ctr[ctr.size()-1], ctr[0], color, 1);
 
 			//draw "major axis"
 			Vec4f _line;
-			fitLine(Mat(ctr), _line, CV_DIST_L2, 0, 0.01, 0.01);
+			Mat curve(ctr);
+			fitLine(curve, _line, CV_DIST_L2, 0, 0.01, 0.01);
 			line(outC, Point(blb[0]-_line[0]*70,blb[1]-_line[1]*70),
 						Point(blb[0]+_line[0]*70,blb[1]+_line[1]*70),
 						Scalar(255,255,0), 1);
-
-			//find farthest point on fitted line
-//			double angle = Vec2d(1,0).dot(Vec2d(_line[0],_line[1]));
-//			cout << "blob area " << blb[3] << ", angle " << angle << endl;
-//			Mat rotMat = getRotationMatrix2D(Point(0,0), angle, 1.0);
-//			Mat transformed(1,ctr.size(),CV_32FC2);
-//			transform(Mat(ctr),transformed,rotMat);
-//			vector<Mat> splitted; split(transformed,splitted);
-//			Point maxLoc;
-//			minMaxLoc(splitted[0],NULL, NULL, NULL, &maxLoc);
-//			cout << "point: " << maxLoc.x << "," << maxLoc.y << endl;
-//			circle(outC, Point(ctr[maxLoc.y].x,ctr[maxLoc.y].y), 5, Scalar(0,0,255), 3);
-
-			//ellipse(outC, Point(blb[0],blb[1]), Size(100,50), angle*180, 0.0, 360.0, Scalar(255,0,0), 2);
-			
+						
 			//blob center
 			circle(outC, Point(blb[0],blb[1]), 50, Scalar(255,0,0), 3);
 			
@@ -336,9 +379,10 @@ int main(int argc, char **argv)
 			Point minLoc; double minval;
 			minMaxLoc(depthMat, &minval, NULL, &minLoc, NULL, out);
 			circle(outC, minLoc, 5, Scalar(0,255,0), 3);
+			vector<int> c;
+			
 //			cout << "min depth " << minval << endl;
 
-			imshow("blob",outC);
 			register_ctr = MIN((register_ctr + 1),60);
 
 			if (register_ctr > 30 && !registered) {
@@ -352,10 +396,46 @@ int main(int argc, char **argv)
 			}
 
 			if(registered) {
-				stringstream ss; ss << "\"x\":" << (int)floor(lastMove.x - blb[0]) << ",\"y\":" << (int)floor(lastMove.y - blb[1]);
+//				stringstream ss; ss << "\"x\":" << (int)floor(lastMove.x - blb[0]) << ",\"y\":" << (int)floor(lastMove.y - blb[1]);
+				stringstream ss; ss << "\"x\":" << (int)floor(blb[0]*100.0/640.0) << ",\"y\":"<<(int)floor(blb[1]*100.0/480.0);
 				cout << "move: " << ss.str() << endl;
 				send_event("Move", ss.str());
-				lastMove.x = blb[0]; lastMove.y = blb[1];
+//				lastMove.x = blb[0]; lastMove.y = blb[1];
+				
+				
+				//---------------------- fist detection ---------------------
+				//calc laplacian of curve
+				vector<Point> approxCurve;	//approximate curve
+				approxPolyDP(curve, approxCurve, 10.0, true);
+				Mat approxCurveM(approxCurve);
+				
+				Mat curve_lap; 
+				calc_laplacian(approxCurveM, curve_lap);	//calc laplacian
+				
+				hcr_ctr = 0;
+				for (int i=0; i<approxCurve.size(); i++) {
+					double n = norm(curve_lap.at<Point2d>(i));
+					if (n > 5.0) {
+						//high curvature point
+						circle(outC, approxCurve[i], 3, Scalar(50,155,255), 2);
+						hcr_ctr++;
+					}
+				}
+				
+				
+				hc_stack.at(hc_stack_ptr) = hcr_ctr;
+				hc_stack_ptr = (hc_stack_ptr + 1) % hc_stack.size();
+				
+				Scalar _avg = mean(Mat(hc_stack));
+				if ((_avg[0] - (double)hcr_ctr) > 5.0) { //a big drop in curvature
+					cout << "Hand click!" << endl;
+					send_event("HandClick", "");
+				}
+				{
+					stringstream ss; ss << "high curve pts " << hcr_ctr << ", avg " << _avg[0];
+					putText(outC, ss.str(), Point(50,50), CV_FONT_HERSHEY_PLAIN, 2.0,Scalar(0,0,255), 2);
+				}
+				
 			} else {
 				//not registered, look for gestures
 				if(appear.x<0) {
@@ -401,6 +481,7 @@ int main(int argc, char **argv)
 					}
 				}
 			}
+			imshow("blob",outC);
 		} else {
 			imshow("blob",depthf);
 			register_ctr = MAX((register_ctr - 1),0);
@@ -413,6 +494,7 @@ int main(int argc, char **argv)
 			cout << "unregister" << endl;
 			send_event("Unregister", "");
 		}
+
 
 
 		/*
