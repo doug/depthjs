@@ -12,14 +12,16 @@ import sys
 import os
 import multiprocessing as mp
 import subprocess
+import time
 
 define("port", default=8000, help="port")
 define("source", default="tcp://127.0.0.1:14444", help="data source host")
-
+define("darkperiod", default=100, help="darkperiod after which you ignore events")
 
 # ZEROMQ
 class Forwarder(object):
   def __init__(self,source,loop):
+    self.lastevent = time.time()
     self.datasocket = context.socket(zmq.SUB)
     self.datasocket.connect(source)
     self.datasocket.setsockopt(zmq.SUBSCRIBE,'')
@@ -29,9 +31,20 @@ class Forwarder(object):
     print("got a %s" % (t,))
     clients = websockets.get(t,[])
     if len(clients) != 0:
-      print("forwarding")
-      for s in clients:
-        s.write_message(data)
+      forward = True
+      if t == "event":
+        datajson = json.loads(data)
+        dtype = datajson["type"]
+        print(dtype)
+        now = time.time()
+        if dtype != "move" and self.lastevent > now:
+          self.lastevent = now
+        else:
+          forward = False
+      if forward == True:
+        print("forwarding")
+        for s in clients:
+          s.write_message(data)
 
 # SOCKETS
 websockets = {}

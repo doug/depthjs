@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 var DepthJS = {
-  verbose: true,
+  verbose: false,
   eventHandlers: {},
   canvasLink: {},
   eventLink: {},
@@ -59,11 +59,7 @@ var DepthJS = {
 DepthJS.state = null;
 
 DepthJS.eventHandlers.onSwipeLeft = function() {
-  if (DepthJS.state == "selectorBoxPopup") {
-    DepthJS.selectorBoxPopup.openHighlightedLink();
-  } else{
-    history.go(-1);
-  }
+   history.go(-1);
 };
 
 DepthJS.eventHandlers.onSwipeRight = function() {
@@ -118,7 +114,9 @@ DepthJS.eventHandlers.onUnregister = function() {
 };
 
 DepthJS.eventHandlers.onHandClick = function() {
-  if (DepthJS.state == "selectorBox") {
+  if (DepthJS.state == "selectorBoxPopup") {
+    DepthJS.selectorBoxPopup.openHighlightedLink();
+  } else if (DepthJS.state == "selectorBox") {
     DepthJS.selectorBox.activate();
   } else if (DepthJS.state == "depthose") {
     DepthJS.depthose.select();
@@ -140,6 +138,7 @@ DepthJS.eventHandlers.onMove = function(data) {
     return;
   }
 
+  data.x = 100-data.x;
   if (DepthJS.state == "panner"){
     DepthJS.panner.move(data.x, data.y);
   } else if (DepthJS.state == "depthose") {
@@ -212,7 +211,7 @@ DepthJS.selectorBox.move = function(x, y) {
   var $box = DepthJS.selectorBox.$box;
   x = Math.min(x, $(window).width() - $box.width());
   y = Math.min(y, $(window).height() - $box.height());
-  console.log("move selector box to " + x + ", " + y);
+  //console.log("move selector box to " + x + ", " + y);
   if (x != $box.css("left") || y != $box.css("top")) {
     $box.css({left: x, top: y});
   }
