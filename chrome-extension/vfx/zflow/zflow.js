@@ -109,17 +109,21 @@ TrayController.prototype.handleEvent = function (event)
     These variables define how the zflow presentation is made.
 */
 
-const CSIZE = 150;
-const CGAP = CSIZE / 2;
+const CSIZE = $(window).width() / 3;
+const CGAP = CSIZE / 6 + 100;
 
-const FLOW_ANGLE = 70;
+const FLOW_ANGLE = .3;
 const FLOW_THRESHOLD = CGAP / 2;
 const FLOW_ZFOCUS = CSIZE;
 const FLOW_XGAP = CSIZE / 3;
 
-const T_NEG_ANGLE = "rotateY(" + (- FLOW_ANGLE) + "deg)";
-const T_ANGLE = "rotateY(" + FLOW_ANGLE + "deg)";
-const T_ZFOCUS = "translate3d(0, 0, " + FLOW_ZFOCUS + "px)";
+// const T_NEG_ANGLE = "rotateY(" + (- FLOW_ANGLE) + "deg)";
+// const T_ANGLE = "rotateY(" + FLOW_ANGLE + "deg)";
+// const T_ZFOCUS = "translate3d(0, 0, " + FLOW_ZFOCUS + "px)";
+
+const T_NEG_ANGLE = "scale(" + FLOW_ANGLE + ")";
+const T_ANGLE = "scale(" + FLOW_ANGLE + ")";
+const T_ZFOCUS = ""
 
 FlowDelegate = function ()
 {
@@ -157,7 +161,7 @@ FlowDelegate.prototype.clicked = function (currentX)
 
     if ((this.lastFocus == undefined) || this.lastFocus != i)
     {
-        transform += " translate3d(0, 0, 150px) rotateY(180deg)";
+        //transform += " translate3d(0, 0, 150px) rotateY(180deg)";
         this.lastFocus = i;
     }
     else

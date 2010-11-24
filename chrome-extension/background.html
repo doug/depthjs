@@ -514,15 +514,15 @@ function sendTestEvent(msg, callback) {
 
 function makeTestDepthoseEvents() {
   return [
+    // {type:"Register", data:{}},
+    // {type:"Pull", data:{}},
+    // {type:"Move", data:{x: 15, y: 15}},
+    // {type:"Unregister", data:{}},
     {type:"Register", data:{}},
-    {type:"Pull", data:{}},
-    {type:"Move", data:{x: 15, y: 15}},
-    {type:"Unregister", data:{}},
-    {type:"Register", data:{}},
-    {type:"Pull", data:{}},
-    {type:"Move", data:{x: -15, y: 15}},
-    {type:"Move", data:{x: 40, y: 80}},
-    {type:"Push", data:{}}
+    // {type:"Pull", data:{}},
+    // {type:"Move", data:{x: -15, y: 15}},
+    // {type:"Move", data:{x: 40, y: 80}},
+    // {type:"Push", data:{}}
   ].reverse();
 }
 

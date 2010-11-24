@@ -183,8 +183,8 @@ DepthJS.panner.hide = function() {
 }
 
 DepthJS.panner.move = function(x, y) {
-  var x = data.x * $(window).width() / 100;
-  var y = data.y * $(window).height() / 100;
+  var x = x * $(window).width() / 100;
+  var y = y * $(window).height() / 100;
   $("body").css({"-webkit-transform":"scale(1.55) translate(" + x + "px, " + y + "px)",
                  "-webkit-transition-duration":".25s"})
 }
@@ -192,20 +192,8 @@ DepthJS.panner.move = function(x, y) {
 // SELECTOR BOX ------------------------------------------------------------------------------------
 
 DepthJS.selectorBox.init = function() {
-  var $box = $("<div id='DepthJS_box'></div>");
-  $box.css({"height":"100px",
-            "width":"100px",
-            "border":"2px solid #773b00",
-            "background-color":"#f87b00", 
-            "opacity":"0.5",
-            "z-index":"100000",
-            "position":"fixed",
-            "left":"0",
-            "top":"0",
-            "-moz-border-radius":"15px",
-            "-webkit-border-radius":"15px",
-            "border-radius":"15px"})
-      .appendTo("body").hide();
+  var $box = $("<div id='depthjs_selectorBox'></div>");
+  $box.appendTo("body").hide();
   DepthJS.selectorBox.$box = $box;
 };
 
@@ -322,9 +310,9 @@ DepthJS.selectorBoxPopup.move = function(x, y) {
 DepthJS.selectorBoxPopup.openHighlightedLink = function(){
   var $links = DepthJS.selectorBoxPopup.$links;
   var lastHighlightedLinkIndex = DepthJS.selectorBoxPopup.lastHighlightedLinkIndex;
-  
+
   if (lastHighlightedLinkIndex <= 0) return;
-  
+
   var $linkToOpen = $links.eq(lastHighlightedLinkIndex);
 
   var evt = document.createEvent("MouseEvents");
@@ -465,8 +453,10 @@ DepthJS.depthose.show = function() {
     return;
   }
 
+
   console.log("DepthJS: Entering Depthose");
   console.log(["Starting depthose with", DepthJS.depthose.windows]);
+  DepthJS.selectorBox.hide();
   $("#DepthJS_depthose").remove();
   DepthJS.depthose.$div = $("<div id='DepthJS_depthose'></div>");
   var $div = DepthJS.depthose.$div;

@@ -1,3 +1,25 @@
+#depthjs_selectorBox{
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#5170f7', endColorstr='#264ef3'); /* for IE */
+  background: -webkit-gradient(linear, left top, left bottom, from(#5170f7), to(#264ef3)); /* for webkit browsers */
+  background: -moz-linear-gradient(top,  #5170f7,  #264ef3); /* for firefox 3.6+ */
+
+  height:150px;
+  width:150px;
+  opacity:.75;
+  z-index:100000;
+  position:fixed;
+  left:0;
+  top:0;
+  -moz-border-radius:35px;
+  -webkit-border-radius:35px;
+  border-radius:75px;
+
+  -moz-box-shadow: 0px 8px 35px #666;
+  -webkit-box-shadow: 0px 8px 35px #666;
+  box-shadow: 0px 8px 35px #666;
+}
+
+
 #depthjs_selectorBoxPopup{
   position:absolute;
   z-index:100;
@@ -15,9 +37,9 @@
   background: -webkit-gradient(linear, left top, left bottom, from(#fefefe), to(#eceaea)); /* for webkit browsers */
   background: -moz-linear-gradient(top,  #fefefe,  #eceaea); /* for firefox 3.6+ */
 
-  -moz-box-shadow: 3px 3px 4px #888;
+  -moz-box-shadow: 0px 8px 35px #888;
   -webkit-box-shadow: 0px 8px 35px #888;
-  box-shadow: 3px 0px 4px #888;
+  box-shadow: 0px 8px 35px #888;
   -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
   filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
 }
