@@ -293,11 +293,10 @@ DepthJS.selectorBoxPopup.move = function(x, y) {
   var $links = DepthJS.selectorBoxPopup.$links;
   var popupHeight = $("#DepthJS_selectorBoxPopup").height();
   y = (y * popupHeight / 100) / (popupHeight / $links.length);
-  var closestLinkIndex = Math.round(y);
+  var closestLinkIndex = Math.min($links.length-1, Math.round(y));
   console.log("Closest link is " + closestLinkIndex);
 
   var $lastHighlightedLink = DepthJS.selectorBoxPopup.$lastHighlightedLink;
-  console.log($lastHighlightedLink);
   if ($lastHighlightedLink != null){
     $lastHighlightedLink.removeClass("DepthJS_selectorBoxPopupItemHighlight");
   }
@@ -311,8 +310,7 @@ DepthJS.selectorBoxPopup.openHighlightedLink = function(){
   var $links = DepthJS.selectorBoxPopup.$links;
   var lastHighlightedLinkIndex = DepthJS.selectorBoxPopup.lastHighlightedLinkIndex;
 
-  if (lastHighlightedLinkIndex <= 0) return;
-
+  if (lastHighlightedLinkIndex < 0 || lastHighlightedLinkIndex > $links.length) return;
   var $linkToOpen = $links.eq(lastHighlightedLinkIndex);
 
   var evt = document.createEvent("MouseEvents");
