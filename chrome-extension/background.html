@@ -323,8 +323,8 @@ DepthJS.backend.onConnect = function (stream) {
   // WebSockets have frames of a limited size (<32k seems to work best)
   // Buffer the data until we have a complete frame
   function makeImageBuffer(listeners, bytes) {
-    var w = 640;
-    var h = 480;
+    var w = 160;
+    var h = 120;
     var dataArray = [];
     var dataLength = 0;
     var frameSize = w*h*bytes;

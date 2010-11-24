@@ -345,23 +345,35 @@ DepthJS.eventLink.onEvent = function (msg) {
 };
 
 // CANVAS LINK -------------------------------------------------------------------------------------
-
+DepthJS.canvasLink.depthPort = null;
 DepthJS.canvasLink.initDepth = function() {
   var $depthCanvas = $("canvas#DepthJS_depth");
+  if ($depthCanvas.length == 0) {
+    console.log("Putting depth map in corner");
+    $("<canvas id='DepthJS_depth'></canvas>").css({
+      position: "fixed",
+      width: "160px",
+      height: "120px",
+      bottom: "20px",
+      left: "20px",
+      "background-color": "#555",
+      border: "1px solid #5170F7"
+    }).appendTo("body");
+  }
   if ($depthCanvas.length > 0) {
     console.log("DepthJS: Will write to depth canvas");
     var depthCanvas = $depthCanvas.get(0);
     var c = depthCanvas.getContext("2d");
 
     // read the width and height of the canvas
-    var w = 640;
-    var h = 480;
+    var w = 160;
+    var h = 120;
     var imageData = c.createImageData(w, h);
 
     var port = chrome.extension.connect({name: "depth"});
     port.onMessage.addListener(function(msg) {
       var depthData = msg.data;
-      // depthData is 255-valued depth repeated 640x480 times
+      // depthData is 255-valued depth repeated 160x120 times
       var imgPtr = 0;
       for (var ptr = 0; ptr < depthData.length; ptr++) {
         imageData.data[imgPtr++] = depthData.charCodeAt(ptr); // R
@@ -389,8 +401,8 @@ DepthJS.canvasLink.initImage = function () {
     console.log("DepthJS: Will write to image canvas");
 
     // read the width and height of the canvas
-    var w = 640;
-    var h = 480;
+    var w = 160;
+    var h = 120;
     var imageCanvas = $imageCanvas.get(0);
     var c = imageCanvas.getContext("2d");
     var imageData = c.createImageData(w, h);
@@ -398,7 +410,7 @@ DepthJS.canvasLink.initImage = function () {
     var port = chrome.extension.connect({name: "image"});
     port.onMessage.addListener(function(msg) {
       var rawData = msg.data;
-      // rawData is RGB repeated 640x480 times
+      // rawData is RGB repeated 160x120 times
       var imgPtr = 0;
       for (var ptr = 0; ptr < rawData.length; ptr+=3) {
         imageData.data[imgPtr++] = rawData.charCodeAt(ptr+0); // R
