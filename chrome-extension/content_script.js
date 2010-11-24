@@ -117,7 +117,7 @@ DepthJS.eventHandlers.onUnregister = function() {
   DepthJS.depthose.hide();
 };
 
-DepthJS.eventHandlers.onPush = function() {
+DepthJS.eventHandlers.onHandClick = function() {
   if (DepthJS.state == "selectorBox") {
     DepthJS.selectorBox.activate();
   } else if (DepthJS.state == "depthose") {
