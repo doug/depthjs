@@ -206,14 +206,13 @@ DepthJS.selectorBox.hide = function() {
 };
 
 DepthJS.selectorBox.move = function(x, y) {
-  console.log("move selector box");
    // Constrain to window
   if (x < 0) x = 0;
   if (y < 0) y = 0;
   var $box = DepthJS.selectorBox.$box;
   x = Math.min(x, $(window).width() - $box.width());
   y = Math.min(y, $(window).height() - $box.height());
-
+  console.log("move selector box to " + x + ", " + y);
   if (x != $box.css("left") || y != $box.css("top")) {
     $box.animate({
       left: x,
