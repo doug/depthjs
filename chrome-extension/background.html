@@ -1,7 +1,7 @@
 <html><head>
 <script src="jquery-1.4.4.min.js"></script>
 <script src="underscore-min.js"></script>
-
+<script src="jquery.idle-timer.js"></script>
 <script>
 /*
 DepthJS
@@ -32,7 +32,9 @@ var DepthJS = {
   portsByTabId: {},
   imageListeners: [],
   eventListeners: [],
-  depthListeners: []
+  depthListeners: [],
+  tabs: {},
+  test: {}
 };
 
 console.log('Making loader');
@@ -42,136 +44,123 @@ var WS_OPEN = 1;
 var WS_CLOSING = 2;
 var WS_CLOSED = 3;
 
-DepthJS.registerPopup = function(popupWindow) {
-  console.log("LKASDJlkasdjflksajdflkasjdflkjasdflkjasdlkfjsalkdjlsakjdflasjdflksja");
-  console.log(popupWindow);
-
-  $(".disabled", popupWindow).live("click", function() {
-    // Do nothing
-  });
-
-  $(".enabled", popupWindow).live("click", function(e) {
-    console.log(e);
-  });
-};
-
 DepthJS.init = function () {
   console.log("Connecting WebSocket");
   if (!DepthJS.backend.connect()) {
     console.log("Couldn't connect... aborting");
     return;
   }
+  DepthJS.tabs.init();
+}
 
-  // Private collections
-  var tab_cache = {};
-  var window_cache = {};
-  var focused_window_id;
+DepthJS.tabs.thumbnailCache = {};
+DepthJS.tabs.tabCache = {};
+DepthJS.tabs.windowCache = {};
 
-  // Go through all existing tabs/windows and add to cache
-  chrome.windows.getAll({populate: true}, function(windows) {
-    for (var i = 0; i < windows.length; ++i) {
-      var window = windows[i];
-      if (window.focused == true) {
-        focused_window = window.id;
-      }
-
-      console.log('Adding existing window '+ obj_repr(window, 'Window'));
-      for (var j = 0; j < window.tabs.length; ++j) {
-        var tab = window.tabs[j];
-        tab.windowId = window.id;
-        console.log('Adding existing tab ' + obj_repr(tab, 'Tab'));
-        tab_cache[tab.id] = tab;
-
-        if (tab.status == 'complete') {
-          // We should add this already loaded tab
-          DepthJS.eventHandlers.onNewTab(tab.url, tab.title, window.id, tab.id);
-        }
-      }
-      delete window.tabs; // Unnecessary... it'll be too stale to do anything with.
-      window_cache[window.id] = window;
-    }
-  });
+DepthJS.tabs.init = function() {
+  DepthJS.tabs.populateCaches();
 
   // Subscribe to event handlers
-  var obj_repr = DepthJS.tools.obj_repr;
   chrome.tabs.onCreated.addListener(function(tab) {
     // console.log('new tab created: ' + obj_repr(tab, 'Tab'));
-    tab_cache[tab.id] = tab;
+    // But not yet loaded--wait for onUpdated
+    DepthJS.tabs.tabCache[tab.id] = tab;
   });
 
-  chrome.tabs.onAttached.addListener(function(tabId, attachInfo) {
-    // console.log('tab attached: id=' + tabId + ', attachInfo=' + obj_repr(attachInfo));
-  });
+  chrome.tabs.onRemoved.addListener(DepthJS.tabs.onClosedTab);
 
-  chrome.tabs.onDetached.addListener(function(tabId, detachInfo) {
-    // console.log('tab detached: id=' + tabId + ', detachInfo=' + obj_repr(detachInfo));
-  });
-
-  chrome.tabs.onMoved.addListener(function(tabId, moveInfo) {
-    // console.log('tab moved: id=' + tabId + ', moveInfo=' + obj_repr(moveInfo));
-  });
-
-  chrome.tabs.onRemoved.addListener(function(tabId) {
-    // console.log('tab removed: id=' + tabId);
-    // Close page
-    var cachedTab = tab_cache[tabId];
-    if (!cachedTab) {
-      console.log('Could not find tabId ' + tabId + ' in cache: ' + cachedTab);
-      return;
-    }
-    DepthJS.eventHandlers.onClosedTab(cachedTab.url, cachedTab.windowId, cachedTab.id);
-    delete tab_cache[tabId];
-  });
-
-  chrome.tabs.onSelectionChanged.addListener(function(tabId, selectInfo) {
-    // console.log('tab selection changed: id=' + tabId + ', selectInfo=' + obj_repr(selectInfo));
-  });
-
-
-  chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-    var cachedTab = tab_cache[tabId];
-    if (!cachedTab) {
-      console.log('Could not find tabId ' + tabId + ' in cache: ' + cachedTab);
-      return;
-    }
-
-    if (changeInfo.status == 'complete' && cachedTab.status == 'loading') {
-      console.log('tab loaded: changeInfo=' + obj_repr(changeInfo) +
-                  ", tab=" + obj_repr(tab, 'Tab') +
-                  ", tabInCache=" + obj_repr(tab_cache[tab.id], 'Tab'));
-      DepthJS.eventHandlers.onNewTab(tab.url, tab.title, tab.windowId, tab.id);
-    } else if (tab.url != cachedTab.url) {
-      console.log('URL CHANGED IN onUpdated: changeInfo=' + obj_repr(changeInfo) +
-                  ", tab=" + obj_repr(tab, 'Tab') +
-                  ", tabInCache=" + obj_repr(tab_cache[tab.id], 'Tab'));
-      DepthJS.eventHandlers.onClosedTab(cachedTab.url, cachedTab.windowId, cachedTab.id);
-      if (tab.status == 'complete') {
-        // Never the case?
-        DepthJS.eventHandlers.onNewTab(tab.url, tab.title, tab.windowId, tab.id);
-      }
-    }
-    // Save state
-    delete tab_cache[tabId]; // help GC
-    tab_cache[tabId] = tab;
-  });
-
-  chrome.windows.onCreated.addListener(function(window) {
-    // console.log('new window created: ' + obj_repr(window, 'Window'));
-  });
-
-  chrome.windows.onFocusChanged.addListener(function(windowId) {
-    // console.log('window focus changed: id=' + windowId);
-  });
+  chrome.tabs.onUpdated.addListener(DepthJS.tabs.onTabUpdated);
 
   chrome.windows.onRemoved.addListener(function(windowId) {
     // console.log('window removed: id=' + windowId);
   });
-
-  chrome.browserAction.onClicked.addListener(function(tab) {
-    // console.log('broswerAction clicked');
-  });
-
 };
+
+DepthJS.tabs.populateCaches = function() {
+  var obj_repr = DepthJS.tools.obj_repr;
+  // Go through all existing tabs/windows and add to cache
+  chrome.windows.getAll({populate: true}, function(windows) {
+    for (var i = 0; i < windows.length; ++i) {
+      var window = windows[i];
+      console.log('Adding existing window '+ obj_repr(window, 'Window'));
+      for (var j = 0; j < window.tabs.length; ++j) {
+        var tab = window.tabs[j];
+        console.log('Adding existing tab ' + obj_repr(tab, 'Tab'));
+        DepthJS.tabs.tabCache[tab.id] = tab;
+
+        if (tab.status == 'complete') {
+          // We should add this already loaded tab
+          if (tab.selected) { // since we are only doing a screenshot on new
+            DepthJS.tabs.onNewVisibleTab(tab.url, tab.title, window.id, tab.id);
+          }
+        }
+      }
+      delete window.tabs; // Unnecessary... it'll be too stale to do anything with.
+      DepthJS.tabs.windowCache[window.id] = window;
+    }
+  });
+};
+
+DepthJS.tabs.onTabUpdated = function(tabId, changeInfo, tab) {
+  var cachedTab = DepthJS.tabs.tabCache[tabId];
+  if (!cachedTab) {
+    console.log('Could not find tabId ' + tabId + ' in cache: ' + cachedTab);
+    return;
+  }
+
+  if (changeInfo.status == 'complete' && cachedTab.status == 'loading') {
+    if (tab.selected) DepthJS.tabs.onNewVisibleTab(tab.url, tab.title, tab.id);
+  } else if (tab.url != cachedTab.url) {
+    DepthJS.tabs.onClosedTab(cachedTab.id);
+    if (tab.status == 'complete') {
+      // Never the case?
+      if (tab.selected) DepthJS.tabs.onNewVisibleTab(tab.url, tab.title, tab.id);
+    }
+  }
+  // Save state
+  delete DepthJS.tabs.tabCache[tabId]; // help GC
+  DepthJS.tabs.tabCache[tabId] = tab;
+};
+
+DepthJS.tabs.onNewVisibleTab = function(url, title, windowId, tabId) {
+  // Take screenshot
+  var capture = function(windowId) {
+    chrome.tabs.captureVisibleTab(windowId, null, function(dataUrl) {
+      console.log("captured thumbnail for tabId " + tabId);
+      DepthJS.tabs.thumbnailCache[tabId] = {
+        dataUrl: dataUrl,
+        title: title};
+    });
+  }
+  if (tabId != null) {
+    capture(windowId);
+  } else {
+    tabId = windowId; // variable num args in function call, jquery style.
+    chrome.tabs.get(tabId, function(tab) { capture(tab.windowId); });
+  }
+};
+
+DepthJS.tabs.onClosedTab = function(tabId) {
+  if (DepthJS.portsByTabId[tabId] != null) {
+    console.log("Had ports by closed tab laying around, deleting");
+    delete DepthJS.portsByTabId[tabId];
+  }
+  // Close page
+  var cachedTab = DepthJS.tabs.tabCache[tabId];
+  if (!cachedTab) {
+    console.log('Could not find tabId ' + tabId + ' in cache: ' + cachedTab);
+    return;
+  }
+
+  delete DepthJS.tabs.tabCache[tabId];
+  if (DepthJS.tabs.thumbnailCache[tabId] != null) {
+    delete DepthJS.tabs.thumbnailCache[tabId];
+  }
+};
+
+DepthJS.tabs.onReaccessedTab = function(url, tabId) {
+};
+
 
 DepthJS.tools.obj_repr = function (obj, className) {
   var buf = [];
@@ -329,18 +318,6 @@ DepthJS.backend.onConnect = function (stream) {
   console.log("Connect on " + stream + " stream");
 };
 
-DepthJS.eventHandlers.onNewTab = function(url, title, windowId, tabId) {
-};
-
-DepthJS.eventHandlers.onClosedTab = function(url, windowId, tabId) {
-  if (DepthJS.portsByTabId[tabId] != null) {
-    console.log("Had ports by closed tab laying around, deleting");
-    delete DepthJS.portsByTabId[tabId];
-  }
-};
-
-DepthJS.eventHandlers.onReaccessedTab = function(url, windowId, tabId) {
-};
 
 (function() {
   // WebSockets have frames of a limited size (<32k seems to work best)
@@ -399,40 +376,6 @@ chrome.extension.onConnect.addListener(function(port) {
   }
   tabPorts[name] = port;
 
-
-  if (name == "event") {
-    port.onMessage.addListener(function (req) {
-      if (req.type == "getThumbnailUrls") {
-        chrome.windows.getAll({populate: true}, function(windows) {
-          var finishedWindows = 0;
-          _.each(windows, function(window) {
-            console.log("Capturing windowId" + window.id);
-            console.log(window);
-            chrome.tabs.captureVisibleTab(window.id, null, function(dataUrl) {
-              if (dataUrl !== undefined && dataUrl != null) {
-                window.dataUrl = dataUrl;
-              } else {
-                console.log("Ignoring window " + window.id + " without dataUrl");
-                // Because windows is closured in this function
-                for (var i = 0; i < windows.length; ++i) {
-                  if (windows[i].id == window.id) {
-                    windows.splice(i, 1);
-                    break;
-                  }
-                }
-              }
-              finishedWindows++;
-              if (finishedWindows == windows.length) {
-                console.log(["All thumbnails taken", windows]);
-                port.postMessage({type: "ThumbnailUrls", data:{windows:windows}});
-              }
-            });
-          });
-        });
-      }
-    });
-  }
-
   port.onDisconnect.addListener(function (e) {
     console.log(name + " port disconnected on tab " + tabId);
     DepthJS[name + "Listeners"] = _.reject(
@@ -461,7 +404,7 @@ function split(str, size) {
     }
   }
   return splits;
-}
+};
 
 chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
   if (req.action == "connect") {
@@ -476,16 +419,20 @@ chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
     }
   } else if (req.action == "depthoseTest") {
     console.log("depthosetest");
-    test(makeTestDepthoseEvents());
+    DepthJS.test.depthoseTest();
   } else if (req.action == "pannerTest") {
-    test(makeTestPannerEvents());
+    DepthJS.test.pannerTest();
   } else if (req.action == "selectorBoxTest") {
-    test(makeTestSelectorBoxEvents());
+    DepthJS.test.selectorBoxTest();
+  } else if (req.action == "getThumbnailCache") {
+    console.log(["sending thumbnail cache", DepthJS.tabs.thumbnailCache]);
+    sendResponse({thumbnailCache: DepthJS.tabs.thumbnailCache});
   }
 });
 
+DepthJS.test.currentTest = [];
 
-function sendTestEvent(msg, callback) {
+DepthJS.test.sendTestEvent = function(msg, callback) {
   console.log("Sending out test event " + msg.type);
   msg.jsonRep = JSON.stringify(msg);
 
@@ -510,34 +457,34 @@ function sendTestEvent(msg, callback) {
     eventPort.postMessage(msg);
     callback();
   });
-}
+};
 
-function makeTestDepthoseEvents() {
-  return [
+DepthJS.test.depthoseTest = function () {
+  DepthJS.test.runTestSequence([
     {type:"Register", data:{}},
     {type:"Pull", data:{}},
     {type:"Move", data:{x: 15, y: 15}},
     {type:"Unregister", data:{}},
-    {type:"Register", data:{}},
-    {type:"Pull", data:{}},
-    {type:"Move", data:{x: -15, y: 15}},
-    {type:"Move", data:{x: 40, y: 80}},
-    {type:"Push", data:{}}
-  ].reverse();
-}
+    //{type:"Register", data:{}},
+    //{type:"Pull", data:{}},
+    //{type:"Move", data:{x: -15, y: 15}},
+    //{type:"Move", data:{x: 40, y: 80}},
+    //{type:"Push", data:{}}
+  ].reverse());
+};
 
-function makeTestPannerEvents() {
-  return [
+DepthJS.test.pannerTest = function makeTestPannerEvents() {
+  DepthJS.test.runTestSequence([
     {type:"Register", data:{}},
     {type:"HandOpen", data:{}},
     {type:"Move", data:{x: 10, y: 30}},
     {type:"Move", data:{x: 40, y: 50}},
     {type:"Unregister", data:{}},
-  ].reverse();
-}
+  ].reverse());
+};
 
-function makeTestSelectorBoxEvents() {
-  return [
+DepthJS.test.selectorBoxTest = function () {
+  DepthJS.test.runTestSequence([
      {type:"Register", data:{}},
      {type:"Move", data:{x: 50, y: 50}},
      {type:"Push", data:{}},
@@ -554,27 +501,25 @@ function makeTestSelectorBoxEvents() {
      {type:"Move", data:{x: 60, y: 100}},
      {type: "SwipeLeft", data: {}},
      {type:"Unregister", data:{}},
-   ].reverse();
-}
+   ].reverse());
+};
 
-var currentTest = [];
-
-function test(testEvents) {
+DepthJS.test.runTestSequence = function (testEvents) {
   console.log("Starting new test sequence");
   // Cancel all other ones
-  for (var i = 0; i < 20; i++) { currentTest.pop(); }
+  for (var i = 0; i < 20; i++) { DepthJS.test.currentTest.pop(); }
   // Make new test with closure
-  var local = currentTest = testEvents;
+  DepthJS.test.currentTest = testEvents;
   function next() {
-    var event = local.pop();
+    var event = testEvents.pop();
     if (event != undefined) {
-      sendTestEvent(event, function() {
+      DepthJS.test.sendTestEvent(event, function() {
         setTimeout(next, 1000);
       });
     }
   }
   next();
-}
+};
 
 </script>
 </head></html>

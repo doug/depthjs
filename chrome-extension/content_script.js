@@ -183,8 +183,8 @@ DepthJS.panner.hide = function() {
 }
 
 DepthJS.panner.move = function(x, y) {
-  var x = data.x * $(window).width() / 100;
-  var y = data.y * $(window).height() / 100;
+  var x = x * $(window).width() / 100;
+  var y = y * $(window).height() / 100;
   $("body").css({"-webkit-transform":"scale(1.55) translate(" + x + "px, " + y + "px)",
                  "-webkit-transition-duration":".25s"})
 }
@@ -192,20 +192,8 @@ DepthJS.panner.move = function(x, y) {
 // SELECTOR BOX ------------------------------------------------------------------------------------
 
 DepthJS.selectorBox.init = function() {
-  var $box = $("<div id='DepthJS_box'></div>");
-  $box.css({"height":"100px",
-            "width":"100px",
-            "border":"2px solid #773b00",
-            "background-color":"#f87b00", 
-            "opacity":"0.5",
-            "z-index":"100000",
-            "position":"fixed",
-            "left":"0",
-            "top":"0",
-            "-moz-border-radius":"15px",
-            "-webkit-border-radius":"15px",
-            "border-radius":"15px"})
-      .appendTo("body").hide();
+  var $box = $("<div id='DepthJS_selectorBox'></div>");
+  $box.appendTo("body").hide();
   DepthJS.selectorBox.$box = $box;
 };
 
@@ -275,7 +263,7 @@ DepthJS.selectorBoxPopup.activate = function(){
   DepthJS.state = "selectorBoxPopup";
   var $box = DepthJS.selectorBox.$box;
   var position = "top:" + $box.position().top + "px; left:" + $box.position().left + "px";
-  $("body").append("<div id='depthjs_selectorBoxPopup' style='" + position + "'></div>");
+  $("body").append("<div id='DepthJS_selectorBoxPopup' style='" + position + "'></div>");
   var popupContent = "";
   var popupItemIndex = 0;
   for(var i = 0; i < $links.length; i++){
@@ -284,18 +272,18 @@ DepthJS.selectorBoxPopup.activate = function(){
     if (linkText.length <= 0) continue;
 
     if (linkText.indexOf("<img") > 0){
-      popupContent += "<div id='depthjs_popupItem" + popupItemIndex +
-      "' class='depthjs_selectorBoxPopupItem'>" +
+      popupContent += "<div id='DepthJS_popupItem" + popupItemIndex +
+      "' class='DepthJS_selectorBoxPopupItem'>" +
       linkText.substring(0,70) + "</div>";
     } else{
-      popupContent += "<div id='depthjs_popupItem" + popupItemIndex +
-      "' class='depthjs_selectorBoxPopupItem'>" +
+      popupContent += "<div id='DepthJS_popupItem" + popupItemIndex +
+      "' class='DepthJS_selectorBoxPopupItem'>" +
       $($links[i]).html() + "</div>";
     }
     popupItemIndex += 1;
   }
   DepthJS.selectorBox.$box.hide();
-  $("#depthjs_selectorBoxPopup").html(popupContent);
+  $("#DepthJS_selectorBoxPopup").html(popupContent);
 }
 
 DepthJS.selectorBoxPopup.move = function(x, y) {
@@ -303,7 +291,7 @@ DepthJS.selectorBoxPopup.move = function(x, y) {
   if (y == 0) y = 1;
 
   var $links = DepthJS.selectorBoxPopup.$links;
-  var popupHeight = $("#depthjs_selectorBoxPopup").height();
+  var popupHeight = $("#DepthJS_selectorBoxPopup").height();
   y = (y * popupHeight / 100) / (popupHeight / $links.length);
   var closestLinkIndex = Math.round(y);
   console.log("Closest link is " + closestLinkIndex);
@@ -311,10 +299,10 @@ DepthJS.selectorBoxPopup.move = function(x, y) {
   var $lastHighlightedLink = DepthJS.selectorBoxPopup.$lastHighlightedLink;
   console.log($lastHighlightedLink);
   if ($lastHighlightedLink != null){
-    $lastHighlightedLink.removeClass("depthjs_selectorBoxPopupItemHighlight");
+    $lastHighlightedLink.removeClass("DepthJS_selectorBoxPopupItemHighlight");
   }
-  var $closestLink = $("#depthjs_popupItem" + closestLinkIndex);
-  $closestLink.addClass("depthjs_selectorBoxPopupItemHighlight");
+  var $closestLink = $("#DepthJS_popupItem" + closestLinkIndex);
+  $closestLink.addClass("DepthJS_selectorBoxPopupItemHighlight");
   DepthJS.selectorBoxPopup.lastHighlightedLinkIndex = closestLinkIndex;
   DepthJS.selectorBoxPopup.$lastHighlightedLink = $closestLink;
 }
@@ -322,9 +310,9 @@ DepthJS.selectorBoxPopup.move = function(x, y) {
 DepthJS.selectorBoxPopup.openHighlightedLink = function(){
   var $links = DepthJS.selectorBoxPopup.$links;
   var lastHighlightedLinkIndex = DepthJS.selectorBoxPopup.lastHighlightedLinkIndex;
-  
+
   if (lastHighlightedLinkIndex <= 0) return;
-  
+
   var $linkToOpen = $links.eq(lastHighlightedLinkIndex);
 
   var evt = document.createEvent("MouseEvents");
@@ -333,8 +321,8 @@ DepthJS.selectorBoxPopup.openHighlightedLink = function(){
 }
 
 DepthJS.selectorBoxPopup.hide = function(){
-  $("#depthjs_selectorBoxPopup").fadeOut(300, function(){
-    $("#depthjs_selectorBoxPopup").remove();
+  $("#DepthJS_selectorBoxPopup").fadeOut(300, function(){
+    $("#DepthJS_selectorBoxPopup").remove();
   });
 }
 
@@ -440,33 +428,28 @@ DepthJS.canvasLink.initImage = function () {
   }
 };
 
-
-
-
-// DEPTHOSE
+// DEPTHOSE ---------------------------------------------------------------------------------------
 
 DepthJS.depthose.$div = null;
-DepthJS.depthose.windows = null;
-DepthJS.depthose.start = function() {
-  DepthJS.eventLink.port.postMessage({type: "getThumbnailUrls"});
-};
-DepthJS.eventHandlers.onThumbnailUrls = function(response) {
-  console.log(["REPSONE", response]);
-  var windows = response.windows;
-  DepthJS.depthose.windows = windows; // Make a local copy in case these objects are reused
-  console.log(["got windows", windows]);
-  DepthJS.depthose.show();
-};
+DepthJS.depthose.thumbnailCache = null;
 
+DepthJS.depthose.start = function() {
+  chrome.extension.sendRequest({action: "getThumbnailCache"}, function (response) {
+    console.log(["DepthJS: Got back thumbnail cache", response]);
+    DepthJS.depthose.thumbnailCache = response.thumbnailCache;
+    if (DepthJS.depthose.thumbnailCache != null) DepthJS.depthose.show();
+  });
+};
 
 DepthJS.depthose.show = function() {
-  if (DepthJS.depthose.windows == null) {
+  if (DepthJS.depthose.thumbnailCache == null) {
     DepthJS.depthose.start();
     return;
   }
+  var thumbnailCache = DepthJS.depthose.thumbnailCache;
 
-  console.log("DepthJS: Entering Depthose");
-  console.log(["Starting depthose with", DepthJS.depthose.windows]);
+  DepthJS.selectorBox.hide();
+  console.log(["DepthJS: Starting depthose with", DepthJS.depthose.thumbnailCache]);
   $("#DepthJS_depthose").remove();
   DepthJS.depthose.$div = $("<div id='DepthJS_depthose'></div>");
   var $div = DepthJS.depthose.$div;
@@ -481,24 +464,16 @@ DepthJS.depthose.show = function() {
       .appendTo("body");
 
   $div.append("<div class='centering'><div id='DepthJS_tray' class='tray'></div></div>");
-  // var images = _.pluck(DepthJS.depthose.windows, "dataUrl");
-  var imageObjs = _.reject(DepthJS.depthose.windows,
-                           function(el) { el.dataUrl == null; });
-  console.log("after filtering we have " + imageObjs.length + " done.");
 
-  imageObjs = _.map(imageObjs, function(window) {
-    return {
-      url: window.dataUrl,
-      label: "im stupid",
-      selectCallback: function() {
-        console.log("selecting window id " + window.id);
-      }
+  _.each(thumbnailCache, function(tabObj, tabId) {
+    tabObj.selectCallback = function() {
+      console.log("selecting window id " + window.id);
     };
   });
 
-  if (imageObjs.length > 0) {
+  if (!_.isEmpty(thumbnailCache)) {
     console.log("starting zflow");
-    zflow(imageObjs, "#DepthJS_tray");
+    zflow(_.values(thumbnailCache), "#DepthJS_tray");
     var e = document.createEvent("Event");
     e.initEvent("depthstart");
     e.pageX = $(window).width()/2;
@@ -517,23 +492,34 @@ DepthJS.depthose.hide = function() {
   document.getElementById("DepthJS_tray").dispatchEvent(e);
   DepthJS.depthose.$div.remove();
   DepthJS.depthose.$div = null;
+  DepthJS.depthose.thumbnailCache = null;
 };
 
 DepthJS.depthose.move = function(x, y) {
+  if (DepthJS.depthose.thumbnailCache == null) {
+    console.log("DepthJS: Haven't loaded Depthose yet, ignoring move event");
+    return;
+  }
+
   console.log("DepthJS: Move depthose");
   var e = document.createEvent("Event");
   e.initEvent("depthmove");
   e.pageX = x * $(window).width() / 100;
   e.pageY = y * $(window).height() / 100;
   document.getElementById("DepthJS_tray").dispatchEvent(e);
-}
+};
 
 DepthJS.depthose.select = function() {
+  if (DepthJS.depthose.thumbnailCache == null) {
+    console.log("DepthJS: Haven't loaded Depthose yet, ignoring move event");
+    return;
+  }
+
   console.log("DepthJS: Selecting");
   var e = document.createEvent("Event");
   e.initEvent("depthselect");
   document.getElementById("DepthJS_tray").dispatchEvent(e);
-}
+};
 
 // Do the initialization
 DepthJS.selectorBox.init();

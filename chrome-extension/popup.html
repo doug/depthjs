@@ -58,8 +58,8 @@ li.enabled:hover {
   }
 
   function connecting() {
-    $("li").removeClass("enabled")
-           .addClass("disabled");
+    $("li:not(.test)").removeClass("enabled")
+                      .addClass("disabled");
   }
 
   function updateMessage(msg) {
@@ -92,9 +92,9 @@ li.enabled:hover {
   <li class="disabled" id="connect">Connect&nbsp;to&nbsp;Kinect</li>
   <li class="disabled" id="disconnect">Disconnect&nbsp;from&nbsp;Kinect</li>
   <li><hr></li>
-  <li class="enabled" id="depthoseTest">Depthosé Test</li>
-  <li class="enabled" id="pannerTest">Panner Test</li>
-  <li class="enabled" id="selectorBoxTest">Selector Box Test</li>
+  <li class="test enabled" id="depthoseTest">Depthosé Test</li>
+  <li class="test enabled" id="pannerTest">Panner Test</li>
+  <li class="test enabled" id="selectorBoxTest">Selector Box Test</li>
 </ul>
 
 </body>
