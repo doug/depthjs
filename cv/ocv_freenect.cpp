@@ -219,7 +219,7 @@ int main(int argc, char **argv)
 		{
 			Mat _tmp = (depthMat - 400.0);					//minimum observed value is ~440. so shift a bit
 			_tmp.setTo(Scalar(2048), depthMat > 600.0);		//cut off at 600 to create a "box" where the user interacts
-			_tmp.convertTo(depthf, CV_8UC1, 255.0/1648.0);
+			_tmp.convertTo(depthf, CV_8UC1, 255.0/1648.0);	//values are 0-2048 (11bit), account for -400 = 1648
 		}
 //		{
 //			stringstream ss; ss << "depth_"<<fr<<".png";
@@ -234,22 +234,23 @@ int main(int argc, char **argv)
 //		}
 //		imshow("depth",depthf);
 
-		Mat rgbAndDepth,gray; cvtColor(rgbMat, gray, CV_BGR2GRAY);
-		equalizeHist(gray, gray);
-		vector<Mat> cs; //split(rgbAndDepth,cs);
-		cs.push_back(depthf);
-		cs.push_back(gray);
-		cs.push_back(Mat::zeros(depthf.size(), CV_8UC1));
-		merge(cs,rgbAndDepth);
+		//Mix grayscale and depth for bg-fg model
+//		Mat rgbAndDepth,gray; cvtColor(rgbMat, gray, CV_BGR2GRAY);
+//		equalizeHist(gray, gray);
+//		vector<Mat> cs; //split(rgbAndDepth,cs);
+//		cs.push_back(depthf);
+//		cs.push_back(gray);
+//		cs.push_back(Mat::zeros(depthf.size(), CV_8UC1));
+//		merge(cs,rgbAndDepth);
 
 //		imshow("rgb",rgbAndDepth);
 
 //		IplImage rgbIplI = (IplImage)depthf;
-		IplImage rgbIplI = (IplImage)rgbAndDepth;
+//		IplImage rgbIplI = (IplImage)rgbAndDepth;
 
-		if(!bg_model)
-        {
-			CvGaussBGStatModelParams params;
+//		if(!bg_model)
+//        {
+//			CvGaussBGStatModelParams params;
 
 //#define CV_BGFG_MOG_BACKGROUND_THRESHOLD     0.7     /* threshold sum of weights for background test */
 //#define CV_BGFG_MOG_STD_THRESHOLD            2.5     /* lambda=2.5 is 99% */
@@ -259,22 +260,22 @@ int main(int argc, char **argv)
 //#define CV_BGFG_MOG_SIGMA_INIT               30
 //#define CV_BGFG_MOG_MINAREA                  15.f
 
-			params.win_size      = 100; //CV_BGFG_MOG_WINDOW_SIZE;
-			params.bg_threshold  = 0.7;
-
-			params.std_threshold = CV_BGFG_MOG_STD_THRESHOLD;
-			params.weight_init   = CV_BGFG_MOG_WEIGHT_INIT;
-
-			params.variance_init = CV_BGFG_MOG_SIGMA_INIT*CV_BGFG_MOG_SIGMA_INIT;
-			params.minArea       = CV_BGFG_MOG_MINAREA;
-			params.n_gauss       = 5;
-
-            //create BG model
-            bg_model = cvCreateGaussianBGModel( &rgbIplI , &params);
-
-            //bg_model = cvCreateFGDStatModel( &rgbIplI );
-            continue;
-        }
+//			params.win_size      = 100; //CV_BGFG_MOG_WINDOW_SIZE;
+//			params.bg_threshold  = 0.7;
+//
+//			params.std_threshold = CV_BGFG_MOG_STD_THRESHOLD;
+//			params.weight_init   = CV_BGFG_MOG_WEIGHT_INIT;
+//
+//			params.variance_init = CV_BGFG_MOG_SIGMA_INIT*CV_BGFG_MOG_SIGMA_INIT;
+//			params.minArea       = CV_BGFG_MOG_MINAREA;
+//			params.n_gauss       = 5;
+//
+//            //create BG model
+////            bg_model = cvCreateGaussianBGModel( &rgbIplI , &params);
+//
+//            //bg_model = cvCreateFGDStatModel( &rgbIplI );
+//            continue;
+//        }
 
 		//Background-forground model
 //        double t = (double)cvGetTickCount();
@@ -286,7 +287,7 @@ int main(int argc, char **argv)
 		//        printf( "%d. %.1f\n", fr, t/(cvGetTickFrequency()*1000.) );
 		//        cvShowImage("BG", bg_model->background);
 		//        cvShowImage("FG", bg_model->foreground);
-		imshow("foreground", bg_model->foreground);
+		//imshow("foreground", bg_model->foreground);
 
 		Mat tmp_bg_fg = depthf < 255; //(bg_model->foreground) & (depthf < 255); //not using bg-fg anymore
 		vector<Point> ctr;
@@ -301,11 +302,13 @@ int main(int argc, char **argv)
 //			chns[2] = chns[2] & out;
 //			merge(chns,outC);
 
+			//draw contour
 			Scalar color(0,0,255);
 			for (int idx=0; idx<ctr.size()-1; idx++)
 				line(outC, ctr[idx], ctr[idx+1], color, 2);
 			line(outC, ctr[ctr.size()-1], ctr[0], color, 2);
 
+			//draw "major axis"
 			Vec4f _line;
 			fitLine(Mat(ctr), _line, CV_DIST_L2, 0, 0.01, 0.01);
 			line(outC, Point(blb[0]-_line[0]*70,blb[1]-_line[1]*70),
@@ -325,7 +328,11 @@ int main(int argc, char **argv)
 //			circle(outC, Point(ctr[maxLoc.y].x,ctr[maxLoc.y].y), 5, Scalar(0,0,255), 3);
 
 			//ellipse(outC, Point(blb[0],blb[1]), Size(100,50), angle*180, 0.0, 360.0, Scalar(255,0,0), 2);
+			
+			//blob center
 			circle(outC, Point(blb[0],blb[1]), 50, Scalar(255,0,0), 3);
+			
+			//closest point to the camera
 			Point minLoc; double minval;
 			minMaxLoc(depthMat, &minval, NULL, &minLoc, NULL, out);
 			circle(outC, minLoc, 5, Scalar(0,255,0), 3);
@@ -345,8 +352,8 @@ int main(int argc, char **argv)
 			}
 
 			if(registered) {
-				cout << "move: " << blb[0] << "," << blb[1] << endl;
-				stringstream ss; ss << "\"x\":" << lastMove.x - blb[0] << ",\"y\":" << lastMove.y - blb[1] << endl;
+				stringstream ss; ss << "\"x\":" << (int)floor(lastMove.x - blb[0]) << ",\"y\":" << (int)floor(lastMove.y - blb[1]);
+				cout << "move: " << ss.str() << endl;
 				send_event("Move", ss.str());
 				lastMove.x = blb[0]; lastMove.y = blb[1];
 			} else {
@@ -360,7 +367,7 @@ int main(int argc, char **argv)
 				} else {
 					//blob was seen before, how much time passed
 					double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
-					if (timediff > .1 && timediff < .7) {
+					if (timediff > .1 && timediff < 1.0) {
 						//enough time passed from appearence
 						if (appear.x - blb[0] > 100) {
 							cout << "right"<<endl; appear.x = -1;
@@ -384,7 +391,7 @@ int main(int argc, char **argv)
 							register_ctr = 0;
 						}
 					}
-					if(timediff >= 0.7) {
+					if(timediff >= 1.0) {
 						cout << "a ghost..."<<endl;
 						update_bg_model = true;
 						//a second passed from appearence - reset 1st appear
@@ -399,7 +406,7 @@ int main(int argc, char **argv)
 			register_ctr = MAX((register_ctr - 1),0);
 		}
 
-		if (register_ctr <= 10 && registered) {
+		if (register_ctr <= 15 && registered) {
 			midBlob.x = midBlob.y = -1;
 			registered = false;
 			update_bg_model = true;
@@ -463,12 +470,12 @@ int main(int argc, char **argv)
 		prevPts = nextPts;
 		 */
 
-		if (nmfr%15 == 0) {
-			cursor.x = frameMat.cols/2;
-			cursor.y = frameMat.rows/2;
-			cursor.width = cursor.height = 10;
-			nmfr = 0;
-		}
+//		if (nmfr%15 == 0) {
+//			cursor.x = frameMat.cols/2;
+//			cursor.y = frameMat.rows/2;
+//			cursor.width = cursor.height = 10;
+//			nmfr = 0;
+//		}
 
         char k = cvWaitKey(5);
         if( k == 27 ) break;
