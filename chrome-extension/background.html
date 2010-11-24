@@ -5,7 +5,7 @@
 <script>
 /*
 DepthJS
-Copyright (C) 2010 Aaron Zinman, Doug Fritz, Roy Shilkrot
+Copyright (C) 2010 Aaron Zinman, Doug Fritz, Roy Shilkrot, and Greg Elliott
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -37,6 +37,23 @@ var DepthJS = {
 
 console.log('Making loader');
 
+var WS_CONNECTING = 0;
+var WS_OPEN = 1;
+var WS_CLOSING = 2;
+var WS_CLOSED = 3;
+
+DepthJS.registerPopup = function(popupWindow) {
+  console.log("LKASDJlkasdjflksajdflkasjdflkjasdflkjasdlkfjsalkdjlsakjdflasjdflksja");
+  console.log(popupWindow);
+
+  $(".disabled", popupWindow).live("click", function() {
+    // Do nothing
+  });
+
+  $(".enabled", popupWindow).live("click", function(e) {
+    console.log(e);
+  });
+};
 
 DepthJS.init = function () {
   console.log("Connecting WebSocket");
@@ -177,15 +194,48 @@ DepthJS.backend.imageWs = null;
 DepthJS.backend.depthWs = null;
 DepthJS.backend.host = "localhost";
 DepthJS.backend.port = 8000;
+DepthJS.backend.connecting = false;
+DepthJS.backend.connected = false;
 
 DepthJS.backend.connect = function() {
+  DepthJS.backend.connecting = true;
+  chrome.extension.sendRequest({action: "connecting"});
+  var connected = 0;
+  function check() {
+    connected++;
+    if (connected == 3) {
+      console.log("All 3 connected");
+      chrome.extension.sendRequest({action: "connected"});
+      DepthJS.backend.connecting = false;
+      DepthJS.backend.connected = true;
+    }
+  }
+
+  // If we do not connect within a timeout period,
+  // effectively cancel it and let the popup know.
+  setTimeout(function() {
+    if (connected != 3) {
+      DepthJS.backend.disconnect();
+    }
+  }, 3000);
+
   return _.all(_.map(["event", "image", "depth"], function(stream) {
     var path = "ws://" + DepthJS.backend.host + ":" + DepthJS.backend.port + "/" + stream;
     console.log("Connecting to " + stream + " stream on " + path);
-    if (DepthJS.backend[stream+"Ws"] != null) {
-      console.log("Already connected or connecting");
-      return false;
+
+    // Clear out any old sockets
+    var oldSocket = DepthJS.backend[stream+"Ws"];
+    if (oldSocket != null) {
+      oldSocket.onmessage = null;
+      oldSocket.onclose = null;
+      oldSocket.onopen = null;
+
+      if (oldSocket.readyState == WS_OPEN ||
+          oldSocket.readyState == WS_CONNECTING) {
+        oldSocket.close();
+      }
     }
+
     var socket = new WebSocket(path);
     DepthJS.backend[stream+"Ws"] = socket;
 
@@ -199,6 +249,7 @@ DepthJS.backend.connect = function() {
 
     socket.onopen = function() {
       DepthJS.backend.onConnect(stream);
+      check();
     };
 
     return true;
@@ -248,8 +299,30 @@ DepthJS.backend.onMessage = function (stream, data) {
   }
 };
 
+DepthJS.backend.disconnect = function() {
+  DepthJS.backend.connected = false;
+  console.log("Disconnecting");
+  chrome.extension.sendRequest({action: "disconnected"});
+  return _.map(["event", "image", "depth"], function(stream) {
+    var oldSocket = DepthJS.backend[stream+"Ws"];
+    if (oldSocket != null) {
+      oldSocket.onmessage = null;
+      oldSocket.onclose = null;
+      oldSocket.onopen = null;
+
+      if (oldSocket.readyState == WS_OPEN ||
+          oldSocket.readyState == WS_CONNECTING) {
+        oldSocket.close();
+      }
+    }
+    DepthJS.backend[stream+"Ws"] = null;
+  });
+}
+
 DepthJS.backend.onDisconnect = function (stream) {
   console.log("Disconnected on " + stream + " stream");
+  // If one is closed, close them all.
+  DepthJS.backend.disconnect();
 };
 
 DepthJS.backend.onConnect = function (stream) {
@@ -257,7 +330,6 @@ DepthJS.backend.onConnect = function (stream) {
 };
 
 DepthJS.eventHandlers.onNewTab = function(url, title, windowId, tabId) {
-  test();
 };
 
 DepthJS.eventHandlers.onClosedTab = function(url, windowId, tabId) {
@@ -268,7 +340,6 @@ DepthJS.eventHandlers.onClosedTab = function(url, windowId, tabId) {
 };
 
 DepthJS.eventHandlers.onReaccessedTab = function(url, windowId, tabId) {
-  test();
 };
 
 (function() {
@@ -362,7 +433,6 @@ chrome.extension.onConnect.addListener(function(port) {
     });
   }
 
-
   port.onDisconnect.addListener(function (e) {
     console.log(name + " port disconnected on tab " + tabId);
     DepthJS[name + "Listeners"] = _.reject(
@@ -394,9 +464,24 @@ function split(str, size) {
 }
 
 chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
-  console.log(sender.tab ?
-              "from a content script:" + sender.tab.url :
-              "from the extension");
+  if (req.action == "connect") {
+    DepthJS.backend.connect();
+  } else if (req.action == "disconnect") {
+    DepthJS.backend.disconnect();
+  } else if (req.action == "getConnectState") {
+    if (DepthJS.backend.connecting) {
+      sendResponse({state: "connecting"});
+    } else {
+      sendResponse({state: DepthJS.backend.connected ? "connected" : "disconnected"});
+    }
+  } else if (req.action == "depthoseTest") {
+    console.log("depthosetest");
+    test(makeTestDepthoseEvents());
+  } else if (req.action == "pannerTest") {
+    test(makeTestPannerEvents());
+  } else if (req.action == "selectorBoxTest") {
+    test(makeTestSelectorBoxEvents());
+  }
 });
 
 
@@ -406,6 +491,10 @@ function sendTestEvent(msg, callback) {
 
   chrome.tabs.getSelected(null, function (tab) {
     console.assert(msg.type != undefined);
+    if (tab == null) {
+      console.log("tab got closed");
+      return;
+    }
     var tabId = tab.id;
     var tabPorts = DepthJS.portsByTabId[tabId];
     if (tabPorts == null) {
@@ -423,7 +512,7 @@ function sendTestEvent(msg, callback) {
   });
 }
 
-function testDepthose() {
+function makeTestDepthoseEvents() {
   return [
     {type:"Register", data:{}},
     {type:"Pull", data:{}},
@@ -437,7 +526,7 @@ function testDepthose() {
   ].reverse();
 }
 
-function testPanner() {
+function makeTestPannerEvents() {
   return [
     {type:"Register", data:{}},
     {type:"HandOpen", data:{}},
@@ -447,7 +536,7 @@ function testPanner() {
   ].reverse();
 }
 
-function testSelectorBox() {
+function makeTestSelectorBoxEvents() {
   return [
      {type:"Register", data:{}},
      {type:"Move", data:{x: 50, y: 50}},
@@ -468,18 +557,14 @@ function testSelectorBox() {
    ].reverse();
 }
 
-function makeTestEvents() {
-  return[];
-}
-
 var currentTest = [];
 
-function test() {
+function test(testEvents) {
   console.log("Starting new test sequence");
   // Cancel all other ones
   for (var i = 0; i < 20; i++) { currentTest.pop(); }
   // Make new test with closure
-  var local = currentTest = makeTestEvents();
+  var local = currentTest = testEvents;
   function next() {
     var event = local.pop();
     if (event != undefined) {
