@@ -347,18 +347,6 @@ DepthJS.eventLink.onEvent = function (msg) {
 DepthJS.canvasLink.depthPort = null;
 DepthJS.canvasLink.initDepth = function() {
   var $depthCanvas = $("canvas#DepthJS_depth");
-  if ($depthCanvas.length == 0) {
-    console.log("Putting depth map in corner");
-    $("<canvas id='DepthJS_depth'></canvas>").css({
-      position: "fixed",
-      width: "160px",
-      height: "120px",
-      bottom: "20px",
-      left: "20px",
-      "background-color": "#555",
-      border: "1px solid #5170F7"
-    }).appendTo("body");
-  }
   if ($depthCanvas.length > 0) {
     console.log("DepthJS: Will write to depth canvas");
     var depthCanvas = $depthCanvas.get(0);
@@ -396,41 +384,50 @@ DepthJS.canvasLink.initDepth = function() {
 
 DepthJS.canvasLink.initImage = function () {
   var $imageCanvas = $("canvas#DepthJS_image");
-  if ($imageCanvas.length > 0) {
-    console.log("DepthJS: Will write to image canvas");
-
-    // read the width and height of the canvas
-    var w = 160;
-    var h = 120;
-    var imageCanvas = $imageCanvas.get(0);
-    var c = imageCanvas.getContext("2d");
-    var imageData = c.createImageData(w, h);
-
-    var port = chrome.extension.connect({name: "image"});
-    port.onMessage.addListener(function(msg) {
-      var rawData = msg.data;
-      // rawData is RGB repeated 160x120 times
-      var imgPtr = 0;
-      for (var ptr = 0; ptr < rawData.length; ptr+=3) {
-        imageData.data[imgPtr++] = rawData.charCodeAt(ptr+0); // R
-        imageData.data[imgPtr++] = rawData.charCodeAt(ptr+1); // G
-        imageData.data[imgPtr++] = rawData.charCodeAt(ptr+2); // B
-        imageData.data[imgPtr++] = 0xFF; // Alpha
-      }
-      c.putImageData(imageData, 0, 0);
+  if ($imageCanvas.length == 0) {
+    console.log("Putting image map in corner");
+    $imageCanvas = $("<canvas id='DepthJS_image'></canvas>").css({
+      position: "fixed",
+      width: "160px",
+      height: "120px",
+      bottom: "20px",
+      left: "20px",
+      "background-color": "#555",
+      border: "1px solid #5170F7"
     });
+    $imageCanvas.appendTo("body");
+  }
+  console.log("DepthJS: Will write to image canvas");
 
-    // Start with all blue
-    var c = imageCanvas.getContext("2d");
-    var imageData = c.createImageData(w, h);
-    for (var i = 0; i < imageData.data.length; i+=4) {
-      imageData.data[i+0] = 0; // R
-      imageData.data[i+1] = 0; // G
-      imageData.data[i+2] = 0xFF; // B
-      imageData.data[i+3] = 0xFF; // Alpha
+  // read the width and height of the canvas
+  var w = 160;
+  var h = 120;
+  var imageCanvas = $imageCanvas.get(0);
+  var c = imageCanvas.getContext("2d");
+  var imageData = c.createImageData(w, h);
+
+  var port = chrome.extension.connect({name: "image"});
+  port.onMessage.addListener(function(msg) {
+    var rawData = msg.data;
+    // rawData is RGB repeated 160x120 times
+    var imgPtr = 0;
+    for (var ptr = 0; ptr < rawData.length; ptr+=3) {
+      imageData.data[imgPtr++] = rawData.charCodeAt(ptr+0); // R
+      imageData.data[imgPtr++] = rawData.charCodeAt(ptr+1); // G
+      imageData.data[imgPtr++] = rawData.charCodeAt(ptr+2); // B
+      imageData.data[imgPtr++] = 0xFF; // Alpha
     }
     c.putImageData(imageData, 0, 0);
+  });
+
+  // Start with all blue
+  for (var i = 0; i < imageData.data.length; i+=4) {
+    imageData.data[i+0] = 0; // R
+    imageData.data[i+1] = 0; // G
+    imageData.data[i+2] = 0xFF; // B
+    imageData.data[i+3] = 0xFF; // Alpha
   }
+  c.putImageData(imageData, 0, 0);
 };
 
 // DEPTHOSE ---------------------------------------------------------------------------------------
