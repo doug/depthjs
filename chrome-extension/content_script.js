@@ -193,15 +193,18 @@ DepthJS.panner.move = function(x, y) {
 
 DepthJS.selectorBox.init = function() {
   var $box = $("<div id='DepthJS_box'></div>");
-  $box.css("height", "100px")
-      .css("width", "100px")
-      .css("border", "2px solid #586F82")
-      .css("background-color", "#B8FF71")
-      .css("opacity", "0.5")
-      .css("z-index", "100000")
-      .css("position", "fixed")
-      .css("left", "0")
-      .css("top", "0")
+  $box.css({"height":"100px",
+            "width":"100px",
+            "border":"2px solid #773b00",
+            "background-color":"#f87b00", 
+            "opacity":"0.5",
+            "z-index":"100000",
+            "position":"fixed",
+            "left":"0",
+            "top":"0",
+            "-moz-border-radius":"15px",
+            "-webkit-border-radius":"15px",
+            "border-radius":"15px"})
       .appendTo("body").hide();
   DepthJS.selectorBox.$box = $box;
 };
