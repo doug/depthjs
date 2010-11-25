@@ -470,7 +470,9 @@ DepthJS.depthose.show = function() {
 
   _.each(thumbnailCache, function(tabObj, tabId) {
     tabObj.selectCallback = function() {
-      console.log("selecting window id " + window.id);
+      console.log("selecting tab id " + tabId);
+      DepthJS.eventHandlers.onUnregister();
+      chrome.extension.sendRequest({action:"selectTab", tabId: parseInt(tabId)});
     };
   });
 
@@ -518,7 +520,7 @@ DepthJS.depthose.select = function() {
     return;
   }
 
-  console.log("DepthJS: Selecting");
+  console.log("DepthJS: Selecting in Depthose");
   var e = document.createEvent("Event");
   e.initEvent("depthselect");
   document.getElementById("DepthJS_tray").dispatchEvent(e);
