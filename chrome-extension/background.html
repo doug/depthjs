@@ -478,7 +478,7 @@ DepthJS.test.sendTestEvent = function(msg, callback) {
     }
     if (DepthJS.verbose) console.log([msg, " send to ", eventPort]);
     eventPort.postMessage(msg);
-    callback();
+    if (callback != null) callback();
   });
 };
 

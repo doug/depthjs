@@ -17,7 +17,7 @@ import base64
 
 define("port", default=8000, help="port")
 define("source", default="tcp://127.0.0.1:14444", help="data source host")
-define("darkperiod", default=0.5, help="darkperiod after which you ignore events")
+define("darkperiod", default=1, help="darkperiod after which you ignore events")
 define("imgdarkperiod", default=0.5, help="darkperiod after which you ignore images")
 
 # ZEROMQ
@@ -31,7 +31,7 @@ class Forwarder(object):
     loop.add_handler(self.datasocket, self.read_data, zmq.POLLIN)
   def read_data(self, sock, events):
     t, data = sock.recv_multipart()
-    print("got a %s" % (t,))
+    #print("got a %s" % (t,))
     clients = websockets.get(t,[])
     if len(clients) != 0:
       forward = True
@@ -39,24 +39,27 @@ class Forwarder(object):
       if t == "event":
         datajson = json.loads(data)
         dtype = datajson["type"]
-        print(dtype)
-        if dtype != "move" and (now - self.lastevent) < options.darkperiod:
-          self.lastevent = now
-          print("don't forward")
-          forward = False
-      if t in ["image", "depth"] and (now - self.lastimg) > options.imgdarkperiod:
-        print("IMAGEEE!!!!!!!")
-        self.lastimg = now
-        data = base64.b64encode(data)
-        forward = False
+        if not (dtype in ["Move"]):
+          print(dtype)
+          print((now - self.lastevent))
+        if dtype in ["HandClick"]:
+          if (now - self.lastevent) < options.darkperiod:
+            print("don't forward in darkperiod")
+            forward = False
+          else:
+            self.lastevent = now
+      #if t in ["image", "depth"] and (now - self.lastimg) > options.imgdarkperiod:
+        #print("IMAGEEE!!!!!!!")
+        #self.lastimg = now
+        #data = base64.b64encode(data)
+        #forward = False
       #else:
         #print("IMAGE BUt tIME is wrong")
         #print((now - self.lastimg))
         #forward = False
-      #if t in ["image", "depth"]:
-        #forward = False
+      if t in ["image", "depth"]:
+        forward = False
       if forward == True:
-        print("forwarding")
         for s in clients:
           s.write_message(data)
 
