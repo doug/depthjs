@@ -102,6 +102,10 @@ DepthJS.eventHandlers.onRegister = function() {
   $(window).trigger("touchstart");
   DepthJS.state = "panner";
   DepthJS.panner.show();
+  //DepthJS.state = "depthose";
+  //DepthJS.depthose.show();
+  //DepthJS.state = "selectorBox";
+  //DepthJS.selectorBox.show();
 };
 
 DepthJS.eventHandlers.onUnregister = function() {
@@ -135,7 +139,7 @@ DepthJS.eventHandlers.onPull = function() {
 (function() {
 var accumulatedX = null;
 var accumulatedY = null;
-var smoothing = 0.8;
+var smoothing = 0.95;
 DepthJS.eventHandlers.onMove = function(data) {
   if (data.x == null || data.y == null) {
     console.log(["Could not understand data", data]);

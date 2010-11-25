@@ -17,7 +17,7 @@ import base64
 
 define("port", default=8000, help="port")
 define("source", default="tcp://127.0.0.1:14444", help="data source host")
-define("darkperiod", default=0.5, help="darkperiod after which you ignore events")
+define("darkperiod", default=1.5, help="darkperiod after which you ignore events")
 define("imgdarkperiod", default=0.5, help="darkperiod after which you ignore images")
 
 # ZEROMQ
