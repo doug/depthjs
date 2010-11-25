@@ -413,7 +413,8 @@ DepthJS.canvasLink.initDepth = function() {
 
 DepthJS.canvasLink.initImage = function () {
   var $imageCanvas = $("canvas#DepthJS_image");
-  if ($imageCanvas.length == 0) {
+  // This is not really working right now
+  /* if ($imageCanvas.length == 0) {
     if (DepthJS.verbose) console.log("Putting image map in corner");
     $imageCanvas = $("<canvas id='DepthJS_image'></canvas>").css({
       position: "fixed",
@@ -425,9 +426,10 @@ DepthJS.canvasLink.initImage = function () {
       border: "1px solid #5170F7"
     });
     $imageCanvas.appendTo("body");
-  }
+  } */
   if (DepthJS.verbose) console.log("DepthJS: Will write to image canvas");
 
+  if ($imageCanvas.length == 0) return;
   // read the width and height of the canvas
   var w = 160;
   var h = 120;
@@ -560,3 +562,12 @@ DepthJS.selectorBox.init();
 DepthJS.eventLink.initPort();
 DepthJS.canvasLink.initDepth();
 DepthJS.canvasLink.initImage();
+
+// Let us know its running
+$("<img src='https://github.com/doug/depthjs/raw/master/chrome-extension/logo_128x128.png'>").css({
+  position: "fixed",
+  width: "32px",
+  height: "32px",
+  bottom: "20px",
+  left: "20px"
+}).appendTo("body");
