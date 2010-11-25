@@ -406,6 +406,8 @@ function split(str, size) {
   return splits;
 };
 
+DepthJS.registerMode = "selectorBox";
+
 chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
   if (req.action == "connect") {
     DepthJS.backend.connect();
@@ -413,9 +415,10 @@ chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
     DepthJS.backend.disconnect();
   } else if (req.action == "getConnectState") {
     if (DepthJS.backend.connecting) {
-      sendResponse({state: "connecting"});
+      sendResponse({state: "connecting", mode: DepthJS.registerMode});
     } else {
-      sendResponse({state: DepthJS.backend.connected ? "connected" : "disconnected"});
+      sendResponse({state: DepthJS.backend.connected ? "connected" : "disconnected",
+                    mode: DepthJS.registerMode});
     }
   } else if (req.action == "depthoseTest") {
     console.log("depthosetest");
@@ -429,6 +432,16 @@ chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
     sendResponse({thumbnailCache: DepthJS.tabs.thumbnailCache});
   } else if (req.action == "selectTab") {
     chrome.tabs.update(req.tabId, {selected: true});
+  } else if (req.action == "depthoseMode") {
+    console.log("going to depthose mode");
+    DepthJS.registerMode = "depthose";
+    DepthJS.test.sendTestEvent({type: "DepthoseMode", data:{}});
+  } else if (req.action == "pannerMode") {
+    DepthJS.registerMode = "panner";
+    DepthJS.test.sendTestEvent({type: "PannerMode", data:{}});
+  } else if (req.action == "selectorBoxMode") {
+    DepthJS.registerMode = "selectorBox";
+    DepthJS.test.sendTestEvent({type: "SelectorBoxMode", data:{}});
   }
 });
 

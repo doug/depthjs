@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 var DepthJS = {
   verbose: false,
+  registerMode: "selectorBox",
   eventHandlers: {},
   canvasLink: {},
   eventLink: {},
@@ -96,12 +97,24 @@ DepthJS.eventHandlers.onSwipeUp = function() {
   });
 };
 
+DepthJS.eventHandlers.onDepthoseMode = function() {
+  DepthJS.registerMode = "depthose";
+};
+
+DepthJS.eventHandlers.onPannerMode = function() {
+  DepthJS.registerMode = "panner";
+};
+
+DepthJS.eventHandlers.onSelectorBoxMode = function() {
+  DepthJS.registerMode = "selectorBox";
+};
+
 // POINTER -----------------------------------------------------------------------------------------
 DepthJS.eventHandlers.onRegister = function() {
   console.log("DepthJS: User registered their hand");
   $(window).trigger("touchstart");
-  DepthJS.state = "panner";
-  DepthJS.panner.show();
+  DepthJS.state = DepthJS.registerMode;
+  DepthJS[DepthJS.registerMode].show();
 };
 
 DepthJS.eventHandlers.onUnregister = function() {

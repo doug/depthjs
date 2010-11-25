@@ -58,8 +58,8 @@ li.enabled:hover {
   }
 
   function connecting() {
-    $("li:not(.test)").removeClass("enabled")
-                      .addClass("disabled");
+    $("li.server").removeClass("enabled")
+                  .addClass("disabled");
   }
 
   function updateMessage(msg) {
@@ -70,6 +70,13 @@ li.enabled:hover {
       disconnected();
     } else if (state == "connecting") {
       connecting();
+    }
+
+    if (msg.mode != null) {
+      $(".mode").removeClass("disabled")
+                .addClass("enabled");
+      $("#" + msg.mode + "Mode").removeClass("enabled")
+                                .addClass("disabled");
     }
   }
 
@@ -89,8 +96,12 @@ li.enabled:hover {
 <body>
 
 <ul>
-  <li class="disabled" id="connect">Connect&nbsp;to&nbsp;Kinect</li>
-  <li class="disabled" id="disconnect">Disconnect&nbsp;from&nbsp;Kinect</li>
+  <li class="server disabled" id="connect">Connect&nbsp;to&nbsp;Kinect</li>
+  <li class="server disabled" id="disconnect">Disconnect&nbsp;from&nbsp;Kinect</li>
+  <li><hr></li>
+  <li class="mode enabled" id="depthoseMode">Depthosé Mode</li>
+  <li class="mode enabled" id="pannerMode">Panner Mode</li>
+  <li class="mode enabled" id="selectorBoxMode">Selector Mode</li>
   <li><hr></li>
   <li class="test enabled" id="depthoseTest">Depthosé Test</li>
   <li class="test enabled" id="pannerTest">Panner Test</li>
