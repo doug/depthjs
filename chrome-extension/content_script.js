@@ -130,8 +130,12 @@ DepthJS.eventHandlers.onHandClick = function() {
 DepthJS.eventHandlers.onPull = function() {
   DepthJS.state = "depthose";
   DepthJS.depthose.start();
-}
+};
 
+(function() {
+var accumulatedX = null;
+var accumulatedY = null;
+var smoothing = 0.8;
 DepthJS.eventHandlers.onMove = function(data) {
   if (data.x == null || data.y == null) {
     console.log(["Could not understand data", data]);
@@ -139,19 +143,29 @@ DepthJS.eventHandlers.onMove = function(data) {
   }
 
   data.x = 100-data.x;
+
+  if (accumulatedX == null) {
+    accumulatedX = data.x;
+    accumulatedY = data.y;
+  } else {
+    accumulatedX = accumulatedX * smoothing + data.x * (1-smoothing);
+    accumulatedY = accumulatedY * smoothing + data.y * (1-smoothing);
+  }
+
   if (DepthJS.state == "panner"){
-    DepthJS.panner.move(data.x, data.y);
+    DepthJS.panner.move(accumulatedX, accumulatedY);
   } else if (DepthJS.state == "depthose") {
-    DepthJS.depthose.move(data.x, data.y);
+    DepthJS.depthose.move(accumulatedX, accumulatedY);
   } else if (DepthJS.state == "selectorBox") {
-    DepthJS.selectorBox.move(data.x * $(window).width() / 100,
-                             data.y * $(window).height() / 100);
-   } else if (DepthJS.state == "selectorBoxPopup") {
-     DepthJS.selectorBoxPopup.move(data.x, data.y);
+    DepthJS.selectorBox.move(accumulatedX * $(window).width() / 100,
+                             accumulatedY * $(window).height() / 100);
+  } else if (DepthJS.state == "selectorBoxPopup") {
+    DepthJS.selectorBoxPopup.move(accumulatedX, accumulatedY);
   } else {
     console.log("Ignoring move in state " + DepthJS.state);
   }
 }
+})();
 
 // PANNER ------------------------------------------------------------------------------------------
 
