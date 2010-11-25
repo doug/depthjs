@@ -117,6 +117,20 @@ void send_event(const string& etype, const string& edata) {
 	s_send (socket, ss.str());
 }
 
+void send_image(const Mat& img) {
+	s_sendmore(socket, "image");
+	
+	Mat _img;
+	if(img.type() == CV_8UC1) {
+		Mat _tmp; resize(img, _tmp,Size(160,120)); //better to resize the gray data and not RGB
+		cvtColor(_tmp, _img, CV_GRAY2RGB);
+	} else {
+		resize(img, _img, Size(160,120));
+	}
+	
+	s_send(socket, (const char*)_img.data);
+}
+
 Mat laplacian_mtx(int N, bool closed_poly) {
 	Mat A = Mat::zeros(N, N, CV_64FC1);
 	Mat d = Mat::zeros(N, 1, CV_64FC1);
@@ -481,8 +495,10 @@ int main(int argc, char **argv)
 				}
 			}
 			imshow("blob",outC);
+			send_image(outC);
 		} else {
 			imshow("blob",depthf);
+			send_image(depthf);
 			register_ctr = MAX((register_ctr - 1),0);
 		}
 
@@ -493,8 +509,6 @@ int main(int argc, char **argv)
 			cout << "unregister" << endl;
 			send_event("Unregister", "");
 		}
-
-
 
 		/*
 		if (fr%5 == 0) {	//every 5 frames add more points to track
@@ -557,6 +571,8 @@ int main(int argc, char **argv)
 //			cursor.width = cursor.height = 10;
 //			nmfr = 0;
 //		}
+		
+		
 
         char k = cvWaitKey(5);
         if( k == 27 ) break;

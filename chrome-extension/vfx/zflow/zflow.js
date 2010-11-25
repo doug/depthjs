@@ -58,6 +58,7 @@ TrayController.prototype.depthstart = function (e)
     this.touchMoved = false;
 
     window.addEventListener("depthmove", this, true);
+    window.addEventListener("depthselect", this, true);
     window.addEventListener("depthend", this, true);
 
     this.elem.style.webkitTransitionDuration = "0s";
@@ -151,6 +152,13 @@ FlowDelegate.prototype.updateTouchEnd = function (controller)
 FlowDelegate.prototype.clicked = function (currentX)
 {
     var i = - Math.round(currentX / CGAP);
+    console.log(i);
+    console.log(this.imageObjs);
+
+    if (i < 0 || i >= this.imageObjs.length) {
+      console.log("Invalid obj to select");
+      return;
+    }
 
     this.imageObjs[i].selectCallback();
     return; // skip rest as not needed for Depthose.

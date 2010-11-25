@@ -323,8 +323,8 @@ DepthJS.backend.onConnect = function (stream) {
   // WebSockets have frames of a limited size (<32k seems to work best)
   // Buffer the data until we have a complete frame
   function makeImageBuffer(listeners, bytes) {
-    var w = 640;
-    var h = 480;
+    var w = 160;
+    var h = 120;
     var dataArray = [];
     var dataLength = 0;
     var frameSize = w*h*bytes;
@@ -427,6 +427,8 @@ chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
   } else if (req.action == "getThumbnailCache") {
     console.log(["sending thumbnail cache", DepthJS.tabs.thumbnailCache]);
     sendResponse({thumbnailCache: DepthJS.tabs.thumbnailCache});
+  } else if (req.action == "selectTab") {
+    chrome.tabs.update(req.tabId, {selected: true});
   }
 });
 
@@ -463,7 +465,8 @@ DepthJS.test.depthoseTest = function () {
   DepthJS.test.runTestSequence([
     {type:"Register", data:{}},
     {type:"Pull", data:{}},
-    {type:"Move", data:{x: 15, y: 15}},
+    //{type:"Move", data:{x: 15, y: 15}},
+    {type:"HandClick", data:{}},
     {type:"Unregister", data:{}},
     //{type:"Register", data:{}},
     //{type:"Pull", data:{}},
@@ -487,7 +490,7 @@ DepthJS.test.selectorBoxTest = function () {
   DepthJS.test.runTestSequence([
      {type:"Register", data:{}},
      {type:"Move", data:{x: 50, y: 50}},
-     {type:"Push", data:{}},
+     {type:"HandOpen", data:{}},
      {type:"Move", data:{x: 60, y: 0}},
      {type:"Move", data:{x: 60, y: 15}},
      {type:"Move", data:{x: 60, y: 25}},
