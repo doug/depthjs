@@ -486,10 +486,7 @@ DepthJS.test.depthoseTest = function () {
 DepthJS.test.pannerTest = function makeTestPannerEvents() {
   DepthJS.test.runTestSequence([
     {type:"Register", data:{}},
-    {type:"HandOpen", data:{}},
-    {type:"Move", data:{x: 10, y: 30}},
-    {type:"Move", data:{x: 40, y: 50}},
-    {type:"Unregister", data:{}},
+    {type:"Move", data:{x: 25, y: 25}},
   ].reverse());
 };
 

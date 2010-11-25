@@ -200,9 +200,9 @@ DepthJS.panner.hide = function() {
 }
 
 DepthJS.panner.move = function(x, y) {
-  var x = x * $(window).width() / 100;
-  var y = y * $(window).height() / 100;
   var centerPoint = $(window).height()/2 + $(window).scrollTop();
+  var x = (x-50) * $(window).width() / 100;
+  var y = -(y-50) * $(window).height() / 100;
   $("body").css({"-webkit-transform":"scale(1.55) translate(" + x + "px, " + y + "px)",
                  "-webkit-transition-duration":".25s",
                  "-webkit-transform-origin":"50% " + centerPoint + "px"});
