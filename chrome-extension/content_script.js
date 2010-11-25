@@ -100,8 +100,8 @@ DepthJS.eventHandlers.onSwipeUp = function() {
 DepthJS.eventHandlers.onRegister = function() {
   console.log("DepthJS: User registered their hand");
   $(window).trigger("touchstart");
-  DepthJS.state = "selectorBox";
-  DepthJS.selectorBox.show();
+  DepthJS.state = "panner";
+  DepthJS.panner.show();
 };
 
 DepthJS.eventHandlers.onUnregister = function() {
@@ -184,8 +184,10 @@ DepthJS.panner.hide = function() {
 DepthJS.panner.move = function(x, y) {
   var x = x * $(window).width() / 100;
   var y = y * $(window).height() / 100;
+  var centerPoint = $(window).height()/2 + $(window).scrollTop();
   $("body").css({"-webkit-transform":"scale(1.55) translate(" + x + "px, " + y + "px)",
-                 "-webkit-transition-duration":".25s"})
+                 "-webkit-transition-duration":".25s",
+                 "-webkit-transform-origin":"50% " + centerPoint + "px"});
 }
 
 // SELECTOR BOX ------------------------------------------------------------------------------------
