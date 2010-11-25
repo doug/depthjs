@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 console.log('background.html Starting DepthJS');
 var DepthJS = {
   __VERSION__: '0.1',
+  verbose: false,
   backend: {},
   eventHandlers: {},
   cv: {},
@@ -45,9 +46,9 @@ var WS_CLOSING = 2;
 var WS_CLOSED = 3;
 
 DepthJS.init = function () {
-  console.log("Connecting WebSocket");
+  if (DepthJS.verbose) console.log("Connecting WebSocket");
   if (!DepthJS.backend.connect()) {
-    console.log("Couldn't connect... aborting");
+    if (DepthJS.verbose) console.log("Couldn't connect... aborting");
     return;
   }
   DepthJS.tabs.init();
@@ -82,10 +83,10 @@ DepthJS.tabs.populateCaches = function() {
   chrome.windows.getAll({populate: true}, function(windows) {
     for (var i = 0; i < windows.length; ++i) {
       var window = windows[i];
-      console.log('Adding existing window '+ obj_repr(window, 'Window'));
+      if (DepthJS.verbose) console.log('Adding existing window '+ obj_repr(window, 'Window'));
       for (var j = 0; j < window.tabs.length; ++j) {
         var tab = window.tabs[j];
-        console.log('Adding existing tab ' + obj_repr(tab, 'Tab'));
+        if (DepthJS.verbose) console.log('Adding existing tab ' + obj_repr(tab, 'Tab'));
         DepthJS.tabs.tabCache[tab.id] = tab;
 
         if (tab.status == 'complete') {
@@ -104,7 +105,7 @@ DepthJS.tabs.populateCaches = function() {
 DepthJS.tabs.onTabUpdated = function(tabId, changeInfo, tab) {
   var cachedTab = DepthJS.tabs.tabCache[tabId];
   if (!cachedTab) {
-    console.log('Could not find tabId ' + tabId + ' in cache: ' + cachedTab);
+    if (DepthJS.verbose) console.log('Could not find tabId ' + tabId + ' in cache: ' + cachedTab);
     return;
   }
 
@@ -126,7 +127,7 @@ DepthJS.tabs.onNewVisibleTab = function(url, title, windowId, tabId) {
   // Take screenshot
   var capture = function(windowId) {
     chrome.tabs.captureVisibleTab(windowId, null, function(dataUrl) {
-      console.log("captured thumbnail for tabId " + tabId);
+      if (DepthJS.verbose) console.log("captured thumbnail for tabId " + tabId);
       DepthJS.tabs.thumbnailCache[tabId] = {
         dataUrl: dataUrl,
         title: title};
@@ -142,13 +143,13 @@ DepthJS.tabs.onNewVisibleTab = function(url, title, windowId, tabId) {
 
 DepthJS.tabs.onClosedTab = function(tabId) {
   if (DepthJS.portsByTabId[tabId] != null) {
-    console.log("Had ports by closed tab laying around, deleting");
+    if (DepthJS.verbose) console.log("Had ports by closed tab laying around, deleting");
     delete DepthJS.portsByTabId[tabId];
   }
   // Close page
   var cachedTab = DepthJS.tabs.tabCache[tabId];
   if (!cachedTab) {
-    console.log('Could not find tabId ' + tabId + ' in cache: ' + cachedTab);
+    if (DepthJS.verbose) console.log('Could not find tabId ' + tabId + ' in cache: ' + cachedTab);
     return;
   }
 
@@ -193,7 +194,7 @@ DepthJS.backend.connect = function() {
   function check() {
     connected++;
     if (connected == 3) {
-      console.log("All 3 connected");
+      if (DepthJS.verbose) console.log("All 3 connected");
       chrome.extension.sendRequest({action: "connected"});
       DepthJS.backend.connecting = false;
       DepthJS.backend.connected = true;
@@ -210,7 +211,7 @@ DepthJS.backend.connect = function() {
 
   return _.all(_.map(["event", "image", "depth"], function(stream) {
     var path = "ws://" + DepthJS.backend.host + ":" + DepthJS.backend.port + "/" + stream;
-    console.log("Connecting to " + stream + " stream on " + path);
+    if (DepthJS.verbose) console.log("Connecting to " + stream + " stream on " + path);
 
     // Clear out any old sockets
     var oldSocket = DepthJS.backend[stream+"Ws"];
@@ -250,10 +251,10 @@ DepthJS.backend.onMessage = function (stream, data) {
     if (data === undefined || data.data == null) {
       return;
     }
-    console.log(data.data);
+    if (DepthJS.verbose) console.log(data.data);
     var msg = JSON.parse(data.data);
     if (!$.isPlainObject(msg)) {
-      console.log('Unknown message: ' + data);
+      if (DepthJS.verbose) console.log('Unknown message: ' + data);
       return;
     }
     var handler = DepthJS.eventHandlers["on"+msg.type];
@@ -270,12 +271,12 @@ DepthJS.backend.onMessage = function (stream, data) {
       var tabId = tab.id;
       var tabPorts = DepthJS.portsByTabId[tabId];
       if (tabPorts == null) {
-        console.log("Could not find ports for tabId " + tabId);
+        if (DepthJS.verbose) console.log("Could not find ports for tabId " + tabId);
         return;
       }
       var eventPort = tabPorts.event;
       if (eventPort == null) {
-        console.log("Could not find event port for tabId " + tabId);
+        if (DepthJS.verbose) console.log("Could not find event port for tabId " + tabId);
         return;
       }
 
@@ -290,7 +291,7 @@ DepthJS.backend.onMessage = function (stream, data) {
 
 DepthJS.backend.disconnect = function() {
   DepthJS.backend.connected = false;
-  console.log("Disconnecting");
+  if (DepthJS.verbose) console.log("Disconnecting");
   chrome.extension.sendRequest({action: "disconnected"});
   return _.map(["event", "image", "depth"], function(stream) {
     var oldSocket = DepthJS.backend[stream+"Ws"];
@@ -309,13 +310,13 @@ DepthJS.backend.disconnect = function() {
 }
 
 DepthJS.backend.onDisconnect = function (stream) {
-  console.log("Disconnected on " + stream + " stream");
+  if (DepthJS.verbose) console.log("Disconnected on " + stream + " stream");
   // If one is closed, close them all.
   DepthJS.backend.disconnect();
 };
 
 DepthJS.backend.onConnect = function (stream) {
-  console.log("Connect on " + stream + " stream");
+  if (DepthJS.verbose) console.log("Connect on " + stream + " stream");
 };
 
 
@@ -329,18 +330,18 @@ DepthJS.backend.onConnect = function (stream) {
     var dataLength = 0;
     var frameSize = w*h*bytes;
     return function(frameEvent) {
-      console.log(frameEvent.data.length);
+      if (DepthJS.verbose) console.log(frameEvent.data.length);
       var frameData = atob(frameEvent.data);
-      console.log(frameData.length);
+      if (DepthJS.verbose) console.log(frameData.length);
       _.each(listeners, function(port) {
-        console.log("sending image or depth data");
+        if (DepthJS.verbose) console.log("sending image or depth data");
         port.postMessage({data: frameData});
       });
       return;
       if (dataLength + frameData.length < frameSize) {
         dataArray.push(frameData);
         dataLength += frameData.length;
-        console.log("got " + frameData.length + " bytes, need " + (frameSize - dataLength) + "more");
+        if (DepthJS.verbose) console.log("got " + frameData.length + " bytes, need " + (frameSize - dataLength) + "more");
       } else {
         var rem = (dataLength + frameData.length) - frameSize;
         var dataTail = frameData.substring(0,frameData.length - rem);
@@ -348,7 +349,7 @@ DepthJS.backend.onConnect = function (stream) {
         dataArray.push(dataTail);
         var data = dataArray.join("");
         _.each(listeners, function(port) {
-            console.log("sending image or depth data");
+            if (DepthJS.verbose) console.log("sending image or depth data");
             port.postMessage({data: data});
         });
         dataArray = [];
@@ -371,8 +372,8 @@ console.log("Setting up message passing listener");
 var urls = [];
 chrome.extension.onConnect.addListener(function(port) {
   var name = port.name;
-  console.assert(name == "event" || name == "image" || name == "depth");
-  console.log(name + " port connected");
+  if (DepthJS.verbose) console.assert(name == "event" || name == "image" || name == "depth");
+  if (DepthJS.verbose) console.log(name + " port connected");
   var listeners =  DepthJS[name + "Listeners"];
   listeners.push(port);
 
@@ -384,14 +385,14 @@ chrome.extension.onConnect.addListener(function(port) {
   tabPorts[name] = port;
 
   port.onDisconnect.addListener(function (e) {
-    console.log(name + " port disconnected on tab " + tabId);
+    if (DepthJS.verbose) console.log(name + " port disconnected on tab " + tabId);
     DepthJS[name + "Listeners"] = _.reject(
       listeners, function(el) { el === port; });
     var _tabPorts = DepthJS.portsByTabId[tabId];
     if (_tabPorts) {
       delete _tabPorts[name];
       if (_.isEmpty(_tabPorts)) {
-        console.log("for all ports on this tab");
+        if (DepthJS.verbose) console.log("for all ports on this tab");
         delete DepthJS.portsByTabId[tabId];
       }
     }
@@ -413,6 +414,8 @@ function split(str, size) {
   return splits;
 };
 
+DepthJS.registerMode = "selectorBox";
+
 chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
   if (req.action == "connect") {
     DepthJS.backend.connect();
@@ -420,49 +423,60 @@ chrome.extension.onRequest.addListener(function(req, sender, sendResponse) {
     DepthJS.backend.disconnect();
   } else if (req.action == "getConnectState") {
     if (DepthJS.backend.connecting) {
-      sendResponse({state: "connecting"});
+      sendResponse({state: "connecting", mode: DepthJS.registerMode});
     } else {
-      sendResponse({state: DepthJS.backend.connected ? "connected" : "disconnected"});
+      sendResponse({state: DepthJS.backend.connected ? "connected" : "disconnected",
+                    mode: DepthJS.registerMode});
     }
   } else if (req.action == "depthoseTest") {
-    console.log("depthosetest");
+    if (DepthJS.verbose) console.log("depthosetest");
     DepthJS.test.depthoseTest();
   } else if (req.action == "pannerTest") {
     DepthJS.test.pannerTest();
   } else if (req.action == "selectorBoxTest") {
     DepthJS.test.selectorBoxTest();
   } else if (req.action == "getThumbnailCache") {
-    console.log(["sending thumbnail cache", DepthJS.tabs.thumbnailCache]);
+    if (DepthJS.verbose) console.log(["sending thumbnail cache", DepthJS.tabs.thumbnailCache]);
     sendResponse({thumbnailCache: DepthJS.tabs.thumbnailCache});
   } else if (req.action == "selectTab") {
     chrome.tabs.update(req.tabId, {selected: true});
+  } else if (req.action == "depthoseMode") {
+    console.log("going to depthose mode");
+    DepthJS.registerMode = "depthose";
+    DepthJS.test.sendTestEvent({type: "DepthoseMode", data:{}});
+  } else if (req.action == "pannerMode") {
+    DepthJS.registerMode = "panner";
+    DepthJS.test.sendTestEvent({type: "PannerMode", data:{}});
+  } else if (req.action == "selectorBoxMode") {
+    DepthJS.registerMode = "selectorBox";
+    DepthJS.test.sendTestEvent({type: "SelectorBoxMode", data:{}});
   }
 });
 
 DepthJS.test.currentTest = [];
 
 DepthJS.test.sendTestEvent = function(msg, callback) {
-  console.log("Sending out test event " + msg.type);
+  if (DepthJS.verbose) console.log("Sending out test event " + msg.type);
   msg.jsonRep = JSON.stringify(msg);
 
   chrome.tabs.getSelected(null, function (tab) {
-    console.assert(msg.type != undefined);
+    if (DepthJS.verbose) console.assert(msg.type != undefined);
     if (tab == null) {
-      console.log("tab got closed");
+      if (DepthJS.verbose) console.log("tab got closed");
       return;
     }
     var tabId = tab.id;
     var tabPorts = DepthJS.portsByTabId[tabId];
     if (tabPorts == null) {
-      console.log("Could not find ports for tabId " + tabId);
+      if (DepthJS.verbose) console.log("Could not find ports for tabId " + tabId);
       return;
     }
     var eventPort = tabPorts.event;
     if (eventPort == null) {
-      console.log("Could not find event port for tabId " + tabId);
+      if (DepthJS.verbose) console.log("Could not find event port for tabId " + tabId);
       return;
     }
-    console.log([msg, " send to ", eventPort]);
+    if (DepthJS.verbose) console.log([msg, " send to ", eventPort]);
     eventPort.postMessage(msg);
     callback();
   });
@@ -512,7 +526,7 @@ DepthJS.test.selectorBoxTest = function () {
 };
 
 DepthJS.test.runTestSequence = function (testEvents) {
-  console.log("Starting new test sequence");
+  if (DepthJS.verbose) console.log("Starting new test sequence");
   // Cancel all other ones
   for (var i = 0; i < 20; i++) { DepthJS.test.currentTest.pop(); }
   // Make new test with closure
