@@ -100,8 +100,8 @@ DepthJS.eventHandlers.onSwipeUp = function() {
 DepthJS.eventHandlers.onRegister = function() {
   console.log("DepthJS: User registered their hand");
   $(window).trigger("touchstart");
-  DepthJS.state = "selectorBox";
-  DepthJS.selectorBox.show();
+  DepthJS.state = "panner";
+  DepthJS.panner.show();
 };
 
 DepthJS.eventHandlers.onUnregister = function() {
@@ -409,6 +409,7 @@ DepthJS.canvasLink.initImage = function () {
   var port = chrome.extension.connect({name: "image"});
   port.onMessage.addListener(function(msg) {
     var rawData = msg.data;
+    console.log(rawData.length);
     // rawData is RGB repeated 160x120 times
     var imgPtr = 0;
     for (var ptr = 0; ptr < rawData.length; ptr+=3) {

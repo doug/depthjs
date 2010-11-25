@@ -329,7 +329,14 @@ DepthJS.backend.onConnect = function (stream) {
     var dataLength = 0;
     var frameSize = w*h*bytes;
     return function(frameEvent) {
+      console.log(frameEvent.data.length);
       var frameData = atob(frameEvent.data);
+      console.log(frameData.length);
+      _.each(listeners, function(port) {
+        console.log("sending image or depth data");
+        port.postMessage({data: frameData});
+      });
+      return;
       if (dataLength + frameData.length < frameSize) {
         dataArray.push(frameData);
         dataLength += frameData.length;
