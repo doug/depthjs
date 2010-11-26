@@ -18,20 +18,17 @@ import base64
 define("port", default=8000, help="port")
 define("source", default="tcp://127.0.0.1:14444", help="data source host")
 define("darkperiod", default=1, help="darkperiod after which you ignore events")
-define("imgdarkperiod", default=0.5, help="darkperiod after which you ignore images")
 
 # ZEROMQ
 class Forwarder(object):
   def __init__(self,source,loop):
-    self.lastevent = time.time()
-    self.lastimg = time.time()
+    self.lastevent = {}
     self.datasocket = context.socket(zmq.SUB)
     self.datasocket.connect(source)
     self.datasocket.setsockopt(zmq.SUBSCRIBE,'')
     loop.add_handler(self.datasocket, self.read_data, zmq.POLLIN)
   def read_data(self, sock, events):
     t, data = sock.recv_multipart()
-    #print("got a %s" % (t,))
     clients = websockets.get(t,[])
     if len(clients) != 0:
       forward = True
@@ -39,25 +36,12 @@ class Forwarder(object):
       if t == "event":
         datajson = json.loads(data)
         dtype = datajson["type"]
-        if not (dtype in ["Move"]):
-          print(dtype)
-          print((now - self.lastevent))
         if dtype in ["HandClick"]:
-          if (now - self.lastevent) < options.darkperiod:
+          if (now - self.lastevent.get(dtype,0)) < options.darkperiod:
             print("don't forward in darkperiod")
             forward = False
-          else:
-            self.lastevent = now
-      #if t in ["image", "depth"] and (now - self.lastimg) > options.imgdarkperiod:
-        #print("IMAGEEE!!!!!!!")
-        #self.lastimg = now
-        #data = base64.b64encode(data)
-        #forward = False
-      #else:
-        #print("IMAGE BUt tIME is wrong")
-        #print((now - self.lastimg))
-        #forward = False
-      if t in ["image", "depth"]:
+        self.lastevent[dtype] = now
+      if t in ["image", "depth"]: # don't forward images for now too much for websocket and js
         forward = False
       if forward == True:
         for s in clients:
