@@ -1,4 +1,0 @@
-ofxThread
-ofxOpenCv
-ofxXmlSettings
-ofxVectorMath
