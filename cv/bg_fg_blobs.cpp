@@ -15,7 +15,7 @@
 					   vector<Point>& contour,
 					   Point2i& previous)
 {
-    int niters = 3;
+//    int niters = 3;
     
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
@@ -40,11 +40,11 @@
 	
     // iterate through all the top-level contours,
     // draw each connected component with its own random color
-    int idx = 0, largestComp = 0;
+    unsigned int idx = 0, largestComp = 0;
     double maxArea = 0;
     
 //    for( ; idx >= 0; idx = hierarchy[idx][0] )
-	for (idx=0; idx<contours.size(); idx++)
+	for (; idx<contours.size(); idx++)
     {
         const vector<Point>& c = contours[idx];
 		Scalar _mean = mean(Mat(contours[idx]));
@@ -76,7 +76,7 @@
 	
 	return b;
 }
-
+/*
  void makePointsFromMask(Mat& maskm,vector<Point2f>& points, bool _add = false) {//, Mat& out) {
 	if(!_add)
 		points.clear();
@@ -102,7 +102,7 @@ void drawPoint(Mat& out,vector<Point2f>& points,Scalar color, Mat* maskm = NULL)
 	}
 }
 
-/*
+
 //this is a sample for foreground detection functions
 int bgfg_main(int argc, char** argv)
 {

@@ -12,19 +12,17 @@
 
 using namespace std;
 
-//#include <opencv2/opencv.hpp>
-#include <cv.h>
-#include <highgui.h>
-#include <cvaux.h>
-
-using namespace cv;
+//#include <cv.h>
+//#include <highgui.h>
+//#include <cvaux.h>
+//
+//using namespace cv;
 
 #include <iostream>
+#include <sstream>
 #include <stdio.h>
 #include <string.h>
 #include <libusb.h>
 #include "libfreenect.h"
 
 #include <pthread.h>
-
-#include "zhelpers.hpp"
