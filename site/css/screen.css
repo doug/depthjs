@@ -1,0 +1,156 @@
+/* ================= */
+/* = General stuff = */
+/* ================= */
+a:link, a:visited{
+  text-shadow: 0px 1px 0px #fff;
+  font-family:"TeXGyreAdventorRegular";
+  color:#636363;
+  font-size:15px;
+  text-decoration:none;
+}
+
+body{
+  background-color:#fff;
+  font-family:"TeXGyreHerosRegular";
+  font-size:13px;
+  padding:0;
+  margin:0;
+  margin-top:10px;
+  background-image:url(../images/pattern.png);
+  background-repeat:repeat-x repeat-y;
+}
+
+#container{
+  width:900px;
+  margin:auto;
+  position:relative;
+}
+
+/* ======== */
+/* = logo = */
+/* ======== */
+#logo #depthjs{
+  position:relative;
+  font-family:"TeXGyreHerosRegular";
+  color:#F34201;
+  font-size:90px;
+  letter-spacing:-2px;
+  text-transform:capitalize;
+  margin-bottom:10px;
+  text-shadow: 0px 1px 0px #fff;
+}
+
+#medialab{
+  position:absolute;
+  right:0px;
+  bottom:5px;
+  letter-spacing:0px;
+  text-align:right;
+  width:200px;
+  line-height:45px;
+}
+
+#medialab a:link, #medialab a:visited{
+  color:#636363;
+  font-size:20px;
+}
+
+#logo #sub{
+  color:#636363;
+  font-size:60px;
+  text-transform:lowercase;
+  text-shadow: 0px 1px 0px #fff;
+}
+
+#slogan{
+  color:#636363;
+  font-size:40px;
+  text-transform:none;
+  text-shadow: 0px 0px 0px #fff;
+  margin-left:5px;
+  margin-bottom:30px;
+  letter-spacing:1px;
+}
+
+#slogan span{
+  font-size:20px;
+}
+
+#slogan a:link, #slogan a:visited{
+  color:#F34201;
+  text-decoration:line-through;
+  font-size:20px;
+}
+
+#description{
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+  background:#f0f0f0;
+  border:1px solid #bfbfbf;
+  border-top:1px solid #aaa;
+  font-size:100px;
+  color:#333;
+  font-family:"TeXGyreHerosBold";
+  line-height:100px;
+  margin-bottom:30px;
+  padding:20px;
+  padding-bottom:10px;
+}
+
+/* ================================== */
+/* = Headers and small text classes = */
+/* ================================== */
+.header{
+  background:transparent;
+  font-size:50px;
+  color:#666;
+  font-family:"TeXGyreHerosRegular";
+  padding-left:20px;
+  padding-right:20px;
+  margin-bottom:10px;
+}
+
+.smallText{
+  color:#777;
+  font-size:21px;
+  font-family:"TeXGyreHerosRegular";
+  margin-bottom:50px;
+  padding-left:20px;
+  padding-right:20px;
+  line-height:1.4em;
+}
+
+.smallText a:link, .smallText a:visited{
+  font-size:21px;
+  color:#F34201;
+}
+
+.smallText a:hover{
+  color:#000;
+}
+
+/* ============ */
+/* = Profiles = */
+/* ============ */
+.profile{
+  float:left;
+  width:200px;
+  margin-right:10px;
+}
+
+.profile img{
+  height:175px;
+}
+
+.profile .description{
+  font-size:14px;
+  color:#555;
+}
+
+#footer{
+  margin-top:40px;
+  margin-bottom:40px;
+  margin-left:20px;
+}
+
+.clear{clear:both}
