@@ -16,7 +16,7 @@
 					   vector<Point>& second_contour,
 					   Point2i& previous)
 {
-    int niters = 3;
+//    int niters = 3;
     
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
@@ -49,7 +49,7 @@
 	vector<double> weightedarea(contours.size());
 	
 //    for( ; idx >= 0; idx = hierarchy[idx][0] )
-	for (idx=0; idx<contours.size(); idx++)
+	for (; idx<contours.size(); idx++)
     {
         const vector<Point>& c = contours[idx];
 		Scalar _mean = mean(Mat(contours[idx]));
@@ -83,7 +83,7 @@
 		fillPoly(dst, (const Point**)(&pts), &num, 1, color);
 		
 		Scalar b = mean(Mat(contours[largestComp]));
-		b[3] = maxWArea;
+		b[2] = maxWArea;
 		
 		contour.clear();
 		contour = contours[largestComp];
@@ -91,6 +91,7 @@
 		second_contour.clear();
 		if(secondlargest >= 0) {
 			second_contour = contours[secondlargest];
+			b[3] = maxJArea;
 		}
 		
 		previous.x = b[0]; previous.y = b[1];
@@ -99,7 +100,7 @@
 		return Scalar(-1,-1);
 	
 }
-
+/*
  void makePointsFromMask(Mat& maskm,vector<Point2f>& points, bool _add = false) {//, Mat& out) {
 	if(!_add)
 		points.clear();
@@ -125,7 +126,7 @@ void drawPoint(Mat& out,vector<Point2f>& points,Scalar color, Mat* maskm = NULL)
 	}
 }
 
-/*
+
 //this is a sample for foreground detection functions
 int bgfg_main(int argc, char** argv)
 {

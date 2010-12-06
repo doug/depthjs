@@ -9,7 +9,7 @@
 #define LIBUSB_DEBUG 5
 
 #include "ocv_freenect.h"
-
+#include "zhelpers.hpp"
 #include <math.h>
 
 pthread_t ocv_thread;
@@ -36,7 +36,12 @@ int got_frames = 0;
 uint16_t t_gamma[2048];
 freenect_context *f_ctx;
 
-void *freenect_threadfunc(void* arg) {	//all this thread does is to fetch events from freenect
+void *freenect_threadfunc(void* arg);
+//	void depth_cb(freenect_device *dev, void *depth, uint32_t timestamp);
+//	void rgb_cb(freenect_device *dev, freenect_pixel *rgb, uint32_t timestamp);
+void send_event(const string& etype, const string& edata);
+
+void* freenect_threadfunc(void* arg) {	//all this thread does is to fetch events from freenect
 	cout << "freenect thread"<<endl;
 	while(!die && freenect_process_events(f_ctx) >= 0 ) {}
 	cout << "freenect die"<<endl;
@@ -87,18 +92,64 @@ void send_event(const string& etype, const string& edata) {
 	s_send (socket, ss.str());
 }
 
-void send_image(const Mat& img) {
-	s_sendmore(socket, "image");
+
+int initFreenect() {
+//	int res = 0;
 	
-	Mat _img;
-	if(img.type() == CV_8UC1) {
-		Mat _tmp; resize(img, _tmp,Size(160,120)); //better to resize the gray data and not RGB
-		cvtColor(_tmp, _img, CV_GRAY2RGB);
-	} else {
-		resize(img, _img, Size(160,120));
+	//setup Freenect...
+	if (freenect_init(&f_ctx, NULL) < 0) {
+		printf("freenect_init() failed\n");
+		return 1;
 	}
 	
-	s_send(socket, (const char*)_img.data);
+	freenect_set_log_level(f_ctx, FREENECT_LOG_ERROR);
+	
+	int nr_devices = freenect_num_devices (f_ctx);
+	printf ("Number of devices found: %d\n", nr_devices);
+	
+	int user_device_number = 0;
+//	if (argc > 1)
+//		user_device_number = atoi(argv[1]);
+//	
+//	if (nr_devices < 1)
+//		return 1;
+	
+	if (freenect_open_device(f_ctx, &f_dev, user_device_number) < 0) {
+		printf("Could not open device\n");
+		return 1;
+	}
+	
+	freenect_set_tilt_degs(f_dev,freenect_angle);
+	freenect_set_led(f_dev,LED_RED);
+	freenect_set_depth_callback(f_dev, depth_cb);
+	freenect_set_rgb_callback(f_dev, rgb_cb);
+	freenect_set_rgb_format(f_dev, FREENECT_FORMAT_RGB);
+	freenect_set_depth_format(f_dev, FREENECT_FORMAT_11_BIT);
+	
+	freenect_start_depth(f_dev);
+	freenect_start_rgb(f_dev);
+	
+	//start the freenect thread to poll for events
+//	res = pthread_create(&ocv_thread, NULL, freenect_threadfunc, NULL);
+//	if (res) {
+//		printf("pthread_create failed\n");
+//		return 1;
+//	}
+	return 0;
+}	
+
+void send_image(const Mat& img) {
+//	s_sendmore(socket, "image");
+//	
+//	Mat _img;
+//	if(img.type() == CV_8UC1) {
+//		Mat _tmp; resize(img, _tmp,Size(160,120)); //better to resize the gray data and not RGB
+//		cvtColor(_tmp, _img, CV_GRAY2RGB);
+//	} else {
+//		resize(img, _img, Size(160,120));
+//	}
+//	
+//	s_send(socket, (const char*)_img.data);
 }
 
 //Calculating the laplacian of a 2D curve. Thanks Y.Gingold!
@@ -133,7 +184,7 @@ Mat laplacian_mtx(int N, bool closed_poly) {
 
 void calc_laplacian(Mat& X, Mat& Xlap) {
 	static Mat lapX = laplacian_mtx(X.rows,false);
-		//a feeble attempt to save up in memory allocation.. in 99.9% of the cases this if fires
+	//a feeble attempt to save up in memory allocation.. in 99.9% of the cases this if fires
 	if(lapX.rows != X.rows) lapX = laplacian_mtx(X.rows,false); 
 	
 	Mat _X;	//handle non-64UC2 matrices
@@ -151,12 +202,13 @@ void calc_laplacian(Mat& X, Mat& Xlap) {
 	Xlap = Xlap.t();
 }
 
+
 void doHist(Mat& depthf, Mat& dmask) {
 //	cvtColor(src, hsv, CV_BGR2HSV);
 	
     // let's quantize the hue to 30 levels
     // and the saturation to 32 levels
-    int hbins = 254, sbins = 32;
+    int hbins = 254;//, sbins = 32;
     int histSize[] = {hbins};
     // hue varies from 0 to 179, see cvtColor
     float hranges[] = { 0, 255 };
@@ -185,7 +237,7 @@ void doHist(Mat& depthf, Mat& dmask) {
     int scale = 2;
     Mat histImg = Mat::zeros(hbins*scale, 100, CV_8UC3);
 	
-	int s=0;
+//	int s=0;
     for( int h = 0; h < hbins; h++ )
 //        for( int s = 0; s < sbins; s++ )
         {
@@ -212,6 +264,7 @@ typedef enum MODES {
 } modes;
 
 modes mode_state = MODE_NONE;
+
 
 int main(int argc, char **argv)
 {
@@ -293,7 +346,7 @@ int main(int argc, char **argv)
 	Rect cursor(frameMat.cols/2,frameMat.rows/2,10,10);
 	bool update_bg_model = true;
 	int fr = 1;
-	int register_ctr = 0;
+	int register_ctr = 0,register_secondbloc_ctr = 0;
 	bool registered = false;
 
 	Point2i appear(-1,-1); double appearTS = -1;
@@ -332,13 +385,15 @@ int main(int argc, char **argv)
 				
 		Mat tmp_bg_fg = depthf < 255;	//anything not white is "real" depth
 		vector<Point> ctr,ctr2;
-		Scalar blb = refineSegments(Mat(),tmp_bg_fg,out,ctr,ctr2,midBlob); //find contours in the foreground, choose biggest
-
-		uint mode_counters[3] = {0};
 		
-		if(blb[0]>=0 && blb[3] > 500) {
-			
-			
+		
+		Scalar blb = refineSegments(Mat(),tmp_bg_fg,out,ctr,ctr2,midBlob); //find contours in the foreground, choose biggest
+		/////// blb :
+		//blb[0] = x, blb[1] = y, blb[2] = 1st blob size, blb[3] = 2nd blob size.
+		
+//		uint mode_counters[3] = {0};
+		
+		if(blb[0]>=0 && blb[2] > 500) { //1st blob detected, and is big enough
 			cvtColor(depthf, outC, CV_GRAY2BGR);
 
 			//draw contour
@@ -374,19 +429,22 @@ int main(int argc, char **argv)
 //			cout << "min depth " << minval << endl;
 
 			register_ctr = MIN((register_ctr + 1),60);
-			register_secondbloc_ctr = ...;
+			
+			if(blb[3] > 500)
+				register_secondbloc_ctr = MIN((register_secondbloc_ctr + 1),60);
 			
 			if (register_ctr > 30 && !registered) {
 				registered = true;   
-				if(register_secondbloc_ctr > 30) {
-					appear.x = -1;
-					cout << "register" << endl;
-					send_event("Register", "\"mode\":");
-					update_bg_model = false;
-					
-					lastMove.x = blb[0]; lastMove.y = blb[1];					
+				appear.x = -1;
+				update_bg_model = false;				
+				lastMove.x = blb[0]; lastMove.y = blb[1];					
+				
+				if(register_secondbloc_ctr < 30) {
+					cout << "register panner" << endl;
+					send_event("Register", "\"mode\":\"panner\"");
 				} else {
-					<#statements#>
+					cout << "register tab swithcer" << endl;
+					send_event("Register", "\"mode\":\"tab_switcher\"");
 				}
 			}
 
@@ -485,6 +543,7 @@ int main(int argc, char **argv)
 			imshow("blob",depthf);
 			send_image(depthf);
 			register_ctr = MAX((register_ctr - 1),0);
+			register_secondbloc_ctr = MAX((register_secondbloc_ctr - 1),0);
 		}
 
 		if (register_ctr <= 15 && registered) {
