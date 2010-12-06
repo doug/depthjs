@@ -67,11 +67,12 @@ void rgb_cb(freenect_device *dev, freenect_pixel *rgb, uint32_t timestamp)
 }
 
 //functions defined in the other file...
-extern  Scalar refineSegments(const Mat& img,
-							  Mat& mask,
-							  Mat& dst,
-							  vector<Point>& contour,
-							  Point2i& previous);
+extern Scalar refineSegments(const Mat& img, 
+							 Mat& mask, 
+							 Mat& dst, 
+							 vector<Point>& contour,
+							 vector<Point>& second_contour,
+							 Point2i& previous);
 extern void makePointsFromMask(Mat& maskm,vector<Point2f>& points, bool _add = false);
 extern void drawPoint(Mat& out,vector<Point2f>& points,Scalar color, Mat* maskm = NULL);
 
@@ -150,6 +151,67 @@ void calc_laplacian(Mat& X, Mat& Xlap) {
 	Xlap = Xlap.t();
 }
 
+void doHist(Mat& depthf, Mat& dmask) {
+//	cvtColor(src, hsv, CV_BGR2HSV);
+	
+    // let's quantize the hue to 30 levels
+    // and the saturation to 32 levels
+    int hbins = 254, sbins = 32;
+    int histSize[] = {hbins};
+    // hue varies from 0 to 179, see cvtColor
+    float hranges[] = { 0, 255 };
+    // saturation varies from 0 (black-gray-white) to
+    // 255 (pure spectrum color)
+//    float sranges[] = { 0, 256 };
+    const float* ranges[] = { hranges };
+    MatND hist;
+    // we compute the histogram from the 0-th and 1-st channels
+    int channels[] = {0};
+	
+    double maxVal=0, minVal =0;
+	minMaxLoc(depthf, &minVal, 0, 0, 0, dmask);
+	
+	Mat depthtmp;
+	depthf.copyTo(depthtmp,(depthf - minVal) < 150);
+	
+	
+	
+    calcHist( &depthtmp, 1, channels, dmask, // do not use mask
+			 hist, 1, histSize, ranges,
+			 true, // the histogram is uniform
+			 false );
+    minMaxLoc(hist, 0, &maxVal, 0, 0);
+	
+    int scale = 2;
+    Mat histImg = Mat::zeros(hbins*scale, 100, CV_8UC3);
+	
+	int s=0;
+    for( int h = 0; h < hbins; h++ )
+//        for( int s = 0; s < sbins; s++ )
+        {
+            float binVal = hist.at<float>(h, 0);
+            float intensity = binVal/maxVal;
+            rectangle( histImg, Point(h*scale, 0),
+						Point( (h+1)*scale - 1, intensity*100.0f),
+						Scalar::all(255),
+						CV_FILLED );
+        }
+	
+//    namedWindow( "Source", 1 );
+//    imshow( "Source", src );
+	
+//    namedWindow( "H-S Histogram", 1 );
+    imshow( "H-S Histogram", histImg );
+}
+
+typedef enum MODES {
+	MODE_NONE,
+	MODE_POINTER,
+	MODE_PANNER,
+	MODE_TAB_SWITHCER
+} modes;
+
+modes mode_state = MODE_NONE;
 
 int main(int argc, char **argv)
 {
@@ -269,10 +331,14 @@ int main(int argc, char **argv)
 
 				
 		Mat tmp_bg_fg = depthf < 255;	//anything not white is "real" depth
-		vector<Point> ctr;
-		Scalar blb = refineSegments(Mat(),tmp_bg_fg,out,ctr,midBlob); //find contours in the foreground, choose biggest
+		vector<Point> ctr,ctr2;
+		Scalar blb = refineSegments(Mat(),tmp_bg_fg,out,ctr,ctr2,midBlob); //find contours in the foreground, choose biggest
 
+		uint mode_counters[3] = {0};
+		
 		if(blb[0]>=0 && blb[3] > 500) {
+			
+			
 			cvtColor(depthf, outC, CV_GRAY2BGR);
 
 			//draw contour
@@ -280,6 +346,13 @@ int main(int argc, char **argv)
 			for (int idx=0; idx<ctr.size()-1; idx++)
 				line(outC, ctr[idx], ctr[idx+1], color, 1);
 			line(outC, ctr[ctr.size()-1], ctr[0], color, 1);
+			
+			if(ctr2.size() > 0) {
+				Scalar color2(255,0,255);
+				for (int idx=0; idx<ctr2.size()-1; idx++)
+					line(outC, ctr2[idx], ctr2[idx+1], color2, 2);
+				line(outC, ctr2[ctr2.size()-1], ctr2[0], color2, 2);
+			}
 
 			//draw "major axis"
 			Vec4f _line;
@@ -301,15 +374,20 @@ int main(int argc, char **argv)
 //			cout << "min depth " << minval << endl;
 
 			register_ctr = MIN((register_ctr + 1),60);
-
+			register_secondbloc_ctr = ...;
+			
 			if (register_ctr > 30 && !registered) {
-				registered = true;
-				appear.x = -1;
-				cout << "register" << endl;
-				send_event("Register", "");
-				update_bg_model = false;
-				
-				lastMove.x = blb[0]; lastMove.y = blb[1];
+				registered = true;   
+				if(register_secondbloc_ctr > 30) {
+					appear.x = -1;
+					cout << "register" << endl;
+					send_event("Register", "\"mode\":");
+					update_bg_model = false;
+					
+					lastMove.x = blb[0]; lastMove.y = blb[1];					
+				} else {
+					<#statements#>
+				}
 			}
 
 			if(registered) {
@@ -344,10 +422,18 @@ int main(int argc, char **argv)
 					cout << "Hand click!" << endl;
 					send_event("HandClick", "");
 				}
-//				{	//some debug on screen..
-//					stringstream ss; ss << "high curve pts " << hcr_ctr << ", avg " << _avg[0];
-//					putText(outC, ss.str(), Point(50,50), CV_FONT_HERSHEY_PLAIN, 2.0,Scalar(0,0,255), 2);
-//				}				
+				
+				if (mode_state == MODE_NONE) {
+					
+				}
+				
+//				imshow("out",out);
+				doHist(depthf,out);
+				
+				{	//some debug on screen..
+					stringstream ss; ss << "high curve pts " << hcr_ctr << ", avg " << _avg[0];
+					putText(outC, ss.str(), Point(50,50), CV_FONT_HERSHEY_PLAIN, 2.0,Scalar(0,0,255), 2);
+				}				
 			} else {
 				//not registered, look for gestures
 				if(appear.x<0) {
@@ -404,6 +490,7 @@ int main(int argc, char **argv)
 		if (register_ctr <= 15 && registered) {
 			midBlob.x = midBlob.y = -1;
 			registered = false;
+			mode_state = MODE_NONE;
 			update_bg_model = true;
 			cout << "unregister" << endl;
 			send_event("Unregister", "");
