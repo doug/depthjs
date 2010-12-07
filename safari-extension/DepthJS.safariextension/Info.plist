@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Author</key>
+	<string>MIT Media Lab</string>
+	<key>CFBundleDisplayName</key>
+	<string>DepthJS</string>
+	<key>CFBundleIdentifier</key>
+	<string>edu.mit.media.depthjs</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>Chrome</key>
+	<dict>
+		<key>Global Page</key>
+		<string>background.html</string>
+		<key>Toolbar Items</key>
+		<array>
+			<dict>
+				<key>Command</key>
+				<string>toolbarClick</string>
+				<key>Identifier</key>
+				<string>DepthJS</string>
+				<key>Image</key>
+				<string>logo_16x16.png</string>
+				<key>Label</key>
+				<string>DepthJS</string>
+				<key>Palette Label</key>
+				<string>DepthJS</string>
+				<key>Tool Tip</key>
+				<string>DepthJS</string>
+			</dict>
+		</array>
+	</dict>
+	<key>Content</key>
+	<dict>
+		<key>Scripts</key>
+		<dict>
+			<key>End</key>
+			<array>
+				<string>vfx/zflow/zflow.js</string>
+				<string>content_script.js</string>
+			</array>
+			<key>Start</key>
+			<array>
+				<string>jquery-1.4.4.min.js</string>
+				<string>underscore-min.js</string>
+			</array>
+		</dict>
+		<key>Stylesheets</key>
+		<array>
+			<string>selectorBox.css</string>
+			<string>vfx/zflow/zflow.css</string>
+		</array>
+	</dict>
+	<key>Description</key>
+	<string>Allows any any web page to interact with the Microsoft Kinect using Javascript.</string>
+	<key>ExtensionInfoDictionaryVersion</key>
+	<string>1.0</string>
+	<key>Permissions</key>
+	<dict>
+		<key>Website Access</key>
+		<dict>
+			<key>Include Secure Pages</key>
+			<true/>
+			<key>Level</key>
+			<string>All</string>
+		</dict>
+	</dict>
+	<key>Website</key>
+	<string>http://depthjs.media.mit.edu</string>
+</dict>
+</plist>
