@@ -1,0 +1,246 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8DD76FB00486AB0100D96B5E /* DepthJS.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6A0FF2C0290799A04C91782 /* DepthJS.1 */; };
+		D794190C12AE0D17000EF2A7 /* bg_fg_blobs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D794190712AE0D17000EF2A7 /* bg_fg_blobs.cpp */; };
+		D794190D12AE0D17000EF2A7 /* ocv_freenect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D794190912AE0D17000EF2A7 /* ocv_freenect.cpp */; };
+		D794190F12AE0D41000EF2A7 /* libfreenect.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D794190E12AE0D41000EF2A7 /* libfreenect.dylib */; };
+		D794191112AE0D58000EF2A7 /* libopencv_core.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D794191012AE0D58000EF2A7 /* libopencv_core.dylib */; };
+		D794191312AE0D72000EF2A7 /* libopencv_highgui.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D794191212AE0D72000EF2A7 /* libopencv_highgui.dylib */; };
+		D794191512AE0D72000EF2A7 /* libopencv_imgproc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D794191412AE0D72000EF2A7 /* libopencv_imgproc.dylib */; };
+		D794193612AE0EAC000EF2A7 /* libzmq.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D794193512AE0EAC000EF2A7 /* libzmq.dylib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8DD76FAF0486AB0100D96B5E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 8;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+				8DD76FB00486AB0100D96B5E /* DepthJS.1 in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		8DD76FB20486AB0100D96B5E /* DepthJS */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DepthJS; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6A0FF2C0290799A04C91782 /* DepthJS.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = DepthJS.1; sourceTree = "<group>"; };
+		D794190712AE0D17000EF2A7 /* bg_fg_blobs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = bg_fg_blobs.cpp; path = ../bg_fg_blobs.cpp; sourceTree = SOURCE_ROOT; };
+		D794190812AE0D17000EF2A7 /* bg_fg_blobs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bg_fg_blobs.h; path = ../bg_fg_blobs.h; sourceTree = SOURCE_ROOT; };
+		D794190912AE0D17000EF2A7 /* ocv_freenect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ocv_freenect.cpp; path = ../ocv_freenect.cpp; sourceTree = SOURCE_ROOT; };
+		D794190A12AE0D17000EF2A7 /* ocv_freenect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ocv_freenect.h; path = ../ocv_freenect.h; sourceTree = SOURCE_ROOT; };
+		D794190B12AE0D17000EF2A7 /* zhelpers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = zhelpers.hpp; path = ../zhelpers.hpp; sourceTree = SOURCE_ROOT; };
+		D794190E12AE0D41000EF2A7 /* libfreenect.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfreenect.dylib; path = usr/local/lib/libfreenect.dylib; sourceTree = SDKROOT; };
+		D794191012AE0D58000EF2A7 /* libopencv_core.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.dylib; path = usr/local/lib/libopencv_core.dylib; sourceTree = SDKROOT; };
+		D794191212AE0D72000EF2A7 /* libopencv_highgui.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.dylib; path = usr/local/lib/libopencv_highgui.dylib; sourceTree = SDKROOT; };
+		D794191412AE0D72000EF2A7 /* libopencv_imgproc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.dylib; path = usr/local/lib/libopencv_imgproc.dylib; sourceTree = SDKROOT; };
+		D794193512AE0EAC000EF2A7 /* libzmq.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libzmq.dylib; path = usr/local/lib/libzmq.dylib; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DD76FAD0486AB0100D96B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D794190F12AE0D41000EF2A7 /* libfreenect.dylib in Frameworks */,
+				D794191112AE0D58000EF2A7 /* libopencv_core.dylib in Frameworks */,
+				D794191312AE0D72000EF2A7 /* libopencv_highgui.dylib in Frameworks */,
+				D794191512AE0D72000EF2A7 /* libopencv_imgproc.dylib in Frameworks */,
+				D794193612AE0EAC000EF2A7 /* libzmq.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* DepthJS */ = {
+			isa = PBXGroup;
+			children = (
+				08FB7795FE84155DC02AAC07 /* Source */,
+				C6A0FF2B0290797F04C91782 /* Documentation */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+				D794190E12AE0D41000EF2A7 /* libfreenect.dylib */,
+				D794191012AE0D58000EF2A7 /* libopencv_core.dylib */,
+				D794191212AE0D72000EF2A7 /* libopencv_highgui.dylib */,
+				D794191412AE0D72000EF2A7 /* libopencv_imgproc.dylib */,
+				D794193512AE0EAC000EF2A7 /* libzmq.dylib */,
+			);
+			name = DepthJS;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				D794190712AE0D17000EF2A7 /* bg_fg_blobs.cpp */,
+				D794190812AE0D17000EF2A7 /* bg_fg_blobs.h */,
+				D794190912AE0D17000EF2A7 /* ocv_freenect.cpp */,
+				D794190A12AE0D17000EF2A7 /* ocv_freenect.h */,
+				D794190B12AE0D17000EF2A7 /* zhelpers.hpp */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DD76FB20486AB0100D96B5E /* DepthJS */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C6A0FF2B0290797F04C91782 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+				C6A0FF2C0290799A04C91782 /* DepthJS.1 */,
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8DD76FA90486AB0100D96B5E /* DepthJS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB928508733DD80010E9CD /* Build configuration list for PBXNativeTarget "DepthJS" */;
+			buildPhases = (
+				8DD76FAB0486AB0100D96B5E /* Sources */,
+				8DD76FAD0486AB0100D96B5E /* Frameworks */,
+				8DD76FAF0486AB0100D96B5E /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DepthJS;
+			productInstallPath = "$(HOME)/bin";
+			productName = DepthJS;
+			productReference = 8DD76FB20486AB0100D96B5E /* DepthJS */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "DepthJS" */;
+			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
+			mainGroup = 08FB7794FE84155DC02AAC07 /* DepthJS */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8DD76FA90486AB0100D96B5E /* DepthJS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DD76FAB0486AB0100D96B5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D794190C12AE0D17000EF2A7 /* bg_fg_blobs.cpp in Sources */,
+				D794190D12AE0D17000EF2A7 /* ocv_freenect.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB928608733DD80010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = DepthJS;
+			};
+			name = Debug;
+		};
+		1DEB928708733DD80010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = DepthJS;
+			};
+			name = Release;
+		};
+		1DEB928A08733DD80010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"/usr/local/include/libusb-1.0",
+					/usr/local/include/libfreenect,
+					/usr/local/include,
+					"/usr/local/include/opencv/**",
+				);
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.6;
+			};
+			name = Debug;
+		};
+		1DEB928B08733DD80010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.6;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB928508733DD80010E9CD /* Build configuration list for PBXNativeTarget "DepthJS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB928608733DD80010E9CD /* Debug */,
+				1DEB928708733DD80010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "DepthJS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB928A08733DD80010E9CD /* Debug */,
+				1DEB928B08733DD80010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
