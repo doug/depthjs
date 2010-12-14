@@ -373,7 +373,7 @@ int main(int argc, char **argv)
 		//Linear interpolation
 		{
 			Mat _tmp = (depthMat - 400.0);					//minimum observed value is ~440. so shift a bit
-			_tmp.setTo(Scalar(2048), depthMat > 700.0);		//cut off at 600 to create a "box" where the user interacts
+			_tmp.setTo(Scalar(2048), depthMat > ((!registered) ? 700.0 : 750.0));		//cut off at 600 to create a "box" where the user interacts
 			_tmp.convertTo(depthf, CV_8UC1, 255.0/1648.0);	//values are 0-2048 (11bit), account for -400 = 1648
 		}
 		
@@ -424,7 +424,7 @@ int main(int argc, char **argv)
 			
 			//cout << "min: " << minval << ", max: " << maxval << ", mean: " << mn[0] << endl;
 			
-			blobMaskInput = depthf < (mn[0] + stdv[0]);
+			blobMaskInput = depthf < (mn[0] + stdv[0]*.5);
 			
 			blb = refineSegments(Mat(),blobMaskInput,blobMaskOutput,ctr,ctr2,midBlob);
 			
@@ -460,7 +460,7 @@ int main(int argc, char **argv)
 				
 				register_ctr = MIN((register_ctr + 1),60);
 				
-				if(blb[3] > 500)
+				if(blb[3] > 5000)
 					register_secondbloc_ctr = MIN((register_secondbloc_ctr + 1),60);
 				
 				if (register_ctr > 30 && !registered) {
@@ -489,8 +489,8 @@ int main(int argc, char **argv)
 					stringstream ss; 
 					ss	<< "\"x\":"  << (int)floor(blb[0]*100.0/640.0) 
 						<< ",\"y\":" << (int)floor(blb[1]*100.0/480.0)
-						<< ",\"z\":" << (int)mn[0];
-					//				cout << "move: " << ss.str() << endl;
+						<< ",\"z\":" << (int)(mn[0] * 2.0);
+					cout << "move: " << ss.str() << endl;
 					send_event("Move", ss.str());
 					
 					//---------------------- fist detection ---------------------
