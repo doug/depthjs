@@ -1,4 +1,5 @@
 // EVENT LINK --------------------------------------------------------------------------------------
+if (window.top === window) {
 console.log("DepthJS: Loading Event Link");
 
 DepthJS.eventLink.initPort = function() {
@@ -22,3 +23,4 @@ DepthJS.eventLink.onEvent = function (msg) {
   DepthJS.eventLink.domPort.text(msg.jsonRep);
   DepthJS.eventLink.domPort.get(0).dispatchEvent(event);
 };
+}

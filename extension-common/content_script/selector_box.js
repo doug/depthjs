@@ -1,3 +1,4 @@
+if (window.top === window) {
 // SELECTOR BOX ------------------------------------------------------------------------------------
 console.log("DepthJS: Loading SelectorBox");
 
@@ -133,3 +134,4 @@ DepthJS.selectorBoxPopup.hide = function(){
     $("#DepthJS_selectorBoxPopup").remove();
   });
 };
+}

@@ -1,3 +1,4 @@
+if (window.top === window) {
 // DEPTHOSE ---------------------------------------------------------------------------------------
 console.log("DepthJS: Loading Depthose");
 DepthJS.depthose.$div = null;
@@ -103,3 +104,4 @@ DepthJS.depthose.select = function() {
   e.initEvent("depthselect");
   document.getElementById("DepthJS_tray").dispatchEvent(e);
 };
+}

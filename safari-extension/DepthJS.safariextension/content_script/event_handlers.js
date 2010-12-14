@@ -24,25 +24,34 @@
  * around the web page. Pushing and pulling activate (click) any links below the selection box.
  **/
 
+if (window.top === window) {
 console.log("DepthJS: Loading event handlers");
 
 DepthJS.state = null;
 
 DepthJS.eventHandlers.onSwipeLeft = function() {
-   history.back();
+   // history.back();
 };
 
 DepthJS.eventHandlers.onSwipeRight = function() {
   // We interpret as "forward".
-  history.forward();
+  // history.forward();
 };
 
 DepthJS.eventHandlers.onSwipeDown = function() {
   // We interpret as "scroll down 75% of window".
-  var scrollAmount = Math.floor($(window).height() * 0.75);
-  $("html, body").animate({
-    scrollTop: ($(document).scrollTop() + scrollAmount)
-  });
+  // var scrollAmount = Math.floor($(window).height() * 0.75);
+  // $("html, body").animate({
+  //   scrollTop: ($(document).scrollTop() + scrollAmount)
+  // });
+};
+
+DepthJS.eventHandlers.onSwipeUp = function() {
+  // We interpret as "scroll up 75% of window".
+  // var scrollAmount = Math.floor($(window).height() * 0.75);
+  // $("html, body").animate({
+  //   scrollTop: ($(document).scrollTop() - scrollAmount)
+  // });
 };
 
 DepthJS.eventHandlers.onHandPointer = function(){
@@ -56,14 +65,6 @@ DepthJS.eventHandlers.onHandOpen = function(){
   DepthJS.eventHandlers.onUnregister();
   DepthJS.state = "panner";
   DepthJS.panner.show();
-};
-
-DepthJS.eventHandlers.onSwipeUp = function() {
-  // We interpret as "scroll up 75% of window".
-  var scrollAmount = Math.floor($(window).height() * 0.75);
-  $("html, body").animate({
-    scrollTop: ($(document).scrollTop() - scrollAmount)
-  });
 };
 
 DepthJS.eventHandlers.onDepthoseMode = function() {
@@ -159,3 +160,4 @@ DepthJS.eventHandlers.onMove = function(data) {
   }
 };
 })();
+}
