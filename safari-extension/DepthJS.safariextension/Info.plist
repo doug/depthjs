@@ -26,7 +26,7 @@
 				<key>Identifier</key>
 				<string>DepthJS</string>
 				<key>Image</key>
-				<string>logo_16x16.png</string>
+				<string>images/logo_16x16.png</string>
 				<key>Label</key>
 				<string>DepthJS</string>
 				<key>Palette Label</key>
@@ -40,21 +40,25 @@
 	<dict>
 		<key>Scripts</key>
 		<dict>
-			<key>End</key>
-			<array>
-				<string>vfx/zflow/zflow.js</string>
-				<string>content_script.js</string>
-			</array>
 			<key>Start</key>
 			<array>
-				<string>jquery-1.4.4.min.js</string>
-				<string>underscore-min.js</string>
+				<string>third_party/jquery-1.4.4.min.js</string>
+				<string>third_party/underscore-min.js</string>
+				<string>content_script/root.js</string>
+				<string>safari.js</string>
+				<string>content_script/event_link.js</string>
+				<string>content_script/event_handlers.js</string>
+				<string>content_script/depthose.js</string>
+				<string>content_script/panner.js</string>
+				<string>content_script/selector_box.js</string>
+				<string>third_party/vfx/zflow/zflow.js</string>
+				<string>content_script/init.js</string>
 			</array>
 		</dict>
 		<key>Stylesheets</key>
 		<array>
-			<string>selectorBox.css</string>
-			<string>vfx/zflow/zflow.css</string>
+			<string>third_party/vfx/zflow/zflow.css</string>
+			<string>css/selectorBox.css</string>
 		</array>
 	</dict>
 	<key>Description</key>
