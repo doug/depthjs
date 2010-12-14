@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 console.log('background.html Starting DepthJS');
 var DepthJS = {
-  __VERSION__: '0.2',
+  __VERSION__: '0.3',
   verbose: true,
   backend: {},
   eventHandlers: {},
