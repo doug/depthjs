@@ -111,20 +111,20 @@ TrayController.prototype.handleEvent = function (event)
 */
 
 const CSIZE = $(window).width() / 3;
-const CGAP = CSIZE / 6 + 100;
+const CGAP = CSIZE / 2;
 
 const FLOW_ANGLE = .3;
 const FLOW_THRESHOLD = CGAP / 2;
 const FLOW_ZFOCUS = CSIZE;
 const FLOW_XGAP = CSIZE / 3;
 
-// const T_NEG_ANGLE = "rotateY(" + (- FLOW_ANGLE) + "deg)";
-// const T_ANGLE = "rotateY(" + FLOW_ANGLE + "deg)";
-// const T_ZFOCUS = "translate3d(0, 0, " + FLOW_ZFOCUS + "px)";
+const T_NEG_ANGLE = "rotateY(" + (- FLOW_ANGLE) + "deg)";
+const T_ANGLE = "rotateY(" + FLOW_ANGLE + "deg)";
+const T_ZFOCUS = "translate3d(0, 0, " + FLOW_ZFOCUS + "px)";
 
-const T_NEG_ANGLE = "scale(" + FLOW_ANGLE + ")";
-const T_ANGLE = "scale(" + FLOW_ANGLE + ")";
-const T_ZFOCUS = ""
+// const T_NEG_ANGLE = "scale(" + FLOW_ANGLE + ")";
+// const T_ANGLE = "scale(" + FLOW_ANGLE + ")";
+// const T_ZFOCUS = ""
 
 FlowDelegate = function ()
 {
@@ -152,8 +152,8 @@ FlowDelegate.prototype.updateTouchEnd = function (controller)
 FlowDelegate.prototype.clicked = function (currentX)
 {
     var i = - Math.round(currentX / CGAP);
-    console.log(i);
-    console.log(this.imageObjs);
+    // console.log(i);
+    // console.log(this.imageObjs);
 
     if (i < 0 || i >= this.imageObjs.length) {
       console.log("Invalid obj to select");
