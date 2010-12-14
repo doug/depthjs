@@ -67,7 +67,7 @@ DepthJS.browser.readdContentScriptListeners = function() {
   _.each(stuff, function(callback, messageType) {
     console.log("Readding event listener for " + messageType);
     safari.self.addEventListener("message", function(e) {
-      console.log(e);
+      //console.log(e);
       if (e.name == messageType) callback(e.message);
     }, false);
   });

@@ -151,8 +151,7 @@ DepthJS.eventHandlers.onMove = function(data) {
   } else if (DepthJS.state == "depthose") {
     DepthJS.depthose.move(accumulatedX, accumulatedY, accumulatedZ);
   } else if (DepthJS.state == "selectorBox") {
-    DepthJS.selectorBox.move(accumulatedX * $(window).width() / 100,
-                             accumulatedY * $(window).height() / 100);
+    DepthJS.selectorBox.move(accumulatedX, accumulatedY);
   } else if (DepthJS.state == "selectorBoxPopup") {
     DepthJS.selectorBoxPopup.move(accumulatedX, accumulatedY, accumulatedZ);
   } else {
