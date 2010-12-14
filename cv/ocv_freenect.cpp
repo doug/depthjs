@@ -422,7 +422,7 @@ int main(int argc, char **argv)
 			Scalar mn,stdv;
 			meanStdDev(depthf,mn,stdv,blobMaskInput);
 			
-			cout << "min: " << minval << ", max: " << maxval << ", mean: " << mn[0] << endl;
+			//cout << "min: " << minval << ", max: " << maxval << ", mean: " << mn[0] << endl;
 			
 			blobMaskInput = depthf < (mn[0] + stdv[0]);
 			
@@ -469,9 +469,16 @@ int main(int argc, char **argv)
 					update_bg_model = false;
 					lastMove.x = blb[0]; lastMove.y = blb[1];
 					
+					cout << "blob size " << blb[2] << endl;
+					
 					if(register_secondbloc_ctr < 30) {
-						cout << "register panner" << endl;
-						send_event("Register", "\"mode\":\"panner\"");
+						if(blb[2] > 10000) {
+							cout << "register panner" << endl;
+							send_event("Register", "\"mode\":\"panner\"");
+						} else {
+							cout << "register pointer" << endl;
+							send_event("Register", "\"mode\":\"pointer\"");
+						}
 					} else {
 						cout << "register tab swithcer" << endl;
 						send_event("Register", "\"mode\":\"tab_switcher\"");
@@ -481,8 +488,8 @@ int main(int argc, char **argv)
 				if(registered) {
 					stringstream ss; 
 					ss	<< "\"x\":"  << (int)floor(blb[0]*100.0/640.0) 
-					<< ",\"y\":" << (int)floor(blb[1]*100.0/480.0)
-					<< ",\"z\":" << (int)mn[0];
+						<< ",\"y\":" << (int)floor(blb[1]*100.0/480.0)
+						<< ",\"z\":" << (int)mn[0];
 					//				cout << "move: " << ss.str() << endl;
 					send_event("Move", ss.str());
 					
@@ -509,7 +516,7 @@ int main(int argc, char **argv)
 					hc_stack_ptr = (hc_stack_ptr + 1) % hc_stack.size();
 					
 					Scalar _avg = mean(Mat(hc_stack));
-					if ((_avg[0] - (double)hcr_ctr) > 5.0) { //a big drop in curvature = hand fisted?
+					if (abs(_avg[0] - (double)hcr_ctr) > 5.0) { //a big change in curvature = hand fisted/opened?
 						cout << "Hand click!" << endl;
 						send_event("HandClick", "");
 					}

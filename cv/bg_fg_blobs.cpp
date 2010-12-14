@@ -82,7 +82,7 @@
 		fillPoly(dst, (const Point**)(&pts), &num, 1, color);
 		
 		Scalar b = mean(Mat(contours[largestComp]));
-		b[2] = maxWArea;
+		b[2] = justarea[largestComp];
 		
 		contour.clear();
 		contour = contours[largestComp];
