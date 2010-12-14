@@ -2,6 +2,8 @@ if (window.top === window) {
 // SELECTOR BOX ------------------------------------------------------------------------------------
 console.log("DepthJS: Loading SelectorBox");
 
+DepthJS.selectorBox.firstMove = null;
+
 DepthJS.selectorBox.init = function() {
   console.log("Initing selector box");
   var $box = $("<div id='DepthJS_selectorBox'></div>");
@@ -13,20 +15,39 @@ DepthJS.selectorBox.init = function() {
 
 DepthJS.selectorBox.show = function() {
   DepthJS.selectorBox.$box.show();
+  DepthJS.selectorBox.firstMove = null;
 };
 
 DepthJS.selectorBox.hide = function() {
   DepthJS.selectorBox.$box.hide();
+  DepthJS.selectorBox.firstMove = null;
 };
 
 DepthJS.selectorBox.move = function(x, y) {
+  if (DepthJS.selectorBox.firstMove == null) {
+    DepthJS.selectorBox.firstMove = [x, y];
+    console.log("first move, x=" + x + " y=" + y);
+    return;
+  }
+  
+  // x = x - DepthJS.selectorBox.firstMove[0];
+  // y = y - DepthJS.selectorBox.firstMove[1];
+
+  x = (x - 50) / 15.0;
+  y = (y - 50) / 15.0;
+  
+  var hwidth = $(window).width() * 0.5;
+  var hheight = $(window).height() * 0.5;
+  x =  hwidth*x + hwidth;
+  y =  hheight*y + hheight;
+
    // Constrain to window
   if (x < 0) x = 0;
   if (y < 0) y = 0;
   var $box = DepthJS.selectorBox.$box;
   x = Math.min(x, $(window).width() - $box.width());
   y = Math.min(y, $(window).height() - $box.height());
-  //console.log("move selector box to " + x + ", " + y);
+  console.log("move selector box to " + x + ", " + y);
   if (x != $box.css("left") || y != $box.css("top")) {
     $box.css({left: x, top: y});
   }

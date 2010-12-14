@@ -118,13 +118,13 @@ const FLOW_THRESHOLD = CGAP / 2;
 const FLOW_ZFOCUS = CSIZE;
 const FLOW_XGAP = CSIZE / 3;
 
-// const T_NEG_ANGLE = "rotateY(" + (- FLOW_ANGLE) + "deg)";
-// const T_ANGLE = "rotateY(" + FLOW_ANGLE + "deg)";
-// const T_ZFOCUS = "translate3d(0, 0, " + FLOW_ZFOCUS + "px)";
+const T_NEG_ANGLE = "rotateY(" + (- FLOW_ANGLE) + "deg)";
+const T_ANGLE = "rotateY(" + FLOW_ANGLE + "deg)";
+const T_ZFOCUS = "translate3d(0, 0, " + FLOW_ZFOCUS + "px)";
 
-const T_NEG_ANGLE = "scale(" + FLOW_ANGLE + ")";
-const T_ANGLE = "scale(" + FLOW_ANGLE + ")";
-const T_ZFOCUS = ""
+// const T_NEG_ANGLE = "scale(" + FLOW_ANGLE + ")";
+// const T_ANGLE = "scale(" + FLOW_ANGLE + ")";
+// const T_ZFOCUS = ""
 
 FlowDelegate = function ()
 {

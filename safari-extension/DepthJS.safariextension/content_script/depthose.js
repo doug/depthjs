@@ -31,7 +31,7 @@ DepthJS.depthose.show = function() {
   var thumbnailCache = DepthJS.depthose.thumbnailCache;
 
   DepthJS.selectorBox.hide();
-  if (DepthJS.verbose) console.log(["DepthJS: Starting depthose with", DepthJS.depthose.thumbnailCache]);
+  //if (DepthJS.verbose) console.log(["DepthJS: Starting depthose with", DepthJS.depthose.thumbnailCache]);
   $("#DepthJS_depthose").remove();
   DepthJS.depthose.$div = $("<div id='DepthJS_depthose'></div>");
   var $div = DepthJS.depthose.$div;
