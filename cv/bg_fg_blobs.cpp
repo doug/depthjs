@@ -26,11 +26,10 @@
 //    dilate(mask, temp, Mat(), Point(-1,-1), niters);
 //    erode(temp, temp, Mat(), Point(-1,-1), niters*2);
 //    dilate(temp, temp, Mat(), Point(-1,-1), niters);
-	blur(mask, temp, Size(21,21));
+	blur(mask, temp, Size(11,11));
 //	imshow("temp",temp);
 	temp = temp > 85.0;
-	imshow("thresh",temp);
-    
+	    
     findContours( temp, contours, /*hierarchy,*/ CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE );
 	
 	if(dst.data==NULL)

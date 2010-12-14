@@ -23,6 +23,6 @@ using namespace cv;
 #include <stdio.h>
 #include <string.h>
 #include <libusb.h>
-#include "libfreenect.h"
+#include <libfreenect.h>
 
 #include <pthread.h>

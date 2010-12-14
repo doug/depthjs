@@ -8,13 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		8DD76FB00486AB0100D96B5E /* DepthJS.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6A0FF2C0290799A04C91782 /* DepthJS.1 */; };
+		D7304C6E12B6EB0400E8EC56 /* libopencv_core.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D7304C6D12B6EB0400E8EC56 /* libopencv_core.dylib */; };
+		D7304C8A12B6EBEB00E8EC56 /* libopencv_highgui.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D7304C8912B6EBEB00E8EC56 /* libopencv_highgui.dylib */; };
+		D7304C8C12B6EBEB00E8EC56 /* libopencv_imgproc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D7304C8B12B6EBEB00E8EC56 /* libopencv_imgproc.dylib */; };
 		D794190C12AE0D17000EF2A7 /* bg_fg_blobs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D794190712AE0D17000EF2A7 /* bg_fg_blobs.cpp */; };
 		D794190D12AE0D17000EF2A7 /* ocv_freenect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D794190912AE0D17000EF2A7 /* ocv_freenect.cpp */; };
-		D794190F12AE0D41000EF2A7 /* libfreenect.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D794190E12AE0D41000EF2A7 /* libfreenect.dylib */; };
-		D794191112AE0D58000EF2A7 /* libopencv_core.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D794191012AE0D58000EF2A7 /* libopencv_core.dylib */; };
-		D794191312AE0D72000EF2A7 /* libopencv_highgui.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D794191212AE0D72000EF2A7 /* libopencv_highgui.dylib */; };
-		D794191512AE0D72000EF2A7 /* libopencv_imgproc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D794191412AE0D72000EF2A7 /* libopencv_imgproc.dylib */; };
 		D794193612AE0EAC000EF2A7 /* libzmq.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D794193512AE0EAC000EF2A7 /* libzmq.dylib */; };
+		D7941D7512B6D124000EF2A7 /* libfreenect.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D7941D7412B6D124000EF2A7 /* libfreenect.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,16 +33,16 @@
 /* Begin PBXFileReference section */
 		8DD76FB20486AB0100D96B5E /* DepthJS */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DepthJS; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6A0FF2C0290799A04C91782 /* DepthJS.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = DepthJS.1; sourceTree = "<group>"; };
+		D7304C6D12B6EB0400E8EC56 /* libopencv_core.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.dylib; path = usr/local/lib/libopencv_core.dylib; sourceTree = SDKROOT; };
+		D7304C8912B6EBEB00E8EC56 /* libopencv_highgui.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.dylib; path = usr/local/lib/libopencv_highgui.dylib; sourceTree = SDKROOT; };
+		D7304C8B12B6EBEB00E8EC56 /* libopencv_imgproc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.dylib; path = usr/local/lib/libopencv_imgproc.dylib; sourceTree = SDKROOT; };
 		D794190712AE0D17000EF2A7 /* bg_fg_blobs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = bg_fg_blobs.cpp; path = ../bg_fg_blobs.cpp; sourceTree = SOURCE_ROOT; };
 		D794190812AE0D17000EF2A7 /* bg_fg_blobs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bg_fg_blobs.h; path = ../bg_fg_blobs.h; sourceTree = SOURCE_ROOT; };
 		D794190912AE0D17000EF2A7 /* ocv_freenect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ocv_freenect.cpp; path = ../ocv_freenect.cpp; sourceTree = SOURCE_ROOT; };
 		D794190A12AE0D17000EF2A7 /* ocv_freenect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ocv_freenect.h; path = ../ocv_freenect.h; sourceTree = SOURCE_ROOT; };
 		D794190B12AE0D17000EF2A7 /* zhelpers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = zhelpers.hpp; path = ../zhelpers.hpp; sourceTree = SOURCE_ROOT; };
-		D794190E12AE0D41000EF2A7 /* libfreenect.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfreenect.dylib; path = usr/local/lib/libfreenect.dylib; sourceTree = SDKROOT; };
-		D794191012AE0D58000EF2A7 /* libopencv_core.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.dylib; path = usr/local/lib/libopencv_core.dylib; sourceTree = SDKROOT; };
-		D794191212AE0D72000EF2A7 /* libopencv_highgui.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.dylib; path = usr/local/lib/libopencv_highgui.dylib; sourceTree = SDKROOT; };
-		D794191412AE0D72000EF2A7 /* libopencv_imgproc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.dylib; path = usr/local/lib/libopencv_imgproc.dylib; sourceTree = SDKROOT; };
 		D794193512AE0EAC000EF2A7 /* libzmq.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libzmq.dylib; path = usr/local/lib/libzmq.dylib; sourceTree = SDKROOT; };
+		D7941D7412B6D124000EF2A7 /* libfreenect.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfreenect.dylib; path = usr/local/lib/libfreenect.dylib; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,11 +50,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D794190F12AE0D41000EF2A7 /* libfreenect.dylib in Frameworks */,
-				D794191112AE0D58000EF2A7 /* libopencv_core.dylib in Frameworks */,
-				D794191312AE0D72000EF2A7 /* libopencv_highgui.dylib in Frameworks */,
-				D794191512AE0D72000EF2A7 /* libopencv_imgproc.dylib in Frameworks */,
 				D794193612AE0EAC000EF2A7 /* libzmq.dylib in Frameworks */,
+				D7941D7512B6D124000EF2A7 /* libfreenect.dylib in Frameworks */,
+				D7304C6E12B6EB0400E8EC56 /* libopencv_core.dylib in Frameworks */,
+				D7304C8A12B6EBEB00E8EC56 /* libopencv_highgui.dylib in Frameworks */,
+				D7304C8C12B6EBEB00E8EC56 /* libopencv_imgproc.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -67,11 +67,11 @@
 				08FB7795FE84155DC02AAC07 /* Source */,
 				C6A0FF2B0290797F04C91782 /* Documentation */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
-				D794190E12AE0D41000EF2A7 /* libfreenect.dylib */,
-				D794191012AE0D58000EF2A7 /* libopencv_core.dylib */,
-				D794191212AE0D72000EF2A7 /* libopencv_highgui.dylib */,
-				D794191412AE0D72000EF2A7 /* libopencv_imgproc.dylib */,
 				D794193512AE0EAC000EF2A7 /* libzmq.dylib */,
+				D7941D7412B6D124000EF2A7 /* libfreenect.dylib */,
+				D7304C6D12B6EB0400E8EC56 /* libopencv_core.dylib */,
+				D7304C8912B6EBEB00E8EC56 /* libopencv_highgui.dylib */,
+				D7304C8B12B6EBEB00E8EC56 /* libopencv_imgproc.dylib */,
 			);
 			name = DepthJS;
 			sourceTree = "<group>";
