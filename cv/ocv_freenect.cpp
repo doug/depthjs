@@ -490,7 +490,7 @@ int main(int argc, char **argv)
           ss  << "\"x\":"  << (int)floor(blb[0]*100.0/640.0)
             << ",\"y\":" << (int)floor(blb[1]*100.0/480.0)
             << ",\"z\":" << (int)(mn[0] * 2.0);
-          cout << "move: " << ss.str() << endl;
+          //cout << "move: " << ss.str() << endl;
           send_event("Move", ss.str());
 
           //---------------------- fist detection ---------------------
