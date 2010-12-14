@@ -28,6 +28,7 @@ if (window.top === window) {
 console.log("DepthJS: Loading event handlers");
 
 DepthJS.state = null;
+DepthJS.lastRegisterTime = null;
 
 DepthJS.eventHandlers.onSwipeLeft = function() {
    // history.back();
@@ -96,6 +97,7 @@ DepthJS.eventHandlers.onRegister = function(data) {
   } else {
     console.log(["DID NOT UNDERSTAND MODE: ", data.mode]);
   }
+  DepthJS.lastRegisterTime = new Date();
   DepthJS.state = DepthJS.registerMode;
   DepthJS[DepthJS.registerMode].show();
 };
@@ -110,6 +112,9 @@ DepthJS.eventHandlers.onUnregister = function() {
 };
 
 DepthJS.eventHandlers.onHandClick = function() {
+  if (DepthJS.lastRegisterTime == null) return;
+  if (new Date() - DepthJS.lastRegisterTime < 1500) return;
+  
   if (DepthJS.state == "selectorBoxPopup") {
     DepthJS.selectorBoxPopup.openHighlightedLink();
   } else if (DepthJS.state == "selectorBox") {

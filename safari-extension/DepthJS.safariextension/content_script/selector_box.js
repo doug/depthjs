@@ -128,12 +128,17 @@ DepthJS.selectorBoxPopup.activate = function(){
 
 DepthJS.selectorBoxPopup.move = function(x, y) {
   if (DepthJS.verbose) console.log("move selector box popup (" + x + ", " + y + ")");
-  if (y == 0) y = 1;
+  y = (y - 50) / 50.0; // -1 to 1
+  // Expode out for a smaller range in Kinect-hand space
+  y *= 4.0;
+  console.log("pre clamp" + y);
+  y = Math.min(1.0, Math.max(-1.0, y)); // clamp to -1 to 1
+  y = (y + 1.0) / 2.0; // shift to 0 to 1
+  console.log(y);
 
   var $links = DepthJS.selectorBoxPopup.$links;
   var popupHeight = $("#DepthJS_selectorBoxPopup").height();
-  y = (y * popupHeight / 100) / (popupHeight / $links.length);
-  var closestLinkIndex = Math.min($links.length-1, Math.round(y));
+  var closestLinkIndex = Math.round(y * $links.length-1);
   if (DepthJS.verbose) console.log("Closest link is " + closestLinkIndex);
 
   var $lastHighlightedLink = DepthJS.selectorBoxPopup.$lastHighlightedLink;
