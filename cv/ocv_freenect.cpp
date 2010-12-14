@@ -516,7 +516,7 @@ int main(int argc, char **argv)
 					hc_stack_ptr = (hc_stack_ptr + 1) % hc_stack.size();
 					
 					Scalar _avg = mean(Mat(hc_stack));
-					if (abs(_avg[0] - (double)hcr_ctr) > 5.0) { //a big change in curvature = hand fisted/opened?
+					if (abs(_avg[0] - (double)hcr_ctr) > 5.0 && mn[0] < 45) { //a big change in curvature = hand fisted/opened?
 						cout << "Hand click!" << endl;
 						send_event("HandClick", "");
 					}
@@ -543,8 +543,9 @@ int main(int argc, char **argv)
 					} else {
 						//blob was seen before, how much time passed
 						double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
-						if (timediff > .1 && timediff < 1.0) {
+						if (timediff > .2 && timediff < 1.0) {
 							//enough time passed from appearence
+							line(outC, appear, Point(blb[0],blb[1]), Scalar(0,0,255), 3);
 							if (appear.x - blb[0] > 100) {
 								cout << "right"<<endl; appear.x = -1;
 								send_event("SwipeRight", "");
