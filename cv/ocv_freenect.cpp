@@ -474,14 +474,14 @@ int main(int argc, char **argv)
 					if(register_secondbloc_ctr < 30) {
 						if(blb[2] > 10000) {
 							cout << "register panner" << endl;
-							send_event("Register", "\"mode\":\"panner\"");
+							send_event("Register", "\"mode\":\"openhand\"");
 						} else {
 							cout << "register pointer" << endl;
-							send_event("Register", "\"mode\":\"pointer\"");
+							send_event("Register", "\"mode\":\"theforce\"");
 						}
 					} else {
 						cout << "register tab swithcer" << endl;
-						send_event("Register", "\"mode\":\"tab_switcher\"");
+						send_event("Register", "\"mode\":\"twohands\"");
 					}
 				}
 				
