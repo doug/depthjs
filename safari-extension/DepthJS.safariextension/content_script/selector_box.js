@@ -32,8 +32,8 @@ DepthJS.selectorBox.move = function(x, y) {
   // x = x - DepthJS.selectorBox.firstMove[0];
   // y = y - DepthJS.selectorBox.firstMove[1];
 
-  x = (x-50.0) / 50.0;
-  y = (y-50.0) / 50.0;
+  x = (x - 50) / 15.0;
+  y = (y - 50) / 15.0;
   
   var hwidth = $(window).width() * 0.5;
   var hheight = $(window).height() * 0.5;
