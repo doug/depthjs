@@ -27,7 +27,7 @@ rgbMat(Size(640,480),CV_8UC3,Scalar(0));
 
 
 freenect_device *f_dev;
-int freenect_angle = 20;
+int freenect_angle = 15;
 int freenect_led;
 
 pthread_cond_t frame_cond = PTHREAD_COND_INITIALIZER;
