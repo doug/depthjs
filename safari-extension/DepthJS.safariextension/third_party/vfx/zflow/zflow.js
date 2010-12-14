@@ -7,7 +7,7 @@
 
     See the README for documentation and license.
 */
-console.log("loading zflow");
+console.log("DepthJS: loading zflow");
 DepthJS.depthose.zflowInit = function () {  // Module pattern
   var global = this;
 
@@ -353,4 +353,3 @@ DepthJS.depthose.zflowInit = function () {  // Module pattern
       ctx.fillRect(0, 0, iwidth, iheight / 2);
   }
 };
-console.log(["Defined zflow: ", DepthJS]);
