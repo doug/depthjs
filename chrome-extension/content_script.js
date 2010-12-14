@@ -30,6 +30,34 @@ var DepthJS = {
   MAX_HANDPLANE_HEIGHT: 100
 };
 
+(function() {
+var lastMessages = [];
+DepthJS.logSortaVerbose = function(type, fullMessage) {
+  lastMessages.push({type: type, data:fullMessage});
+};
+
+function print() {
+  setTimeout(print, 1000);
+  if (lastMessages.length == 0) return;
+  var counts = {};
+  var lastByType = {};
+  _.each(lastMessages, function(msg) {
+    if (counts[msg.type] == null) counts[msg.type] = 0;
+    counts[msg.type] = counts[msg.type] + 1;
+    lastByType[msg.type] = msg.data;
+  });
+  
+  var alphabeticalKeys = _.keys(counts).sort();
+  console.log("------" + (new Date() + ""));
+  _.each(alphabeticalKeys, function(type) {
+    console.log(["   " + counts[type] + " " + type + "; last = ", lastByType[type]]);
+  });
+  
+  lastMessages = [];
+}
+setTimeout(print, 1000);
+})();
+
 // EVENT HANDLERS ----------------------------------------------------------------------------------
 
 /**
@@ -80,14 +108,14 @@ DepthJS.eventHandlers.onHandPointer = function(){
   if (DepthJS.verbose) console.log("DepthJS. Hand Pointer");
   DepthJS.eventHandlers.onUnregister();
   DepthJS.state = "selectorBox";
-}
+};
 
 DepthJS.eventHandlers.onHandOpen = function(){
   if (DepthJS.verbose) console.log("DepthJS. Hand Open");
   DepthJS.eventHandlers.onUnregister();
   DepthJS.state = "panner";
   DepthJS.panner.show();
-}
+};
 
 DepthJS.eventHandlers.onSwipeUp = function() {
   // We interpret as "scroll up 75% of window".
@@ -110,9 +138,18 @@ DepthJS.eventHandlers.onSelectorBoxMode = function() {
 };
 
 // POINTER -----------------------------------------------------------------------------------------
-DepthJS.eventHandlers.onRegister = function() {
+DepthJS.eventHandlers.onRegister = function(data) {
   if (DepthJS.verbose) console.log("DepthJS: User registered their hand");
   $(window).trigger("touchstart");
+  if (data.mode == "theforce") {
+    DepthJS.registerMode = "selectorBox";
+  } else if (data.mode == "twohands") {
+    DepthJS.registerMode = "depthose";
+  } else if (data.mode == "openhand") {
+    DepthJS.registerMode = "panner";
+  } else {
+    console.log(["DID NOT UNDERSTAND MODE: ", data.mode]);
+  }
   DepthJS.state = DepthJS.registerMode;
   DepthJS[DepthJS.registerMode].show();
 };
@@ -150,7 +187,7 @@ var accumulatedX = null;
 var accumulatedY = null;
 var smoothing = 0.95;
 DepthJS.eventHandlers.onMove = function(data) {
-  if (data.x == null || data.y == null) {
+  if (data.x == null || data.y == null || data.z == null) {
     if (DepthJS.verbose) console.log(["Could not understand data", data]);
     return;
   }
@@ -160,30 +197,33 @@ DepthJS.eventHandlers.onMove = function(data) {
   if (accumulatedX == null) {
     accumulatedX = data.x;
     accumulatedY = data.y;
+    accumulatedZ = data.z;
   } else {
     accumulatedX = accumulatedX * smoothing + data.x * (1-smoothing);
     accumulatedY = accumulatedY * smoothing + data.y * (1-smoothing);
+    accumulatedZ = accumulatedZ * smoothing + data.z * (1-smoothing);
   }
 
   if (DepthJS.state == "panner"){
-    DepthJS.panner.move(accumulatedX, accumulatedY);
+    DepthJS.panner.move(accumulatedX, accumulatedY, accumulatedZ);
   } else if (DepthJS.state == "depthose") {
-    DepthJS.depthose.move(accumulatedX, accumulatedY);
+    DepthJS.depthose.move(accumulatedX, accumulatedY, accumulatedZ);
   } else if (DepthJS.state == "selectorBox") {
     DepthJS.selectorBox.move(accumulatedX * $(window).width() / 100,
                              accumulatedY * $(window).height() / 100);
   } else if (DepthJS.state == "selectorBoxPopup") {
-    DepthJS.selectorBoxPopup.move(accumulatedX, accumulatedY);
+    DepthJS.selectorBoxPopup.move(accumulatedX, accumulatedY, accumulatedZ);
   } else {
     if (DepthJS.verbose) console.log("Ignoring move in state " + DepthJS.state);
   }
-}
+};
 })();
 
 // PANNER ------------------------------------------------------------------------------------------
 
 DepthJS.panner.initTransform = null;
 DepthJS.panner.initTransition = null;
+DepthJS.panner.firstMove = null;
 
 DepthJS.panner.show = function() {
   if (DepthJS.panner.initTransform == null) {
@@ -195,8 +235,10 @@ DepthJS.panner.show = function() {
   var centerPoint = $(window).height()/2 + $(window).scrollTop();
   $("body").css({"-webkit-transform":"scale(1.55) translate(0px,0px)",
                  "-webkit-transition-duration":"1s",
+                 "-webkit-transform-style":"preserve-3d",
                  "-webkit-transform-origin":"50% " + centerPoint + "px"});
-}
+  DepthJS.panner.firstMove = null;
+};
 
 DepthJS.panner.hide = function() {
   if ($("body").css("-webkit-transform") == "none") return;
@@ -206,16 +248,34 @@ DepthJS.panner.hide = function() {
     $("body").css({"-webkit-transform": DepthJS.panner.initTransform,
                    "-webkit-transition-duration": DepthJS.panner.initTransition});
   }, 1000);
-}
+  DepthJS.panner.firstMove = null;
+};
 
-DepthJS.panner.move = function(x, y) {
+DepthJS.panner.move = function(x, y, z) {
+  if (DepthJS.panner.firstMove == null) {
+    DepthJS.panner.firstMove = [x, y, z];
+    console.log("first move, x=" + x + " y=" + y);
+    return;
+  }
+  
   var centerPoint = $(window).height()/2 + $(window).scrollTop();
-  var x = (x-50) * $(document).width() / 100;
-  var y = -(y-50) * $(document).height() / 100;
-  $("body").css({"-webkit-transform":"scale(1.55) translate(" + x + "px, " + y + "px)",
+  // use firstMove here
+  
+  x = DepthJS.panner.firstMove[0] - x;
+  y = DepthJS.panner.firstMove[1] - y;
+  var scale = 1.3 - ((z - 50) / 50);
+  
+  // Make the whole bounding box (which is -50, 50) really out of 10
+  
+  console.log("rel x = " + x + ", y = " + y + ", scale=" + scale);
+  
+  x = x * $(document).width() / 75;
+  y = y * $(document).height() / 75;
+  $("body").css({"-webkit-transform":"scale(" + scale + ") translate(" + x + "px, " + y + "px)",
                  "-webkit-transition-duration":".25s",
+                 "-webkit-transform-style":"preserve-3d",
                  "-webkit-transform-origin":"50% " + centerPoint + "px"});
-}
+};
 
 // SELECTOR BOX ------------------------------------------------------------------------------------
 
@@ -308,7 +368,7 @@ DepthJS.selectorBoxPopup.activate = function(){
   }
   DepthJS.selectorBox.$box.hide();
   $("#DepthJS_selectorBoxPopup").html(popupContent);
-}
+};
 
 DepthJS.selectorBoxPopup.move = function(x, y) {
   if (DepthJS.verbose) console.log("move selector box popup (" + x + ", " + y + ")");
@@ -328,7 +388,7 @@ DepthJS.selectorBoxPopup.move = function(x, y) {
   $closestLink.addClass("DepthJS_selectorBoxPopupItemHighlight");
   DepthJS.selectorBoxPopup.lastHighlightedLinkIndex = closestLinkIndex;
   DepthJS.selectorBoxPopup.$lastHighlightedLink = $closestLink;
-}
+};
 
 DepthJS.selectorBoxPopup.openHighlightedLink = function(){
   var $links = DepthJS.selectorBoxPopup.$links;
@@ -340,13 +400,13 @@ DepthJS.selectorBoxPopup.openHighlightedLink = function(){
   var evt = document.createEvent("MouseEvents");
   evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
   $linkToOpen[0].dispatchEvent(evt);
-}
+};
 
 DepthJS.selectorBoxPopup.hide = function(){
   $("#DepthJS_selectorBoxPopup").fadeOut(300, function(){
     $("#DepthJS_selectorBoxPopup").remove();
   });
-}
+};
 
 // EVENT LINK --------------------------------------------------------------------------------------
 
