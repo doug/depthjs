@@ -9,8 +9,6 @@ DepthJS.selectorBox.init = function() {
   var $box = $("<div id='DepthJS_selectorBox'></div>");
   $box.appendTo("body").hide();
   DepthJS.selectorBox.$box = $box;
-  console.log(DepthJS.selectorBox.$box);
-  console.log($("body"));
 };
 
 DepthJS.selectorBox.show = function() {
@@ -24,17 +22,14 @@ DepthJS.selectorBox.hide = function() {
 };
 
 DepthJS.selectorBox.move = function(x, y) {
-  if (DepthJS.selectorBox.firstMove == null) {
-    DepthJS.selectorBox.firstMove = [x, y];
-    console.log("first move, x=" + x + " y=" + y);
-    return;
-  }
+  x = (x - 50) / 50.0;
+  y = (y - 50) / 50.0;
   
-  // x = x - DepthJS.selectorBox.firstMove[0];
-  // y = y - DepthJS.selectorBox.firstMove[1];
-
-  x = (x - 50) / 15.0;
-  y = (y - 50) / 15.0;
+  // Expode out for a smaller range in Kinect-hand space
+  x *= 2;
+  y *= 2;
+  x = Math.min(1, Math.max(-1, x));
+  y = Math.min(1, Math.max(-1, y));
   
   var hwidth = $(window).width() * 0.5;
   var hheight = $(window).height() * 0.5;

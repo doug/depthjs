@@ -83,6 +83,10 @@ DepthJS.eventHandlers.onSelectorBoxMode = function() {
 DepthJS.eventHandlers.onRegister = function(data) {
   if (DepthJS.verbose) console.log("DepthJS: User registered their hand");
   $(window).trigger("touchstart");
+  if (data.mode == "twohands") {
+    console.log("Ignoring in Safari for now");
+    return;
+  }
   if (data.mode == "theforce") {
     DepthJS.registerMode = "selectorBox";
   } else if (data.mode == "twohands") {
