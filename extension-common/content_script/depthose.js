@@ -8,6 +8,7 @@ DepthJS.depthose.init = function() {
   DepthJS.browser.addContentScriptListener("thumbnails", function(data) {
     DepthJS.depthose.recieveThumbnails(data.tabs);
   });
+  DepthJS.depthose.zflowInit();
 };
 
 DepthJS.depthose.start = function() {
@@ -55,7 +56,7 @@ DepthJS.depthose.show = function() {
 
   if (!_.isEmpty(thumbnailCache)) {
     if (DepthJS.verbose) console.log("starting zflow");
-    zflow(_.values(thumbnailCache), "#DepthJS_tray");
+    DepthJS.depthose.zflow(_.values(thumbnailCache), "#DepthJS_tray");
     var e = document.createEvent("Event");
     e.initEvent("depthstart");
     e.pageX = $(window).width()/2;
