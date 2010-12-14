@@ -23,7 +23,7 @@ var VERBOSE = 1;
 var STUPID_VERBOSE = 2;
 
 var DepthJS = {
-  verbose: VERBOSE,
+  verbose: NOT_VERBOSE,
   registerMode: "selectorBox",
   eventHandlers: {},
   eventLink: {},

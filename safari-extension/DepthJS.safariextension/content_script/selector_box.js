@@ -26,8 +26,8 @@ DepthJS.selectorBox.move = function(x, y) {
   y = (y - 50) / 50.0;
   
   // Expode out for a smaller range in Kinect-hand space
-  x *= 2;
-  y *= 2;
+  x *= 5;
+  y *= 5;
   x = Math.min(1, Math.max(-1, x));
   y = Math.min(1, Math.max(-1, y));
   
@@ -42,7 +42,7 @@ DepthJS.selectorBox.move = function(x, y) {
   var $box = DepthJS.selectorBox.$box;
   x = Math.min(x, $(window).width() - $box.width());
   y = Math.min(y, $(window).height() - $box.height());
-  console.log("move selector box to " + x + ", " + y);
+  //console.log("move selector box to " + x + ", " + y);
   if (x != $box.css("left") || y != $box.css("top")) {
     $box.css({left: x, top: y});
   }
@@ -89,6 +89,8 @@ DepthJS.selectorBoxPopup.activate = function(){
   var $links = DepthJS.selectorBoxPopup.$links;
 
   if ($links.length == 1){
+    DepthJS.selectorBox.$box.fadeOut(200);
+
     var evt = document.createEvent("MouseEvents");
     evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
     $links[0].dispatchEvent(evt);
@@ -150,6 +152,8 @@ DepthJS.selectorBoxPopup.openHighlightedLink = function(){
 
   if (lastHighlightedLinkIndex < 0 || lastHighlightedLinkIndex > $links.length) return;
   var $linkToOpen = $links.eq(lastHighlightedLinkIndex);
+
+  DepthJS.selectorBoxPopup.hide();
 
   var evt = document.createEvent("MouseEvents");
   evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
