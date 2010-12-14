@@ -1,5 +1,5 @@
+if (DepthJS) {
 console.log("DepthJS Loading Safari shit");
-
 DepthJS.initBrowserBackground = function() {
   console.log("DepthJS: Initing Safari background");
   DepthJS.toolbar.init = function() {
@@ -97,3 +97,4 @@ DepthJS.browser.sendMessageToPopup = function(msg) {
   console.log(["Sending message to popup: ", msg]);
   // safari.self.tab.dispatchMessage("DepthJS_popup", msg);
 };
+}

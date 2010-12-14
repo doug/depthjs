@@ -1,4 +1,5 @@
 // PANNER ------------------------------------------------------------------------------------------
+if (window.top === window) {
 console.log("DepthJS: Loading Panner");
 
 DepthJS.panner.initTransform = null;
@@ -39,9 +40,6 @@ DepthJS.panner.move = function(x, y, z) {
   }
   //if (DepthJS.panner.midTransition) return;
   DepthJS.panner.midTransition = true;
-  setTimeout(function() {
-    DepthJS.panner.midTransition = false;
-  }, 150);
   
   var centerPoint = $(window).height()/2 + $(window).scrollTop();
   // use firstMove here
@@ -52,12 +50,17 @@ DepthJS.panner.move = function(x, y, z) {
   
   // Make the whole bounding box (which is -50, 50) really out of 10
   
-  console.log("rel x = " + x + ", y = " + y + ", scale=" + scale);
+  //console.log("rel x = " + x + ", y = " + y + ", scale=" + scale);
   
   x = x * $(document).width() / 75;
   y = y * $(document).height() / 75;
   $("body").css({"-webkit-transform":"scale(" + scale + ") translate(" + x + "px, " + y + "px)",
+                 "-webkit-transition-timing-function": "ease-in-out",
                  "-webkit-transition-duration":".25s",
                  "-webkit-transform-style":"preserve-3d",
                  "-webkit-transform-origin":"50% " + centerPoint + "px"});
+  setTimeout(function() {
+    DepthJS.panner.midTransition = false;
+  }, 100);
 };
+}

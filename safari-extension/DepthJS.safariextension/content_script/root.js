@@ -15,6 +15,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+if (window.top === window) {
 console.log("DepthJS: Loading Root");
 
 var NOT_VERBOSE = 0;
@@ -63,3 +64,4 @@ function print() {
 setTimeout(print, 1000);
 
 })();
+}
