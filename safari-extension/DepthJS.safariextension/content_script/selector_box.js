@@ -100,7 +100,9 @@ DepthJS.selectorBoxPopup.activate = function(){
 
   DepthJS.state = "selectorBoxPopup";
   var $box = DepthJS.selectorBox.$box;
-  var position = "top:" + $box.position().top + "px; left:" + $box.position().left + "px";
+  var top = $box.position().top;
+  var left = $box.position().left;
+  var position = "top:" + top + "px; left:" + left + "px";
   $("body").append("<div id='DepthJS_selectorBoxPopup' style='" + position + "'></div>");
 
   var popupContent = "";
@@ -123,7 +125,14 @@ DepthJS.selectorBoxPopup.activate = function(){
     popupItemIndex += 1;
   }
   DepthJS.selectorBox.$box.hide();
-  $("#DepthJS_selectorBoxPopup").html(popupContent);
+  var $popup = $("#DepthJS_selectorBoxPopup");
+  $popup.html(popupContent);
+  if (top + $popup.height() > $(window).height()) {
+    $popup.css("top", $(window).height() - $popup.height() - 40);
+  }
+  if (left + $popup.width() > $(window).width()) {
+    $popup.css("left", $(window).width() - $popup.width() - 40);
+  }
 };
 
 DepthJS.selectorBoxPopup.move = function(x, y) {
@@ -147,6 +156,7 @@ DepthJS.selectorBoxPopup.move = function(x, y) {
   }
   var $closestLink = $("#DepthJS_popupItem" + closestLinkIndex);
   $closestLink.addClass("DepthJS_selectorBoxPopupItemHighlight");
+  
   DepthJS.selectorBoxPopup.lastHighlightedLinkIndex = closestLinkIndex;
   DepthJS.selectorBoxPopup.$lastHighlightedLink = $closestLink;
 };
