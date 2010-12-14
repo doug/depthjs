@@ -91,12 +91,23 @@ DepthJS.selectorBox.activate = function() {
 DepthJS.selectorBoxPopup.activate = function(){
   if (DepthJS.verbose) console.log("Activating selectorbox popup");
   var $links = DepthJS.selectorBoxPopup.$links;
+
+  if ($links.length == 1){
+    var evt = document.createEvent("MouseEvents");
+    evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+    $links[0].dispatchEvent(evt);
+    return;
+  }
+
+
   DepthJS.state = "selectorBoxPopup";
   var $box = DepthJS.selectorBox.$box;
   var position = "top:" + $box.position().top + "px; left:" + $box.position().left + "px";
   $("body").append("<div id='DepthJS_selectorBoxPopup' style='" + position + "'></div>");
+
   var popupContent = "";
   var popupItemIndex = 0;
+
   for(var i = 0; i < $links.length; i++){
     var linkText = $($links[i]).text();
 
