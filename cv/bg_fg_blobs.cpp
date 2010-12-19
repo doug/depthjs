@@ -13,9 +13,10 @@
 					   Mat& mask, 
 					   Mat& dst, 
 					   vector<Point>& contour,
+					   vector<Point>& second_contour,
 					   Point2i& previous)
 {
-    int niters = 3;
+//    int niters = 3;
     
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
@@ -25,9 +26,10 @@
 //    dilate(mask, temp, Mat(), Point(-1,-1), niters);
 //    erode(temp, temp, Mat(), Point(-1,-1), niters*2);
 //    dilate(temp, temp, Mat(), Point(-1,-1), niters);
-	blur(mask, temp, Size(21,21));
+	blur(mask, temp, Size(11,11));
+//	imshow("temp",temp);
 	temp = temp > 85.0;
-    
+	    
     findContours( temp, contours, /*hierarchy,*/ CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE );
 	
 	if(dst.data==NULL)
@@ -40,43 +42,64 @@
 	
     // iterate through all the top-level contours,
     // draw each connected component with its own random color
-    int idx = 0, largestComp = 0;
-    double maxArea = 0;
-    
+    int idx = 0, largestComp = -1, secondlargest = -1;
+    double maxWArea = 0, maxJArea = 0;
+    vector<double> justarea(contours.size());
+	vector<double> weightedarea(contours.size());
+	
 //    for( ; idx >= 0; idx = hierarchy[idx][0] )
-	for (idx=0; idx<contours.size(); idx++)
+	for (; idx<contours.size(); idx++)
     {
         const vector<Point>& c = contours[idx];
 		Scalar _mean = mean(Mat(contours[idx]));
-        double area = fabs(contourArea(Mat(c))) * 
-						((previous.x >- 1) ? 1.0 / (1.0 + norm(Point(_mean[0],_mean[1])-previous)) : 1.0);	//consider distance from last blob
-        if( area > maxArea )
+		justarea[idx] = fabs(contourArea(Mat(c)));
+		weightedarea[idx] = fabs(contourArea(Mat(c))) / 
+						((previous.x >- 1) ? (1.0 + norm(Point(_mean[0],_mean[1])-previous)) : 1.0);	//consider distance from last blob
+    }
+	for (idx = 0; idx<contours.size(); idx++) {
+		if( weightedarea[idx] > maxWArea )
         {
-            maxArea = area;
+            maxWArea = weightedarea[idx];
             largestComp = idx;
         }
-    }
+	}
+	for (idx = 0; idx < contours.size(); idx++) {
+		if ( justarea[idx] > maxJArea && idx != largestComp ) {
+			maxJArea = justarea[idx];
+			secondlargest = idx;
+		}
+	}
+	
     Scalar color( 255 );
 //	cout << "largest cc " << largestComp << endl;
  //   drawContours( dst, contours, largestComp, color, CV_FILLED); //, 8, hierarchy );
 //	for (idx=0; idx<contours[largestComp].size()-1; idx++) {
 //		line(dst, contours[largestComp][idx], contours[largestComp][idx+1], color, 2);
 //	
-	int num = contours[largestComp].size();
-	Point* pts = &(contours[largestComp][0]);
-	fillPoly(dst, (const Point**)(&pts), &num, 1, color);
+	if(largestComp >= 0) {
+		int num = contours[largestComp].size();
+		Point* pts = &(contours[largestComp][0]);
+		fillPoly(dst, (const Point**)(&pts), &num, 1, color);
+		
+		Scalar b = mean(Mat(contours[largestComp]));
+		b[2] = justarea[largestComp];
+		
+		contour.clear();
+		contour = contours[largestComp];
+		
+		second_contour.clear();
+		if(secondlargest >= 0) {
+			second_contour = contours[secondlargest];
+			b[3] = maxJArea;
+		}
+		
+		previous.x = b[0]; previous.y = b[1];
+		return b;
+	} else
+		return Scalar(-1,-1);
 	
-	Scalar b = mean(Mat(contours[largestComp]));
-	b[3] = maxArea;
-	
-	contour.clear();
-	contour = contours[largestComp];
-	
-	previous.x = b[0]; previous.y = b[1];
-	
-	return b;
 }
-
+/*
  void makePointsFromMask(Mat& maskm,vector<Point2f>& points, bool _add = false) {//, Mat& out) {
 	if(!_add)
 		points.clear();
@@ -102,7 +125,7 @@ void drawPoint(Mat& out,vector<Point2f>& points,Scalar color, Mat* maskm = NULL)
 	}
 }
 
-/*
+
 //this is a sample for foreground detection functions
 int bgfg_main(int argc, char** argv)
 {

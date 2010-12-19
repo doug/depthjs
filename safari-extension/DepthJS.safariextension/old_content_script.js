@@ -1,6 +1,6 @@
 /*
 DepthJS
-Copyright (C) 2010 Aaron Zinman, Doug Fritz, Roy Shilkrot
+Copyright (C) 2010 Aaron Zinman, Doug Fritz, Roy Shilkrot, Greg Elliott
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -17,10 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 var DepthJS = {
-  verbose: false,
+  verbose: true,
   registerMode: "selectorBox",
   eventHandlers: {},
-  canvasLink: {},
   eventLink: {},
   selectorBox: {},
   selectorBoxPopup: {},
@@ -29,34 +28,6 @@ var DepthJS = {
   MAX_HANDPLANE_WIDTH: 100,
   MAX_HANDPLANE_HEIGHT: 100
 };
-
-(function() {
-var lastMessages = [];
-DepthJS.logSortaVerbose = function(type, fullMessage) {
-  lastMessages.push({type: type, data:fullMessage});
-};
-
-function print() {
-  setTimeout(print, 1000);
-  if (lastMessages.length == 0) return;
-  var counts = {};
-  var lastByType = {};
-  _.each(lastMessages, function(msg) {
-    if (counts[msg.type] == null) counts[msg.type] = 0;
-    counts[msg.type] = counts[msg.type] + 1;
-    lastByType[msg.type] = msg.data;
-  });
-  
-  var alphabeticalKeys = _.keys(counts).sort();
-  console.log("------" + (new Date() + ""));
-  _.each(alphabeticalKeys, function(type) {
-    console.log(["   " + counts[type] + " " + type + "; last = ", lastByType[type]]);
-  });
-  
-  lastMessages = [];
-}
-setTimeout(print, 1000);
-})();
 
 // EVENT HANDLERS ----------------------------------------------------------------------------------
 
@@ -88,12 +59,12 @@ setTimeout(print, 1000);
 DepthJS.state = null;
 
 DepthJS.eventHandlers.onSwipeLeft = function() {
-   history.go(-1);
+   history.back();
 };
 
 DepthJS.eventHandlers.onSwipeRight = function() {
   // We interpret as "forward".
-  history.go(1);
+  history.forward();
 };
 
 DepthJS.eventHandlers.onSwipeDown = function() {
@@ -108,14 +79,14 @@ DepthJS.eventHandlers.onHandPointer = function(){
   if (DepthJS.verbose) console.log("DepthJS. Hand Pointer");
   DepthJS.eventHandlers.onUnregister();
   DepthJS.state = "selectorBox";
-};
+}
 
 DepthJS.eventHandlers.onHandOpen = function(){
   if (DepthJS.verbose) console.log("DepthJS. Hand Open");
   DepthJS.eventHandlers.onUnregister();
   DepthJS.state = "panner";
   DepthJS.panner.show();
-};
+}
 
 DepthJS.eventHandlers.onSwipeUp = function() {
   // We interpret as "scroll up 75% of window".
@@ -138,18 +109,9 @@ DepthJS.eventHandlers.onSelectorBoxMode = function() {
 };
 
 // POINTER -----------------------------------------------------------------------------------------
-DepthJS.eventHandlers.onRegister = function(data) {
+DepthJS.eventHandlers.onRegister = function() {
   if (DepthJS.verbose) console.log("DepthJS: User registered their hand");
   $(window).trigger("touchstart");
-  if (data.mode == "theforce") {
-    DepthJS.registerMode = "selectorBox";
-  } else if (data.mode == "twohands") {
-    DepthJS.registerMode = "depthose";
-  } else if (data.mode == "openhand") {
-    DepthJS.registerMode = "panner";
-  } else {
-    console.log(["DID NOT UNDERSTAND MODE: ", data.mode]);
-  }
   DepthJS.state = DepthJS.registerMode;
   DepthJS[DepthJS.registerMode].show();
 };
@@ -187,7 +149,7 @@ var accumulatedX = null;
 var accumulatedY = null;
 var smoothing = 0.95;
 DepthJS.eventHandlers.onMove = function(data) {
-  if (data.x == null || data.y == null || data.z == null) {
+  if (data.x == null || data.y == null) {
     if (DepthJS.verbose) console.log(["Could not understand data", data]);
     return;
   }
@@ -197,33 +159,30 @@ DepthJS.eventHandlers.onMove = function(data) {
   if (accumulatedX == null) {
     accumulatedX = data.x;
     accumulatedY = data.y;
-    accumulatedZ = data.z;
   } else {
     accumulatedX = accumulatedX * smoothing + data.x * (1-smoothing);
     accumulatedY = accumulatedY * smoothing + data.y * (1-smoothing);
-    accumulatedZ = accumulatedZ * smoothing + data.z * (1-smoothing);
   }
 
   if (DepthJS.state == "panner"){
-    DepthJS.panner.move(accumulatedX, accumulatedY, accumulatedZ);
+    DepthJS.panner.move(accumulatedX, accumulatedY);
   } else if (DepthJS.state == "depthose") {
-    DepthJS.depthose.move(accumulatedX, accumulatedY, accumulatedZ);
+    DepthJS.depthose.move(accumulatedX, accumulatedY);
   } else if (DepthJS.state == "selectorBox") {
     DepthJS.selectorBox.move(accumulatedX * $(window).width() / 100,
                              accumulatedY * $(window).height() / 100);
   } else if (DepthJS.state == "selectorBoxPopup") {
-    DepthJS.selectorBoxPopup.move(accumulatedX, accumulatedY, accumulatedZ);
+    DepthJS.selectorBoxPopup.move(accumulatedX, accumulatedY);
   } else {
     if (DepthJS.verbose) console.log("Ignoring move in state " + DepthJS.state);
   }
-};
+}
 })();
 
 // PANNER ------------------------------------------------------------------------------------------
 
 DepthJS.panner.initTransform = null;
 DepthJS.panner.initTransition = null;
-DepthJS.panner.firstMove = null;
 
 DepthJS.panner.show = function() {
   if (DepthJS.panner.initTransform == null) {
@@ -235,10 +194,8 @@ DepthJS.panner.show = function() {
   var centerPoint = $(window).height()/2 + $(window).scrollTop();
   $("body").css({"-webkit-transform":"scale(1.55) translate(0px,0px)",
                  "-webkit-transition-duration":"1s",
-                 "-webkit-transform-style":"preserve-3d",
                  "-webkit-transform-origin":"50% " + centerPoint + "px"});
-  DepthJS.panner.firstMove = null;
-};
+}
 
 DepthJS.panner.hide = function() {
   if ($("body").css("-webkit-transform") == "none") return;
@@ -248,34 +205,16 @@ DepthJS.panner.hide = function() {
     $("body").css({"-webkit-transform": DepthJS.panner.initTransform,
                    "-webkit-transition-duration": DepthJS.panner.initTransition});
   }, 1000);
-  DepthJS.panner.firstMove = null;
-};
+}
 
-DepthJS.panner.move = function(x, y, z) {
-  if (DepthJS.panner.firstMove == null) {
-    DepthJS.panner.firstMove = [x, y, z];
-    console.log("first move, x=" + x + " y=" + y);
-    return;
-  }
-  
+DepthJS.panner.move = function(x, y) {
   var centerPoint = $(window).height()/2 + $(window).scrollTop();
-  // use firstMove here
-  
-  x = DepthJS.panner.firstMove[0] - x;
-  y = DepthJS.panner.firstMove[1] - y;
-  var scale = 1.3 - ((z - 50) / 50);
-  
-  // Make the whole bounding box (which is -50, 50) really out of 10
-  
-  console.log("rel x = " + x + ", y = " + y + ", scale=" + scale);
-  
-  x = x * $(document).width() / 75;
-  y = y * $(document).height() / 75;
-  $("body").css({"-webkit-transform":"scale(" + scale + ") translate(" + x + "px, " + y + "px)",
+  var x = (x-50) * $(document).width() / 100;
+  var y = -(y-50) * $(document).height() / 100;
+  $("body").css({"-webkit-transform":"scale(1.55) translate(" + x + "px, " + y + "px)",
                  "-webkit-transition-duration":".25s",
-                 "-webkit-transform-style":"preserve-3d",
                  "-webkit-transform-origin":"50% " + centerPoint + "px"});
-};
+}
 
 // SELECTOR BOX ------------------------------------------------------------------------------------
 
@@ -368,7 +307,7 @@ DepthJS.selectorBoxPopup.activate = function(){
   }
   DepthJS.selectorBox.$box.hide();
   $("#DepthJS_selectorBoxPopup").html(popupContent);
-};
+}
 
 DepthJS.selectorBoxPopup.move = function(x, y) {
   if (DepthJS.verbose) console.log("move selector box popup (" + x + ", " + y + ")");
@@ -388,7 +327,7 @@ DepthJS.selectorBoxPopup.move = function(x, y) {
   $closestLink.addClass("DepthJS_selectorBoxPopupItemHighlight");
   DepthJS.selectorBoxPopup.lastHighlightedLinkIndex = closestLinkIndex;
   DepthJS.selectorBoxPopup.$lastHighlightedLink = $closestLink;
-};
+}
 
 DepthJS.selectorBoxPopup.openHighlightedLink = function(){
   var $links = DepthJS.selectorBoxPopup.$links;
@@ -400,13 +339,13 @@ DepthJS.selectorBoxPopup.openHighlightedLink = function(){
   var evt = document.createEvent("MouseEvents");
   evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
   $linkToOpen[0].dispatchEvent(evt);
-};
+}
 
 DepthJS.selectorBoxPopup.hide = function(){
   $("#DepthJS_selectorBoxPopup").fadeOut(300, function(){
     $("#DepthJS_selectorBoxPopup").remove();
   });
-};
+}
 
 // EVENT LINK --------------------------------------------------------------------------------------
 
@@ -414,9 +353,9 @@ DepthJS.eventLink.initPort = function() {
   if (DepthJS.verbose) console.log("DepthJS: Event link init");
   var $DepthJS_eventPort = $("<div id='DepthJS_eventPort' style='display:none'></div>");
   $DepthJS_eventPort.appendTo("body");
-  var port = chrome.extension.connect({name: "event"});
-  port.onMessage.addListener(DepthJS.eventLink.onEvent);
-  DepthJS.eventLink.port = port;
+  safari.self.addEventListener("message", function(e) {
+    if (e.name == "event") DepthJS.eventLink.onEvent(e.message);
+  }, false);
 };
 
 DepthJS.eventLink.onEvent = function (msg) {
@@ -432,108 +371,28 @@ DepthJS.eventLink.onEvent = function (msg) {
   $("#DepthJS_eventPort").get(0).dispatchEvent(event);
 };
 
-// CANVAS LINK -------------------------------------------------------------------------------------
-DepthJS.canvasLink.depthPort = null;
-DepthJS.canvasLink.initDepth = function() {
-  var $depthCanvas = $("canvas#DepthJS_depth");
-  if ($depthCanvas.length > 0) {
-    if (DepthJS.verbose) console.log("DepthJS: Will write to depth canvas");
-    var depthCanvas = $depthCanvas.get(0);
-    var c = depthCanvas.getContext("2d");
-
-    // read the width and height of the canvas
-    var w = 160;
-    var h = 120;
-    var imageData = c.createImageData(w, h);
-
-    var port = chrome.extension.connect({name: "depth"});
-    port.onMessage.addListener(function(msg) {
-      var depthData = msg.data;
-      // depthData is 255-valued depth repeated 160x120 times
-      var imgPtr = 0;
-      for (var ptr = 0; ptr < depthData.length; ptr++) {
-        imageData.data[imgPtr++] = depthData.charCodeAt(ptr); // R
-        imageData.data[imgPtr++] = depthData.charCodeAt(ptr); // G
-        imageData.data[imgPtr++] = depthData.charCodeAt(ptr); // B
-        imageData.data[imgPtr++] = 0xFF; // Alpha
-      }
-      c.putImageData(imageData, 0, 0);
-    });
-
-    // Start with all gray
-    for (var i = 0; i < imageData.data.length; i+=4) {
-      imageData.data[i+0] = 0x55; // R
-      imageData.data[i+1] = 0x55; // G
-      imageData.data[i+2] = 0x55; // B
-      imageData.data[i+3] = 0xFF; // Alpha
-    }
-    c.putImageData(imageData, 0, 0);
-  }
-};
-
-DepthJS.canvasLink.initImage = function () {
-  var $imageCanvas = $("canvas#DepthJS_image");
-  // This is not really working right now
-  /* if ($imageCanvas.length == 0) {
-    if (DepthJS.verbose) console.log("Putting image map in corner");
-    $imageCanvas = $("<canvas id='DepthJS_image'></canvas>").css({
-      position: "fixed",
-      width: "160px",
-      height: "120px",
-      bottom: "20px",
-      left: "20px",
-      "background-color": "#555",
-      border: "1px solid #5170F7"
-    });
-    $imageCanvas.appendTo("body");
-  } */
-  if (DepthJS.verbose) console.log("DepthJS: Will write to image canvas");
-
-  if ($imageCanvas.length == 0) return;
-  // read the width and height of the canvas
-  var w = 160;
-  var h = 120;
-  var imageCanvas = $imageCanvas.get(0);
-  var c = imageCanvas.getContext("2d");
-  var imageData = c.createImageData(w, h);
-
-  var port = chrome.extension.connect({name: "image"});
-  port.onMessage.addListener(function(msg) {
-    var rawData = msg.data;
-    if (DepthJS.verbose) console.log(rawData.length);
-    // rawData is RGB repeated 160x120 times
-    var imgPtr = 0;
-    for (var ptr = 0; ptr < rawData.length; ptr+=3) {
-      imageData.data[imgPtr++] = rawData.charCodeAt(ptr+0); // R
-      imageData.data[imgPtr++] = rawData.charCodeAt(ptr+1); // G
-      imageData.data[imgPtr++] = rawData.charCodeAt(ptr+2); // B
-      imageData.data[imgPtr++] = 0xFF; // Alpha
-    }
-    c.putImageData(imageData, 0, 0);
-  });
-
-  // Start with all blue
-  for (var i = 0; i < imageData.data.length; i+=4) {
-    imageData.data[i+0] = 0; // R
-    imageData.data[i+1] = 0; // G
-    imageData.data[i+2] = 0xFF; // B
-    imageData.data[i+3] = 0xFF; // Alpha
-  }
-  c.putImageData(imageData, 0, 0);
-};
-
 // DEPTHOSE ---------------------------------------------------------------------------------------
 
 DepthJS.depthose.$div = null;
 DepthJS.depthose.thumbnailCache = null;
 
-DepthJS.depthose.start = function() {
-  chrome.extension.sendRequest({action: "getThumbnailCache"}, function (response) {
-    if (DepthJS.verbose) console.log(["DepthJS: Got back thumbnail cache", response]);
-    DepthJS.depthose.thumbnailCache = response.thumbnailCache;
-    if (DepthJS.depthose.thumbnailCache != null) DepthJS.depthose.show();
-  });
+DepthJS.depthose.init = function() {
+  safari.self.addEventListener("message", function(e) {
+    console.log(e);
+    if (e.name == "thumbnails") DepthJS.depthose.recieveThumbnails(e.message.tabs);
+  }, false);
 };
+
+DepthJS.depthose.start = function() {
+  if (DepthJS.verbose) console.log("DepthJS: Requesting thumbnails");
+  safari.self.tab.dispatchMessage("getThumbnails");
+};
+
+DepthJS.depthose.recieveThumbnails = function(thumbnails) {
+  if (DepthJS.verbose) console.log(["DepthJS: Got back thumbnails", thumbnails]);
+  DepthJS.depthose.thumbnailCache = thumbnails;
+  if (DepthJS.depthose.thumbnailCache != null) DepthJS.depthose.show();
+}
 
 DepthJS.depthose.show = function() {
   if (DepthJS.depthose.thumbnailCache == null) {
@@ -563,7 +422,7 @@ DepthJS.depthose.show = function() {
     tabObj.selectCallback = function() {
       if (DepthJS.verbose) console.log("selecting tab id " + tabId);
       DepthJS.eventHandlers.onUnregister();
-      chrome.extension.sendRequest({action:"selectTab", tabId: parseInt(tabId)});
+      safari.self.tab.dispatchMessage("selectTab", tabObj);
     };
   });
 
@@ -618,16 +477,19 @@ DepthJS.depthose.select = function() {
 };
 
 // Do the initialization
-DepthJS.selectorBox.init();
-DepthJS.eventLink.initPort();
-DepthJS.canvasLink.initDepth();
-DepthJS.canvasLink.initImage();
+if (window.top === window) {
+  // The parent frame is the top-level frame, not an iframe.
+  console.log("Initing DepthJS");
+  DepthJS.selectorBox.init();
+  DepthJS.eventLink.initPort();
+  DepthJS.depthose.init();
 
-// Let us know its running
-$("<img src='https://github.com/doug/depthjs/raw/master/chrome-extension/logo_128x128.png'>").css({
-  position: "fixed",
-  width: "32px",
-  height: "32px",
-  bottom: "20px",
-  left: "20px"
-}).appendTo("body");
+  // Let us know its running
+  $("<img src='https://github.com/doug/depthjs/raw/master/chrome-extension/logo_128x128.png'>").css({
+    position: "fixed",
+    width: "32px",
+    height: "32px",
+    bottom: "20px",
+    left: "20px"
+  }).appendTo("body");
+}
