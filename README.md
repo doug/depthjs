@@ -39,4 +39,4 @@ In addition to the obvious improvements to our gesture recognition, we need to m
 
 We like that the backend is very modular, so that anything (not just DepthJS) can connect via 0MQ or WebSockets to the C++ Kinect+OpenCV backend.
 
-However, this is not a user friendly setup. We want to eventually integrate the entire driver+backend into an NSAPI-based native code extension such that we can distribute the extension "batteries-included" as a one-click install. Eventually it should be hosted on the various web browser (Safari, Firefox, and Chome) extension galleries.
+However, this is not a user friendly setup. We want to eventually integrate the entire driver+backend into an NPAPI-based native code extension such that we can distribute the extension "batteries-included" as a one-click install. Eventually it should be hosted on the various web browser (Safari, Firefox, and Chome) extension galleries.
