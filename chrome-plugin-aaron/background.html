@@ -1,0 +1,14 @@
+<html>
+<head>
+</head>
+<body>
+<embed id="pluginObj" type="application/x-depthjs">
+<script>
+var pluginObj = document.getElementById('pluginObj');
+setTimeout(function() {
+  console.log("Calling init");
+  console.log(pluginObj.InitDepthJS());
+}, 1000);
+</script>
+</body>
+</html>

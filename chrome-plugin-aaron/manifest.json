@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "name": "DepthJS",
+  "description": "DepthJS Plugin",
+  "background_page": "background.html",
+  "icons": {
+    "128": "logo_128x128.png"
+  },
+  "permissions": ["tabs", "http://*/*", "https://*/*","notifications"],
+  "plugins": [ {
+    "path": "plugin/depthjs.plugin"
+  } ]
+}
