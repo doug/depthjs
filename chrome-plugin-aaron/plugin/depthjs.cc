@@ -34,6 +34,7 @@
 #include "plugin.h"
 #include "depthjs.h"
 #include "libfreenect.hpp"
+#include "ocv_freenect.h"
 
 #ifdef _WINDOWS
 #include <atlenc.h>
@@ -135,7 +136,7 @@ private:
 
 static Freenect::Freenect* libfreenect = NULL;
 static DepthJSDevice* device = NULL;
-static bool haveInitDevice = false;
+static volatile bool haveInitDevice = false;
 
 /*
 static void InvokeCallback(NPP npp, NPObject* callback, const char* param) {
@@ -183,8 +184,8 @@ bool InitDepthJS(ScriptablePluginObject* obj, const NPVariant* args,
   std::cout << "DepthJS Plugin: InitDepthJS" << "\n";
   instance_count++;
 
-  if (libfreenect == NULL) {
-    haveInitDevice = setupDevice();
+  if (!haveInitDevice) { //libfreenect == NULL) {
+    haveInitDevice = launchOcvFreenect(); // setupDevice();
   } else {
     std::cout << "DepthJS Plugin: Already init, ignoring" << "\n";
   }
@@ -207,6 +208,7 @@ bool GetRGB(ScriptablePluginObject* obj, const NPVariant* args,
 bool ShutdownDepthJS(ScriptablePluginObject* obj, const NPVariant* args,
           unsigned int argCount, NPVariant* result) {
   std::cout << "DepthJS Plugin: ShutdownDepthJS" << "\n";
+  /*
   if (device != NULL) {
     std::cout << "DepthJS Plugin: removing device" << "\n";
     device->setLed(LED_BLINK_GREEN);
@@ -221,6 +223,8 @@ bool ShutdownDepthJS(ScriptablePluginObject* obj, const NPVariant* args,
     delete libfreenect;
     libfreenect = NULL;
   }
+  */
+  killOcvFreenect();
   std::cout << "DepthJS Plugin: ShutdownDepthJS complete" << "\n";
   haveInitDevice = false;
   BOOLEAN_TO_NPVARIANT(true, *result);
