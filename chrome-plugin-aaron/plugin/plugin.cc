@@ -81,6 +81,7 @@ NPObject* ScriptablePluginObject::Allocate(NPP instance, NPClass* npclass) {
 
 void ScriptablePluginObject::Deallocate(NPObject* obj) {
   std::cout << "DepthJS: ScriptablePluginObject::Deallocate" << "\n";
+  ShutdownDepthJS();
   delete (ScriptablePluginObject*)obj;
 }
 

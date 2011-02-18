@@ -83,7 +83,7 @@ extern Scalar refineSegments(const Mat& img,
 extern void makePointsFromMask(Mat& maskm,vector<Point2f>& points, bool _add = false);
 extern void drawPoint(Mat& out,vector<Point2f>& points,Scalar color, Mat* maskm = NULL);
 
-
+extern bool SendEventToBrowser(const string& eventJson); // depthjs.cc
 void send_event(const string& etype, const string& edata) {
   /*
   s_sendmore (socket, "event");
@@ -93,7 +93,8 @@ void send_event(const string& etype, const string& edata) {
   */
   stringstream ss;
   ss << "{\"type\":\"" << etype << "\",\"data\":{" << edata << "}}";
-  std::cout << "SEND_EVENT IS NOT SUPPORTED: " << ss.str() << "\n";
+  // std::cout << "SEND_EVENT IS NOT SUPPORTED: " << ss.str() << "\n";
+  SendEventToBrowser(ss.str());
 }
 
 
@@ -567,6 +568,8 @@ int launchOcvFreenect() {
 }
 
 void killOcvFreenect() {
+  if (die) return;
   die = true;
+  pthread_join(ocv_thread, NULL);
 }
 

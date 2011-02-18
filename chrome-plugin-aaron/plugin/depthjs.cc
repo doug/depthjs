@@ -137,6 +137,7 @@ private:
 static Freenect::Freenect* libfreenect = NULL;
 static DepthJSDevice* device = NULL;
 static volatile bool haveInitDevice = false;
+static volatile ScriptablePluginObject* pluginHost = NULL;
 
 /*
 static void InvokeCallback(NPP npp, NPObject* callback, const char* param) {
@@ -179,13 +180,66 @@ static bool setupDevice() {
   }
 }
 
+static void _sendEventInBrowserThread(void *data) {
+  std::cout << "DepthJS Plugin: In browser thread" << "\n";
+  char* eventJson = static_cast<char*>(data);
+
+  if (pluginHost == NULL) {
+    std::cerr << "DepthJS Plugin: Ignoring event for uninit host: " << eventJson << "\n";
+    free(eventJson);
+    return;
+  }
+
+  if (npnfuncs == NULL) {
+    std::cerr << "DepthJS Plugin: Somehow npnfuncs is NULL!?" << "\n";
+    free(eventJson);
+    return;
+  }
+
+  stringstream ss;
+  ss << "javascript:if(DepthJS && DepthJS.receiveEvent)DepthJS.receiveEvent(" << eventJson << ")";
+  std::cout << "DepthJS Plugin [browser thread]: Calling " << ss.str() << "\n";
+  npnfuncs->geturl(pluginHost->npp, ss.str().c_str(), NULL);
+  free(eventJson);
+}
+
+bool SendEventToBrowser(const string& eventJson) {
+  if (pluginHost == NULL) {
+    std::cerr << "DepthJS Plugin: Ignoring event for uninit host: " << eventJson << "\n";
+    return false;
+  }
+
+  if (npnfuncs == NULL) {
+    std::cerr << "DepthJS Plugin: Somehow npnfuncs is NULL!?" << "\n";
+    return false;
+  }
+
+  char *eventJsonCStr = static_cast<char*>(malloc(sizeof(char) * (eventJson.length() + 1)));
+  size_t length = eventJson.copy(eventJsonCStr, eventJson.length(), 0);
+  eventJsonCStr[length] = '\0';
+
+  npnfuncs->pluginthreadasynccall(
+      pluginHost->npp,
+      _sendEventInBrowserThread,
+      eventJsonCStr);
+
+  return true;
+}
+
 bool InitDepthJS(ScriptablePluginObject* obj, const NPVariant* args,
           unsigned int argCount, NPVariant* result) {
   std::cout << "DepthJS Plugin: InitDepthJS" << "\n";
   instance_count++;
 
   if (!haveInitDevice) { //libfreenect == NULL) {
-    haveInitDevice = launchOcvFreenect(); // setupDevice();
+    std::cout << "DepthJS Plugin: Device not yet init; initing" << "\n";
+    haveInitDevice = launchOcvFreenect() == 0; // setupDevice();
+    if (haveInitDevice) {
+      std::cout << "DepthJS Plugin: Successfully inited Kinect" << "\n";
+      pluginHost = obj;
+    } else {
+      std::cerr << "DepthJS Plugin: Failed to init Kinect" << "\n";
+    }
   } else {
     std::cout << "DepthJS Plugin: Already init, ignoring" << "\n";
   }
@@ -205,8 +259,7 @@ bool GetRGB(ScriptablePluginObject* obj, const NPVariant* args,
   return true;
 }
 
-bool ShutdownDepthJS(ScriptablePluginObject* obj, const NPVariant* args,
-          unsigned int argCount, NPVariant* result) {
+void ShutdownDepthJS() {
   std::cout << "DepthJS Plugin: ShutdownDepthJS" << "\n";
   /*
   if (device != NULL) {
@@ -227,6 +280,12 @@ bool ShutdownDepthJS(ScriptablePluginObject* obj, const NPVariant* args,
   killOcvFreenect();
   std::cout << "DepthJS Plugin: ShutdownDepthJS complete" << "\n";
   haveInitDevice = false;
+  pluginHost = NULL;
+}
+
+bool ShutdownDepthJS(ScriptablePluginObject* obj, const NPVariant* args,
+          unsigned int argCount, NPVariant* result) {
+  ShutdownDepthJS();
   BOOLEAN_TO_NPVARIANT(true, *result);
   return true;
 }

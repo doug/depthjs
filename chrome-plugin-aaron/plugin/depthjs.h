@@ -25,33 +25,24 @@
 * the terms of any one of the NPL, the GPL or the LGPL.
 * ***** END LICENSE BLOCK ***** */
 
-#ifndef NPCAPTURE__SAVE_H_
-#define NPCAPTURE__SAVE_H_
+#ifndef DEPTHJS_FUNCS_H_
+#define DEPTHJS_FUNCS_H_
 
 #include "npfunctions.h"
+#include <string>
+#include <string.h>
 
 class ScriptablePluginObject;
 
-bool InitDepthJS(ScriptablePluginObject* obj, const NPVariant* args,
-          unsigned int argCount, NPVariant* result);
+bool InitDepthJS(
+  ScriptablePluginObject* obj, const NPVariant* args, unsigned int argCount, NPVariant* result);
 
-bool ShutdownDepthJS(ScriptablePluginObject* obj, const NPVariant* args,
-  unsigned int argCount, NPVariant* result);
+bool ShutdownDepthJS(
+  ScriptablePluginObject* obj, const NPVariant* args, unsigned int argCount, NPVariant* result);
 
-/*
-bool AutoSave(ScriptablePluginObject* obj, const NPVariant* args,
-              unsigned int argCount, NPVariant* result);
+void ShutdownDepthJS();
 
-bool SetSavePath(ScriptablePluginObject* obj, const NPVariant* args,
-                 uint32_t argCount, NPVariant* result);
+bool SendEventToBrowser(const std::string& eventJson);
 
-bool OpenSavePath(ScriptablePluginObject* obj, const NPVariant* args,
-                  unsigned int argCount, NPVariant* result);
+#endif  // DEPTHJS_FUNCS_H_
 
-bool SaveScreenshot(ScriptablePluginObject* obj, const NPVariant* args,
-                    uint32_t argCount, NPVariant* result);
-
-bool SaveToClipboard(ScriptablePluginObject* obj, const NPVariant* args,
-                     uint32_t argCount, NPVariant* result);
-*/
-#endif  // NPCAPTURE__SAVE_H_
