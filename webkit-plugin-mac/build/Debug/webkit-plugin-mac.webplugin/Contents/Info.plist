@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>webkit-plugin-mac</string>
+	<key>CFBundleIdentifier</key>
+	<string>edu.mit.media.depthjs</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>webkit-plugin-mac</string>
+	<key>CFBundlePackageType</key>
+	<string>WBPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+	<key>NSPrincipalClass</key>
+	<string>webkit_plugin_macView</string>
+	<key>WebPluginDescription</key>
+	<string>DepthJS Extension Plugin</string>
+	<key>WebPluginMIMETypes</key>
+	<dict>
+		<key>application/x-depthjs</key>
+		<dict>
+			<key>WebPluginExtensions</key>
+			<array>
+				<string>depthjs</string>
+			</array>
+			<key>WebPluginTypeDescription</key>
+			<string>DepthJS Extension Plugin</string>
+		</dict>
+	</dict>
+	<key>WebPluginName</key>
+	<string>DepthJS Extension Plugin</string>
+</dict>
+</plist>

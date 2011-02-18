@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>English</string>
+  <key>CFBundleExecutable</key>
+  <string>depthjs</string>
+  <key>CFBundleGetInfoString</key>
+  <string>Copyright 2010-2011 Massachusetts Institute of Technology.</string>
+  <key>CFBundleIconFile</key>
+  <string></string>
+  <key>CFBundleIdentifier</key>
+  <string>edu.mit.media.depthjs</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundlePackageType</key>
+  <string>BRPL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.0</string>
+  <key>CFBundleSignature</key>
+  <string>????</string>
+  <key>CFBundleVersion</key>
+  <string>1.0</string>
+  <key>CFPlugInDynamicRegisterFunction</key>
+  <string></string>
+  <key>CFPlugInDynamicRegistration</key>
+  <string>NO</string>
+  <key>CFPlugInFactories</key>
+  <dict>
+    <key>6E8FFACB-A39C-4D2B-A19C-DFE2B9A616CA</key>
+    <string>MyFactoryFunction</string>
+  </dict>
+  <key>CFPlugInTypes</key>
+  <dict>
+    <key>28EE48D2-20CC-43E3-BAE8-17DFAEECE960</key>
+    <array>
+      <string>6E8FFACB-A39C-4D2B-A19C-DFE2B9A616CA</string>
+    </array>
+  </dict>
+  <key>CFPlugInUnloadFunction</key>
+  <string></string>
+  <key>WebPluginDescription</key>
+  <string>DepthJS Extension Plugin</string>
+  <key>WebPluginMIMETypes</key>
+  <dict>
+    <key>application/x-depthjs</key>
+    <dict>
+      <key>WebPluginExtensions</key>
+      <array>
+        <string>depthjs</string>
+      </array>
+      <key>WebPluginTypeDescription</key>
+      <string>DepthJS Extension Plugin</string>
+    </dict>
+  </dict>
+  <key>WebPluginName</key>
+  <string>DepthJS Extension Plugin</string>
+</dict>
+</plist>

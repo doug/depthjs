@@ -1,0 +1,8 @@
+//
+// Prefix header for all source files of the 'webkit-plugin-mac' target in the 'webkit-plugin-mac' project.
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+    #import <WebKit/WebKit.h>
+#endif
