@@ -2,6 +2,10 @@ if (DepthJS) {
 console.log("DepthJS Loading Safari shit");
 DepthJS.initBrowserBackground = function() {
   console.log("DepthJS: Initing Safari background");
+  // Choose the NPAPI-based backend
+  DepthJS.backend.connect = DepthJS.npBackend.connect;
+  DepthJS.backend.disconnect = DepthJS.npBackend.disconnect;
+
   DepthJS.toolbar.init = function() {
 
     var modes = ["PannerMode", "SelectorBoxMode", "DepthoseMode"];
