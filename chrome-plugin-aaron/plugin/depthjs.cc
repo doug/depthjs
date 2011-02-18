@@ -197,7 +197,7 @@ static void _sendEventInBrowserThread(void *data) {
   }
 
   stringstream ss;
-  ss << "javascript:if(DepthJS && DepthJS.receiveEvent)DepthJS.receiveEvent(" << eventJson << ")";
+  ss << "javascript:if(DepthJS && DepthJS.npBackend)DepthJS.npBackend.receiveEvent(" << eventJson << ")";
   std::cout << "DepthJS Plugin [browser thread]: Calling " << ss.str() << "\n";
   npnfuncs->geturl(pluginHost->npp, ss.str().c_str(), NULL);
   free(eventJson);

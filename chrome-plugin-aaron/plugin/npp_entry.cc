@@ -135,7 +135,7 @@ int16_t NPP_HandleEvent(NPP instance, void* event) {
   if (carbonEvent && carbonEvent->what != 0) {
     std::cout << "DepthJS Plugin: NPP_HandleEvent type: " << carbonEvent->what << "\n";
   }
-  *
+  /*
   NPCocoaEvent* cocoaEvent = (NPCocoaEvent*)event;
   std::cout << "DepthJS: NPP_HandleEvent type: " << cocoaEvent->type << "\n";
   */
