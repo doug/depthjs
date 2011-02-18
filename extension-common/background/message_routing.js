@@ -30,13 +30,7 @@ DepthJS.background.handleMessage = function(action, data, reply) {
 
     selectTab: function() {
       var tabId = data.tabId;
-      var tab = _.select(DepthJS.tabs.activeWindowTabCache, function(t) { return t.tabId == tabId; });
-      if (tab.length == 0) {
-        console.log("Couldn't find tabId " + tabId);
-        return;
-      }
-      tab = tab[0];
-      tab.activate();
+      DepthJS.tabs.selectTab(tabId);
     },
 
     depthoseMode: function() {

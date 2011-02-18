@@ -32,18 +32,20 @@ var DepthJS = {
   browser: {},
   background: {},
   registerMode: "selectorBox",
-  pluginObj: null,
+  pluginObj: null
 };
 
 DepthJS.init = function (pluginObj) {
+  console.log("Initing DepthJS background");
   DepthJS.pluginObj = pluginObj;
   DepthJS.initBrowserBackground();
   DepthJS.browser.addBackgroundListener(DepthJS.background.handleMessage);
-  if (DepthJS.verbose) console.log("Connecting WebSocket");
+  if (DepthJS.verbose) console.log("Connecting to Backend");
   if (!DepthJS.backend.connect()) {
     if (DepthJS.verbose) console.log("Couldn't connect... aborting");
     return false;
   }
+  console.log("Init complete");
   return true;
 };
 

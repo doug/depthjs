@@ -3,10 +3,10 @@ console.log("DepthJS Loading Safari shit");
 DepthJS.initBrowserBackground = function() {
   console.log("DepthJS: Initing Safari background");
   DepthJS.toolbar.init = function() {
-    
+
     var modes = ["PannerMode", "SelectorBoxMode", "DepthoseMode"];
     var index = 0;
-    
+
     safari.application.addEventListener("command", function(msgEvent) {
       if (msgEvent.command == "toolbarClick") {
         var mode = index % 3;
@@ -20,7 +20,7 @@ DepthJS.initBrowserBackground = function() {
       }
     });
   };
-  
+
   DepthJS.tabs.populateActiveWindowCache = function(callback) {
     var tabs = safari.application.activeBrowserWindow.tabs;
     DepthJS.tabs.activeWindowTabCache = _.map(tabs, function(tab) {
@@ -30,15 +30,30 @@ DepthJS.initBrowserBackground = function() {
     });
     callback(DepthJS.tabs.activeWindowTabCache);
   };
-  
+
   DepthJS.toolbar.init();
 };
+
+
+DepthJS.tabs.selectTab = function(tabId) {
+  var tab = _.select(DepthJS.tabs.activeWindowTabCache, function(t) { return t.tabId == tabId; });
+  if (tab.length == 0) {
+    console.log("Couldn't find tabId " + tabId);
+    return;
+  }
+  tab = tab[0];
+  tab.activate();
+}
+
+
+
+
 
 /**
  * Typically used for background.html. When a message is passed in, it passes to the
  * callback two parameters: action & data.
  */
-  
+
 DepthJS.browser.addBackgroundListener = function(callback) {
   safari.application.addEventListener("message", function(e) {
     var action = e.name;

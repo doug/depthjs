@@ -12,11 +12,8 @@ DepthJS.wsBackend.imageWs = null;
 DepthJS.wsBackend.depthWs = null;
 DepthJS.wsBackend.host = "localhost";
 DepthJS.wsBackend.port = 8000;
-DepthJS.wsBackend.connecting = false;
-DepthJS.wsBackend.connected = false;
-
 DepthJS.wsBackend.connect = function() {
-  DepthJS.wsBackend.connecting = true;
+  DepthJS.backend.connecting = true;
   DepthJS.browser.sendMessageToPopup("connecting");
   var connected = 0;
   function check() {
@@ -24,8 +21,8 @@ DepthJS.wsBackend.connect = function() {
     if (connected == 3) {
       if (DepthJS.verbose) console.log("All 3 connected");
       DepthJS.browser.sendMessageToPopup("connected");
-      DepthJS.wsBackend.connecting = false;
-      DepthJS.wsBackend.connected = true;
+      DepthJS.backend.connecting = false;
+      DepthJS.backend.connected = true;
     }
   }
 
@@ -101,7 +98,7 @@ DepthJS.wsBackend.onMessage = function (stream, data) {
 };
 
 DepthJS.wsBackend.disconnect = function() {
-  DepthJS.wsBackend.connected = false;
+  DepthJS.backend.connected = false;
   if (DepthJS.verbose) console.log("Disconnecting");
   DepthJS.browser.sendMessageToPopup("disconnected");
   return _.map(["event", "image", "depth"], function(stream) {
@@ -134,20 +131,22 @@ DepthJS.wsBackend.onConnect = function (stream) {
 // NPAPI PLUGIN BASED BACKEND ----------------------------------------------------------------------
 
 DepthJS.npBackend = {};
-DepthJS.npBackend.connected = false;
 DepthJS.npBackend.connect = function() {
-  if (DepthJS.npBackend.connected) {
+  if (DepthJS.backend.connecting || DepthJS.backend.connected) {
     console.log("Already connectted... disconnecting and reconnecting");
     DepthJS.npBackend.disconnect();
   }
   DepthJS.browser.sendMessageToPopup("connecting");
 
+  DepthJS.backend.connected = false;
   var success = DepthJS.pluginObj.InitDepthJS();
+  DepthJS.backend.connecting = false;
   if (success) {
     console.log("Successfully acquired Kinect event monitor from plugin!");
-    DepthJS.npBackend.connected = true;
+    DepthJS.backend.connected = true;
   } else {
     console.log("ERROR: Could not acquire Kinect event monitor from plugin");
+    DepthJS.backend.connected = false;
   }
   return success;
 };
@@ -168,7 +167,8 @@ DepthJS.npBackend.receiveEvent = function (msg) {
 };
 
 DepthJS.npBackend.disconnect = function() {
-  DepthJS.npBackend.connected = false;
+  DepthJS.backend.connected = false;
+  DepthJS.backend.connecting = false;
   if (DepthJS.verbose) console.log("Disconnecting");
   DepthJS.browser.sendMessageToPopup("disconnected");
   DepthJS.pluginObj.ShutdownDepthJS();
@@ -178,5 +178,7 @@ DepthJS.npBackend.disconnect = function() {
 
 DepthJS.backend = {
   connect: DepthJS.wsBackend.connect,
-  disconnect: DepthJS.wsBackend.disconnect
+  disconnect: DepthJS.wsBackend.disconnect,
+  connecting: false,
+  connected: false
 }

@@ -12,7 +12,7 @@ DepthJS.eventLink.initPort = function() {
 };
 
 DepthJS.eventLink.onEvent = function (msg) {
-  DepthJS.logSortaVerbose("DepthJS: event " + msg.type);
+  DepthJS.logSortaVerbose(msg.type, "DepthJS: event " + msg.type);
   var handler = DepthJS.eventHandlers["on"+msg.type];
   if (handler != null) {
     handler(msg.data);

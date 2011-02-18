@@ -30,13 +30,15 @@
               "css/selectorBox.css"],
       "js": ["third_party/jquery-1.4.4.min.js",
              "third_party/underscore-min.js",
-             "third_party/vfx/zflow/zflow.js",
              "content_script/root.js",
              "content_script/depthose.js",
+             "third_party/vfx/zflow/zflow.js",
              "content_script/panner.js",
              "content_script/selector_box.js",
-             "content_script/event_handlers..js",
-             "content_script/event_link.js"],
+             "content_script/event_handlers.js",
+             "content_script/event_link.js",
+             "chrome.js",
+             "content_script/init.js"],
       "run_at": "document_end" }
   ]
 }
