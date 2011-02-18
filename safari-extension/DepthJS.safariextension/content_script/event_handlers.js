@@ -85,7 +85,7 @@ DepthJS.eventHandlers.onRegister = function(data) {
   if (DepthJS.verbose) console.log("DepthJS: User registered their hand");
   $(window).trigger("touchstart");
   if (data.mode == "twohands") {
-    console.log("Ignoring in Safari for now");
+    console.log("Ignoring in two hands for now");
     return;
   }
   if (data.mode == "theforce") {
@@ -161,6 +161,8 @@ DepthJS.eventHandlers.onMove = function(data) {
   } else if (DepthJS.state == "depthose") {
     DepthJS.depthose.move(accumulatedX, accumulatedY, accumulatedZ);
   } else if (DepthJS.state == "selectorBox") {
+    //DepthJS.selectorBox.move(accumulatedX * $(window).width() / 100,
+    //                         accumulatedY * $(window).height() / 100);
     DepthJS.selectorBox.move(accumulatedX, accumulatedY);
   } else if (DepthJS.state == "selectorBoxPopup") {
     DepthJS.selectorBoxPopup.move(accumulatedX, accumulatedY, accumulatedZ);

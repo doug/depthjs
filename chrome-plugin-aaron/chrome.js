@@ -184,10 +184,6 @@ DepthJS.tools.obj_repr = function (obj, className) {
 };
 
 
-DepthJS.browser.initBackgroundListener = function() {
-};
-
-
 /**
  * Typically used for background.html. When a message is passed in, it passes to the
  * callback two parameters: action & data.
@@ -230,8 +226,8 @@ DepthJS.browser.addContentScriptListener = function(messageType, callback) {
   */
 };
 
-DepthJS.browser.readContentScriptListeners = function() {
-  console.log("DepthJS: Unimplemented for chrome: readContentScriptListeners");
+DepthJS.browser.readdContentScriptListeners = function() {
+  console.log("DepthJS: Unimplemented for chrome: readdContentScriptListeners");
   /*
   _.each(stuff, function(callback, messageType) {
     console.log("Reading event listener for " + messageType);

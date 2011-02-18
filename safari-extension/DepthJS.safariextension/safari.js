@@ -89,7 +89,8 @@ DepthJS.browser.readdContentScriptListeners = function() {
 })();
 
 DepthJS.browser.sendMessageToPopup = function(msg) {
-  console.log(["Sent popup", msg]);
+  console.log(["Sending message to popup: ", msg]);
+  // safari.self.tab.dispatchMessage("DepthJS_popup", msg);
 };
 
 DepthJS.browser.sendMessageToActiveTab = function(message) {
@@ -107,8 +108,4 @@ DepthJS.browser.sendMessageToBackground = function(messageType, data) {
   safari.self.tab.dispatchMessage(messageType, data);
 };
 
-DepthJS.browser.sendMessageToPopup = function(msg) {
-  console.log(["Sending message to popup: ", msg]);
-  // safari.self.tab.dispatchMessage("DepthJS_popup", msg);
-};
-}
+} // if (DepthJS)

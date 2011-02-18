@@ -26,7 +26,7 @@ $(function() {
         lastTime = new Date();
       } else if ((new Date()) - lastTime > 1300) {
         console.log("I think I reloaded, redoing init.");
-        DepthJS.browser.readContentScriptListeners();
+        DepthJS.browser.readdContentScriptListeners();
       }
       lastTime = new Date();
     }

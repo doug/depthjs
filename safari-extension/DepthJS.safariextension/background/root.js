@@ -31,17 +31,22 @@ var DepthJS = {
   toolbar: {},
   browser: {},
   background: {},
-  registerMode: "selectorBox"
+  registerMode: "selectorBox",
+  pluginObj: null
 };
 
-DepthJS.init = function () {
+DepthJS.init = function (pluginObj) {
+  console.log("Initing DepthJS background");
+  DepthJS.pluginObj = pluginObj;
   DepthJS.initBrowserBackground();
   DepthJS.browser.addBackgroundListener(DepthJS.background.handleMessage);
-  if (DepthJS.verbose) console.log("Connecting WebSocket");
+  if (DepthJS.verbose) console.log("Connecting to Backend");
   if (!DepthJS.backend.connect()) {
     if (DepthJS.verbose) console.log("Couldn't connect... aborting");
-    return;
+    return false;
   }
+  console.log("Init complete");
+  return true;
 };
 
 
