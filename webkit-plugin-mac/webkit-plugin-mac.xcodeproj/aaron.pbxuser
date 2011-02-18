@@ -1,0 +1,390 @@
+// !$*UTF8*$!
+{
+	0259C573FE90428111CA0C5A /* Project object */ = {
+		activeBuildConfigurationName = Debug;
+		activeTarget = 8D1AC9600486D14A00FE50C9 /* webkit-plugin-mac */;
+		addToTargets = (
+			8D1AC9600486D14A00FE50C9 /* webkit-plugin-mac */,
+		);
+		codeSenseManager = 938563D6130E6093000F4333 /* Code sense */;
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					969,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXConfiguration.PBXTargetDataSource.PBXTargetDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					929,
+					60,
+					20,
+					48,
+					43,
+					43,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXTargetDataSource_PrimaryAttribute,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 319709316;
+			PBXWorkspaceStateSaveDate = 319709316;
+		};
+		perUserProjectItems = {
+			938563CB130E608B000F4333 /* PBXBookmark */ = 938563CB130E608B000F4333 /* PBXBookmark */;
+			938563D4130E6093000F4333 /* PlistBookmark */ = 938563D4130E6093000F4333 /* PlistBookmark */;
+			9385643C130E6D38000F4333 /* PBXTextBookmark */ = 9385643C130E6D38000F4333 /* PBXTextBookmark */;
+			9385643D130E6D38000F4333 /* PBXTextBookmark */ = 9385643D130E6D38000F4333 /* PBXTextBookmark */;
+			9385643E130E6D38000F4333 /* PBXTextBookmark */ = 9385643E130E6D38000F4333 /* PBXTextBookmark */;
+			9385643F130E6D38000F4333 /* PBXTextBookmark */ = 9385643F130E6D38000F4333 /* PBXTextBookmark */;
+			93856440130E6D38000F4333 /* PBXTextBookmark */ = 93856440130E6D38000F4333 /* PBXTextBookmark */;
+			93856442130E6D38000F4333 /* PBXTextBookmark */ = 93856442130E6D38000F4333 /* PBXTextBookmark */;
+			93856443130E6D38000F4333 /* PBXTextBookmark */ = 93856443130E6D38000F4333 /* PBXTextBookmark */;
+			93856444130E6D38000F4333 /* PBXTextBookmark */ = 93856444130E6D38000F4333 /* PBXTextBookmark */;
+			938564F7130E6F51000F4333 /* PBXTextBookmark */ = 938564F7130E6F51000F4333 /* PBXTextBookmark */;
+			938564F8130E6F51000F4333 /* PBXTextBookmark */ = 938564F8130E6F51000F4333 /* PBXTextBookmark */;
+			938564F9130E6F51000F4333 /* PBXTextBookmark */ = 938564F9130E6F51000F4333 /* PBXTextBookmark */;
+			938564FA130E6F51000F4333 /* PBXTextBookmark */ = 938564FA130E6F51000F4333 /* PBXTextBookmark */;
+			938564FB130E6F51000F4333 /* PBXTextBookmark */ = 938564FB130E6F51000F4333 /* PBXTextBookmark */;
+			938564FC130E6F51000F4333 /* XCBuildMessageTextBookmark */ = 938564FC130E6F51000F4333 /* XCBuildMessageTextBookmark */;
+			938564FD130E6F51000F4333 /* PBXTextBookmark */ = 938564FD130E6F51000F4333 /* PBXTextBookmark */;
+		};
+		sourceControlManager = 938563D5130E6093000F4333 /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	0259C576FE90428111CA0C5A /* webkit_plugin_macView.mm */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 2418}}";
+			sepNavSelRange = "{5038, 0}";
+			sepNavVisRange = "{3, 1855}";
+		};
+	};
+	0259C57AFE90428111CA0C5A /* webkit_plugin_macView.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 808}}";
+			sepNavSelRange = "{306, 0}";
+			sepNavVisRange = "{0, 457}";
+		};
+	};
+	32DBCF980370C29C00C91783 /* webkit-plugin-mac_Prefix.pch */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 1172}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 196}";
+		};
+	};
+	8D1AC9600486D14A00FE50C9 /* webkit-plugin-mac */ = {
+		activeExec = 0;
+	};
+	8D1AC9730486D14A00FE50C9 /* Info.plist */ = {
+		uiCtxt = {
+			sepNavWindowFrame = "{{1111, 140}, {863, 1205}}";
+		};
+	};
+	8D1AC97B0486D23100FE50C9 /* English */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {804, 1092}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 96}";
+			sepNavWindowFrame = "{{38, 347}, {863, 1205}}";
+		};
+	};
+	938563CB130E608B000F4333 /* PBXBookmark */ = {
+		isa = PBXBookmark;
+		fRef = 8D1AC9730486D14A00FE50C9 /* Info.plist */;
+	};
+	938563D4130E6093000F4333 /* PlistBookmark */ = {
+		isa = PlistBookmark;
+		fRef = 8D1AC9730486D14A00FE50C9 /* Info.plist */;
+		fallbackIsa = PBXBookmark;
+		isK = 0;
+		kPath = (
+		);
+		name = "/Volumes/New HD/Users/aaron/eclipseWorkspace/depthjs/webkit-plugin-mac/Info.plist";
+		rLen = 0;
+		rLoc = 9223372036854775807;
+	};
+	938563D5130E6093000F4333 /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		scmConfiguration = {
+			repositoryNamesForRoots = {
+				"" = "";
+			};
+		};
+	};
+	938563D6130E6093000F4333 /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	938563D8130E61AF000F4333 /* bg_fg_blobs.cpp */ = {
+		isa = PBXFileReference;
+		fileEncoding = 4;
+		lastKnownFileType = sourcecode.cpp.cpp;
+		name = bg_fg_blobs.cpp;
+		path = "/Volumes/New HD/Users/aaron/eclipseWorkspace/depthjs/npapi_plugin/bg_fg_blobs.cpp";
+		sourceTree = "<absolute>";
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 3302}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{136, 2039}";
+		};
+	};
+	938563DD130E61AF000F4333 /* ocv_freenect.cpp */ = {
+		isa = PBXFileReference;
+		fileEncoding = 4;
+		lastKnownFileType = sourcecode.cpp.cpp;
+		name = ocv_freenect.cpp;
+		path = "/Volumes/New HD/Users/aaron/eclipseWorkspace/depthjs/npapi_plugin/ocv_freenect.cpp";
+		sourceTree = "<absolute>";
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 7488}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{1176, 2771}";
+		};
+	};
+	938563DE130E61AF000F4333 /* ocv_freenect.h */ = {
+		isa = PBXFileReference;
+		fileEncoding = 4;
+		lastKnownFileType = sourcecode.c.h;
+		name = ocv_freenect.h;
+		path = "/Volumes/New HD/Users/aaron/eclipseWorkspace/depthjs/npapi_plugin/ocv_freenect.h";
+		sourceTree = "<absolute>";
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 808}}";
+			sepNavSelRange = "{193, 0}";
+			sepNavVisRange = "{0, 468}";
+		};
+	};
+	9385643C130E6D38000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 938563D8130E61AF000F4333 /* bg_fg_blobs.cpp */;
+		name = "bg_fg_blobs.cpp: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 934;
+		vrLoc = 0;
+	};
+	9385643D130E6D38000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 938563DE130E61AF000F4333 /* ocv_freenect.h */;
+		name = "ocv_freenect.h: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 468;
+		vrLoc = 0;
+	};
+	9385643E130E6D38000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 32DBCF980370C29C00C91783 /* webkit-plugin-mac_Prefix.pch */;
+		name = "webkit-plugin-mac_Prefix.pch: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 196;
+		vrLoc = 0;
+	};
+	9385643F130E6D38000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 938563DD130E61AF000F4333 /* ocv_freenect.cpp */;
+		name = "ocv_freenect.cpp: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 2771;
+		vrLoc = 1176;
+	};
+	93856440130E6D38000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 93856441130E6D38000F4333 /* depthjs.cc */;
+		name = "depthjs.cc: 200";
+		rLen = 85;
+		rLoc = 6063;
+		rType = 0;
+		vrLen = 3010;
+		vrLoc = 4686;
+	};
+	93856441130E6D38000F4333 /* depthjs.cc */ = {
+		isa = PBXFileReference;
+		name = depthjs.cc;
+		path = "/Volumes/New HD/Users/aaron/eclipseWorkspace/depthjs/npapi_plugin/depthjs.cc";
+		sourceTree = "<absolute>";
+	};
+	93856442130E6D38000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 0259C57AFE90428111CA0C5A /* webkit_plugin_macView.h */;
+		name = "webkit_plugin_macView.h: 16";
+		rLen = 0;
+		rLoc = 306;
+		rType = 0;
+		vrLen = 457;
+		vrLoc = 0;
+	};
+	93856443130E6D38000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 0259C576FE90428111CA0C5A /* webkit_plugin_macView.mm */;
+		name = "webkit_plugin_macView.mm: 61";
+		rLen = 0;
+		rLoc = 1690;
+		rType = 0;
+		vrLen = 1919;
+		vrLoc = 1269;
+	};
+	93856444130E6D38000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 0259C576FE90428111CA0C5A /* webkit_plugin_macView.mm */;
+		name = "webkit_plugin_macView.mm: 63";
+		rLen = 0;
+		rLoc = 1741;
+		rType = 0;
+		vrLen = 1919;
+		vrLoc = 1269;
+	};
+	9385648D130E6E63000F4333 /* libfreenect.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 5655}}";
+			sepNavSelRange = "{6057, 0}";
+			sepNavVisRange = "{0, 3292}";
+		};
+	};
+	93856494130E6E6A000F4333 /* cv.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 1092}}";
+			sepNavSelRange = "{2850, 0}";
+			sepNavVisRange = "{961, 2452}";
+		};
+	};
+	93856496130E6E6A000F4333 /* cvaux.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 858}}";
+			sepNavSelRange = "{2497, 0}";
+			sepNavVisRange = "{0, 2830}";
+		};
+	};
+	938564A1130E6EC0000F4333 /* ocv_freenect.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 7657}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 1445}";
+		};
+	};
+	938564A2130E6EC0000F4333 /* ocv_freenect.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 808}}";
+			sepNavSelRange = "{369, 0}";
+			sepNavVisRange = "{0, 468}";
+		};
+	};
+	938564A6130E6EE0000F4333 /* bg_fg_blobs.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 3341}}";
+			sepNavSelRange = "{163, 0}";
+			sepNavVisRange = "{0, 1974}";
+		};
+	};
+	938564A7130E6EE0000F4333 /* bg_fg_blobs.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1147, 833}}";
+			sepNavSelRange = "{233, 0}";
+			sepNavVisRange = "{0, 253}";
+		};
+	};
+	938564F7130E6F51000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 938564A2130E6EC0000F4333 /* ocv_freenect.h */;
+		name = "ocv_freenect.h: 25";
+		rLen = 0;
+		rLoc = 369;
+		rType = 0;
+		vrLen = 468;
+		vrLoc = 0;
+	};
+	938564F8130E6F51000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 938564A1130E6EC0000F4333 /* ocv_freenect.cpp */;
+		name = "ocv_freenect.cpp: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 1445;
+		vrLoc = 0;
+	};
+	938564F9130E6F51000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 938564A6130E6EE0000F4333 /* bg_fg_blobs.cpp */;
+		name = "bg_fg_blobs.cpp: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 1958;
+		vrLoc = 0;
+	};
+	938564FA130E6F51000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 0259C576FE90428111CA0C5A /* webkit_plugin_macView.mm */;
+		name = "webkit_plugin_macView.mm: 10";
+		rLen = 0;
+		rLoc = 189;
+		rType = 0;
+		vrLen = 1741;
+		vrLoc = 0;
+	};
+	938564FB130E6F51000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 938564A7130E6EE0000F4333 /* bg_fg_blobs.h */;
+		name = "bg_fg_blobs.h: 14";
+		rLen = 0;
+		rLoc = 176;
+		rType = 0;
+		vrLen = 253;
+		vrLoc = 0;
+	};
+	938564FC130E6F51000F4333 /* XCBuildMessageTextBookmark */ = {
+		isa = PBXTextBookmark;
+		comments = "Opencv2/core/core_c.h: No such file or directory";
+		fRef = 93856494130E6E6A000F4333 /* cv.h */;
+		fallbackIsa = XCBuildMessageTextBookmark;
+		rLen = 1;
+		rLoc = 62;
+		rType = 1;
+	};
+	938564FD130E6F51000F4333 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 93856494130E6E6A000F4333 /* cv.h */;
+		name = "cv.h: 63";
+		rLen = 0;
+		rLoc = 2850;
+		rType = 0;
+		vrLen = 2452;
+		vrLoc = 961;
+	};
+}
