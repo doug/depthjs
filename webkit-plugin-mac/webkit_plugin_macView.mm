@@ -11,14 +11,14 @@
 
 #import <stdlib.h>
 #import <string.h>
-#import "ocv_freenect.h"
+#include "ocv_freenect.hpp"
 
 static volatile bool haveInitDevice = false;
 
 static volatile webkit_plugin_macView* hostPlugin = nil;
 
 bool SendEventToBrowser(const string& _eventJson) {
-  NSString *eventJson = [NSString stringWithCString:_eventJson.c_str()];
+  NSString *eventJson = [NSString stringWithCString:_eventJson.c_str() encoding:[NSString defaultCStringEncoding]];
   NSLog(@"Going to send the following eventJson nsstring: %@", eventJson);
   
 
@@ -117,10 +117,10 @@ bool SendEventToBrowser(const string& _eventJson) {
   return self;
 }
 
-(NSString *)webScriptNameForSelector:(SEL)selector {
-  if(selector == @selector(initDepthJS)) {
+- (NSString *)webScriptNameForSelector:(SEL)selector {
+  if(selector == @selector(InitDepthJS)) {
     return @"InitDepthJS";
-  } else if (selector == @selector(shutdownDepthJS)) {
+  } else if (selector == @selector(ShutdownDepthJS)) {
     return @"ShutdownDepthJS";
   }
   return nil;
@@ -128,8 +128,8 @@ bool SendEventToBrowser(const string& _eventJson) {
 
 + (BOOL)isSelectorExcludedFromWebScript:(SEL)selector {
   NSLog(@"isSelectorExcludedFromWebScript");
-  if(selector == @selector(initDepthJS) ||
-     selector == @selector(shutdownDepthJS)) {
+  if(selector == @selector(InitDepthJS) ||
+     selector == @selector(ShutdownDepthJS)) {
     NSLog(@"NO");
     return NO;
   }
@@ -141,8 +141,8 @@ bool SendEventToBrowser(const string& _eventJson) {
   NSLog(@"finalizeForWebScript");
 }
 
-- (void) initDepthJS {
-  NSLog(@"DepthJS Plugin: InitDepthJS" << "\n";
+- (void) InitDepthJS {
+  NSLog(@"DepthJS Plugin: InitDepthJS");
   
   if (!haveInitDevice) {
     NSLog(@"DepthJS Plugin: Device not yet init; initing");
@@ -158,7 +158,7 @@ bool SendEventToBrowser(const string& _eventJson) {
   }
 }
 
-- (void) shutdownDepthJS {
+- (void) ShutdownDepthJS {
   NSLog(@"DepthJS Plugin: ShutdownDepthJS");
   killOcvFreenect();
   NSLog(@"DepthJS Plugin: ShutdownDepthJS complete");

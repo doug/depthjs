@@ -3,6 +3,7 @@
 //
 
 #ifdef __OBJC__
+    #include <opencv2/opencv.hpp>
     #import <Cocoa/Cocoa.h>
     #import <WebKit/WebKit.h>
 #endif

@@ -7,7 +7,7 @@
  *
  */
 
-#include "bg_fg_blobs.h"
+#include "bg_fg_blobs.hpp"
 
  Scalar refineSegments(const Mat& img,
                        Mat& mask,

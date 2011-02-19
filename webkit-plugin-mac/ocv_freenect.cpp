@@ -8,7 +8,7 @@
 
 #define LIBUSB_DEBUG 5
 
-#include "ocv_freenect.h"
+#include "ocv_freenect.hpp"
 #include <math.h>
 
 pthread_t ocv_thread;

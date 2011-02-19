@@ -16,7 +16,7 @@
 - (NSDictionary *)pluginArguments;
 - (void)setPluginArguments:(NSDictionary *)value;
   
-- (void) initDepthJS;
-- (void) shutdownDepthJS;
+- (void) InitDepthJS;
+- (void) ShutdownDepthJS;
           
 @end
