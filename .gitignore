@@ -5,4 +5,5 @@
 *.swp
 app/bin/*
 *.pyc
-
+*.mode1v3
+build/
