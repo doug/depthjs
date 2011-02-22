@@ -85,15 +85,8 @@ extern void drawPoint(Mat& out,vector<Point2f>& points,Scalar color, Mat* maskm 
 
 extern bool SendEventToBrowser(const string& eventJson); // depthjs.cc
 void send_event(const string& etype, const string& edata) {
-  /*
-  s_sendmore (socket, "event");
   stringstream ss;
   ss << "{\"type\":\"" << etype << "\",\"data\":{" << edata << "}}";
-  s_send (socket, ss.str());
-  */
-  stringstream ss;
-  ss << "{\"type\":\"" << etype << "\",\"data\":{" << edata << "}}";
-  // std::cout << "SEND_EVENT IS NOT SUPPORTED: " << ss.str() << "\n";
   SendEventToBrowser(ss.str());
 }
 
@@ -210,61 +203,6 @@ void calc_laplacian(Mat& X, Mat& Xlap) {
   Xlap = Xlap.t();
 }
 
-/*
- void doHist(Mat& depthf, Mat& dmask) {
- // cvtColor(src, hsv, CV_BGR2HSV);
-
- // let's quantize the hue to 30 levels
- // and the saturation to 32 levels
- int hbins = 254;//, sbins = 32;
- int histSize[] = {hbins};
- // hue varies from 0 to 179, see cvtColor
- float hranges[] = { 0, 255 };
- // saturation varies from 0 (black-gray-white) to
- // 255 (pure spectrum color)
- //    float sranges[] = { 0, 256 };
- const float* ranges[] = { hranges };
- MatND hist;
- // we compute the histogram from the 0-th and 1-st channels
- int channels[] = {0};
-
- double maxVal=0, minVal =0;
- minMaxLoc(depthf, &minVal, 0, 0, 0, dmask);
-
- Mat depthtmp;
- depthf.copyTo(depthtmp,(depthf - minVal) < 150);
-
-
-
- calcHist( &depthtmp, 1, channels, dmask, // do not use mask
- hist, 1, histSize, ranges,
- true, // the histogram is uniform
- false );
- minMaxLoc(hist, 0, &maxVal, 0, 0);
-
- int scale = 2;
- Mat histImg = Mat::zeros(hbins*scale, 100, CV_8UC3);
-
- // int s=0;
- for( int h = 0; h < hbins; h++ )
- //        for( int s = 0; s < sbins; s++ )
- {
- float binVal = hist.at<float>(h, 0);
- float intensity = binVal/maxVal;
- rectangle( histImg, Point(h*scale, 0),
- Point( (h+1)*scale - 1, intensity*100.0f),
- Scalar::all(255),
- CV_FILLED );
- }
-
- //    namedWindow( "Source", 1 );
- //    imshow( "Source", src );
-
- //    namedWindow( "H-S Histogram", 1 );
- imshow( "H-S Histogram", histImg );
- }
- */
-
 typedef enum MODES {
   MODE_NONE,
   MODE_POINTER,
@@ -304,7 +242,6 @@ void* ocvFreenectThread(void* arg) {
   while (!die) {
     fr++;
 
-    //    imshow("rgb", rgbMat);
     pthread_mutex_lock(&buf_mutex);
 
     //Linear interpolation
@@ -334,7 +271,6 @@ void* ocvFreenectThread(void* arg) {
     //      log(tmp,tmp1);
     //      tmp1.convertTo(depthf, CV_8UC1, 255.0/7.6246189861593985);
     //    }
-    //    imshow("depth",depthf);
 
 
     Mat blobMaskInput = depthf < 255; //anything not white is "real" depth
@@ -342,7 +278,6 @@ void* ocvFreenectThread(void* arg) {
 
 
     Scalar blb = refineSegments(Mat(),blobMaskInput,blobMaskOutput,ctr,ctr2,midBlob); //find contours in the foreground, choose biggest
-    imshow("first", blobMaskOutput);
     /////// blb :
     //blb[0] = x, blb[1] = y, blb[2] = 1st blob size, blb[3] = 2nd blob size.
 
@@ -364,8 +299,6 @@ void* ocvFreenectThread(void* arg) {
       blobMaskInput = depthf < (mn[0] + stdv[0]*.5);
 
       blb = refineSegments(Mat(),blobMaskInput,blobMaskOutput,ctr,ctr2,midBlob);
-
-      imshow("second", blobMaskOutput);
 
       if(blb[0] >= 0 && blb[2] > 300) {
         //draw contour
@@ -462,9 +395,6 @@ void* ocvFreenectThread(void* arg) {
 
           }
 
-          //        imshow("out",out);
-          //doHist(depthf,out);
-
           { //some debug on screen..
             stringstream ss; ss << "high curve pts " << hcr_ctr << ", avg " << _avg[0];
             putText(outC, ss.str(), Point(50,50), CV_FONT_HERSHEY_PLAIN, 2.0,Scalar(0,0,255), 2);
@@ -522,7 +452,6 @@ void* ocvFreenectThread(void* arg) {
       register_ctr = MAX((register_ctr - 1),0);
       register_secondbloc_ctr = MAX((register_secondbloc_ctr - 1),0);
     }
-    imshow("blob",outC);
 
     if (register_ctr <= 15 && registered) {
       midBlob.x = midBlob.y = -1;
@@ -532,17 +461,6 @@ void* ocvFreenectThread(void* arg) {
       cout << "unregister" << endl;
       send_event("Unregister", "");
     }
-
-    /*
-    char k = cvWaitKey(5);
-    if( k == 27 ) break;
-    if( k == ' ' )
-        update_bg_model = !update_bg_model;
-    if (k=='s') {
-      cout << "send test event" << endl;
-      send_event("TestEvent", "");
-    }
-    */
   }
 
   printf("-- done!\n");

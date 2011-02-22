@@ -11,6 +11,7 @@
 		8D1AC96B0486D14A00FE50C9 /* webkit_plugin_macView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0259C576FE90428111CA0C5A /* webkit_plugin_macView.mm */; settings = {ATTRIBUTES = (); }; };
 		8D1AC9700486D14A00FE50C9 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD92D38A0106425D02CA0E72 /* Cocoa.framework */; };
 		8D1AC9800486D23B00FE50C9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8D1AC97F0486D23B00FE50C9 /* InfoPlist.strings */; };
+		937655FA13136C7500AC9D36 /* libMallocDebug.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 937655F913136C7500AC9D36 /* libMallocDebug.A.dylib */; };
 		938563E3130E61AF000F4333 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 938563DC130E61AF000F4333 /* Info.plist */; };
 		938564A3130E6EC0000F4333 /* ocv_freenect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 938564A1130E6EC0000F4333 /* ocv_freenect.cpp */; };
 		938564A8130E6EE0000F4333 /* bg_fg_blobs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 938564A6130E6EE0000F4333 /* bg_fg_blobs.cpp */; };
@@ -27,6 +28,7 @@
 		8D1AC9730486D14A00FE50C9 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1AC9740486D14A00FE50C9 /* webkit-plugin-mac.webplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "webkit-plugin-mac.webplugin"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D1AC97B0486D23100FE50C9 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		937655F913136C7500AC9D36 /* libMallocDebug.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMallocDebug.A.dylib; path = usr/lib/libMallocDebug.A.dylib; sourceTree = SDKROOT; };
 		938563DC130E61AF000F4333 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ../npapi_plugin/Info.plist; sourceTree = SOURCE_ROOT; };
 		93856454130E6E40000F4333 /* libfreenect_sync.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libfreenect_sync.a; sourceTree = "<group>"; };
 		93856456130E6E40000F4333 /* libfreenect.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libfreenect.a; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 				938DB6F5130F3CDC008C37B1 /* IOKit.framework in Frameworks */,
 				938DB6FE130F3D7D008C37B1 /* libz.dylib in Frameworks */,
 				938DB702130F43F0008C37B1 /* Accelerate.framework in Frameworks */,
+				937655FA13136C7500AC9D36 /* libMallocDebug.A.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +94,7 @@
 				1ED78706FE9D4A0611CA0C5A /* Products */,
 				2E58F364FFB232C311CA0CBA /* Frameworks */,
 				938DB701130F43F0008C37B1 /* Accelerate.framework */,
+				937655F913136C7500AC9D36 /* libMallocDebug.A.dylib */,
 			);
 			name = webkit_plugin_mac;
 			sourceTree = "<group>";

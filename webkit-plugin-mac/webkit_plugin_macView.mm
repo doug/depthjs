@@ -18,6 +18,8 @@ static volatile bool haveInitDevice = false;
 static volatile webkit_plugin_macView* hostPlugin = nil;
 
 bool SendEventToBrowser(const string& _eventJson) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; // Top-level pool
+  
   NSString *eventJson = [NSString stringWithCString:_eventJson.c_str() encoding:[NSString defaultCStringEncoding]];
   NSLog(@"Going to send the following eventJson nsstring: %@", eventJson);
   
@@ -32,11 +34,13 @@ bool SendEventToBrowser(const string& _eventJson) {
     /* retrieve a reference to the webview */
     WebView *myWebView = [[pluginContainer webFrame] webView];
     NSString *js = [NSString stringWithFormat:@"if(DepthJS && DepthJS.npBackend)DepthJS.npBackend.receiveEvent(%@)", eventJson];
-    [[myWebView windowScriptObject] evaluateWebScript:js];
+    // [[myWebView windowScriptObject] evaluateWebScript:js];
     NSLog(@"Sent to javascript");
+    [pool release];  // Release the objects in the pool.
     return true;
   } else {
     NSLog(@"Could not find pluginContainer?!;");
+    [pool release];  // Release the objects in the pool.
     return false;
   }
 }
@@ -52,7 +56,8 @@ bool SendEventToBrowser(const string& _eventJson) {
 // The principal class of the plug-in bundle must implement this protocol.
 
 + (NSView *)plugInViewWithArguments:(NSDictionary *)newArguments {
-  return [[[self alloc] _initWithArguments:newArguments] autorelease];
+  NSView *v = [[[self alloc] _initWithArguments:newArguments] autorelease];
+  return v;
 }
 
 
