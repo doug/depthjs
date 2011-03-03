@@ -88,6 +88,7 @@ DepthJS.eventHandlers.onRegister = function(data) {
     console.log("Ignoring in two hands for now");
     return;
   }
+  data.mode = "theforce";
   if (data.mode == "theforce") {
     DepthJS.registerMode = "selectorBox";
   } else if (data.mode == "twohands") {
@@ -100,6 +101,7 @@ DepthJS.eventHandlers.onRegister = function(data) {
   DepthJS.lastRegisterTime = new Date();
   DepthJS.state = DepthJS.registerMode;
   DepthJS[DepthJS.registerMode].show();
+  $("#kinect-help").hide();
 };
 
 DepthJS.eventHandlers.onUnregister = function() {
@@ -109,6 +111,7 @@ DepthJS.eventHandlers.onUnregister = function() {
   DepthJS.selectorBox.hide();
   DepthJS.selectorBoxPopup.hide();
   DepthJS.depthose.hide();
+  $("#kinect-help").show();
 };
 
 DepthJS.eventHandlers.onHandClick = function() {
@@ -167,6 +170,8 @@ DepthJS.eventHandlers.onMove = function(data) {
   } else if (DepthJS.state == "selectorBoxPopup") {
     DepthJS.selectorBoxPopup.move(accumulatedX, accumulatedY, accumulatedZ);
   } else {
+    //console.debug("setting the force")
+    DepthJS.eventHandlers.onRegister({mode:"theforce"});
     if (DepthJS.verbose) console.log("Ignoring move in state " + DepthJS.state);
   }
 };

@@ -54,7 +54,7 @@ function print() {
   });
   
   var alphabeticalKeys = _.keys(counts).sort();
-  console.log("------" + (new Date() + ""));
+  // console.log("------" + (new Date() + ""));
   _.each(alphabeticalKeys, function(type) {
     console.log(["   " + counts[type] + " " + type + "; last = ", lastByType[type]]);
   });

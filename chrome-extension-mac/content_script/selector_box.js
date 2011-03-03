@@ -46,33 +46,58 @@ DepthJS.selectorBox.move = function(x, y) {
   if (x != $box.css("left") || y != $box.css("top")) {
     $box.css({left: x, top: y});
   }
+  DepthJS.selectorBox.handleHover()
 };
 
-DepthJS.selectorBox.activate = function() {
-  if (DepthJS.verbose) console.log("DepthJS: Activating underneath selectorBox");
-  // Lame code for now...
-
-  var $intersectingLinks = $("a").filter(function() {
+$.fn.findOverlapping = function($box) {
+  var bx = $box.position().left + $box.width() / 2;
+  var by = $box.position().top + $box.height() / 2;
+  
+  return $(this).filter(function() {
     var $a = $(this);
     var ax = $a.offset().left + $(window).scrollLeft();
     var aw = $a.width();
     var ay = $a.offset().top + $(window).scrollTop();
     var ah = $a.height();
 
-    var $box = DepthJS.selectorBox.$box;
-    var bx = $box.position().left;
-    var by = $box.position().top;
-    var bw = $box.width();
-    var bh = $box.height();
-
     if (by > ay + ah || // box-top is lower than link-bottom
-        by + bh < ay || // box-bottom is higher than link-top
+        by < ay || // box-bottom is higher than link-top
         bx > ax + aw || // box-left is right of link right
-        bx + bw < aw) { // box-right is left of link left
+        bx < ax) { // box-right is left of link left
       return false;
     }
     return true;
   });
+}
+
+DepthJS.selectorBox.handleHover = function() {
+  var $lastElement = $('.depthjs-hover');
+  var $hoverables = $("a").findOverlapping(DepthJS.selectorBox.$box);
+  
+  var trigger = function(element, name) {
+    var event = document.createEvent("Events")
+    event.initEvent(name, true, true); //true for can bubble, true for cancelable
+    // var event = document.createEvent(name);
+    // event.initEvent(msg.type, false, false);
+    element[0].dispatchEvent(event);
+  }
+  
+  if ($hoverables[0] == $lastElement[0]) { // same element
+    // do nothing
+  } else { 
+    if ($lastElement.length > 0) {
+      trigger($lastElement.removeClass('depthjs-hover'), 'hoverOut');
+    }
+    if ($hoverables.length > 0) {
+      trigger($hoverables.addClass("depthjs-hover"), "hoverOver");
+    }
+  }
+};
+
+DepthJS.selectorBox.activate = function() {
+  if (DepthJS.verbose) console.log("DepthJS: Activating underneath selectorBox");
+  // Lame code for now...
+  var $intersectingLinks = $("a").findOverlapping(DepthJS.selectorBox.$box);
 
   if (DepthJS.verbose) console.log("Got " + $intersectingLinks.length + " links");
   if (DepthJS.verbose) console.log($intersectingLinks);

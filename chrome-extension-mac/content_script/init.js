@@ -9,14 +9,25 @@ $(function() {
 
     // Let us know its running
     console.log("Finished initing, sticking in logo");
-    $("<img src='https://github.com/doug/depthjs/raw/master/chrome-extension/logo_128x128.png'>").css({
-      position: "fixed",
-      width: "32px",
-      height: "32px",
-      bottom: "20px",
-      left: "20px"
-    }).appendTo("body");
-    console.log($("img"));
+    $("<img/>").attr("src", chrome.extension.getURL("logo_128x128.png"))
+               .css({
+                  position: "fixed",
+                  width: "32px",
+                  height: "32px",
+                  bottom: "20px",
+                  left: "20px"
+               })
+               .appendTo("body");
+    $("<div id='kinect-help'/>").text("move your hand closer until you see your hand on the screen")
+                                .css({
+                                  position: "fixed",
+                                  left: "55px",
+                                  bottom: "20px",
+                                  backgroundColor: "white",
+                                  padding: 4
+                                })
+                                .appendTo("body");
+    // console.log($("img"));
 
 
     var lastTime = null;
