@@ -30,8 +30,8 @@ using namespace cv;
 
 #include <pthread.h>
 
-int launchOcvFreenect();
-
+int initFreenect();
+void* ocvFreenectThread(void *arg);
 void killOcvFreenect();
 
 #endif // __DEPTHJS_OCV_FREENECT_HPP__
