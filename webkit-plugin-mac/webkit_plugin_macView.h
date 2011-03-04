@@ -10,13 +10,11 @@
 
 @interface webkit_plugin_macView : NSView <WebPlugInViewFactory>
 {
-  BOOL haveInitDevice;
   NSDictionary *pluginArguments;
+  BOOL haveInitDevice;
+  NSThread *ocvThread;
 }
 - (NSDictionary *)pluginArguments;
 - (void)setPluginArguments:(NSDictionary *)value;
-  
-- (void) InitDepthJS;
-- (void) ShutdownDepthJS;
-          
+
 @end

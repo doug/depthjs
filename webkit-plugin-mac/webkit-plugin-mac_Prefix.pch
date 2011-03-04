@@ -3,7 +3,11 @@
 //
 
 #ifdef __OBJC__
+#ifdef __cplusplus
     #include <opencv2/opencv.hpp>
+#endif
     #import <Cocoa/Cocoa.h>
     #import <WebKit/WebKit.h>
+    #import "DLog.h"
 #endif
+

@@ -22,8 +22,8 @@ int window;
 
 pthread_mutex_t buf_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-Mat depthMat(Size(640,480),CV_16UC1,Scalar(0)),
-rgbMat(Size(640,480),CV_8UC3,Scalar(0));
+Mat depthMat(cv::Size(640,480),CV_16UC1,Scalar(0)),
+rgbMat(cv::Size(640,480),CV_8UC3,Scalar(0));
 
 
 freenect_device *f_dev;
@@ -77,9 +77,9 @@ void rgb_cb(freenect_device *dev, void *rgb, uint32_t timestamp)
 extern Scalar refineSegments(const Mat& img,
                Mat& mask,
                Mat& dst,
-               vector<Point>& contour,
-               vector<Point>& second_contour,
-               Point2i& previous);
+               vector<cv::Point>& contour,
+               vector<cv::Point>& second_contour,
+               cv::Point2i& previous);
 extern void makePointsFromMask(Mat& maskm,vector<Point2f>& points, bool _add = false);
 extern void drawPoint(Mat& out,vector<Point2f>& points,Scalar color, Mat* maskm = NULL);
 
@@ -224,7 +224,7 @@ void* ocvFreenectThread(void* arg) {
   vector<Point2f> prevPts,nextPts;
   vector<uchar> statusv;
   vector<float> errv;
-  Rect cursor(frameMat.cols/2,frameMat.rows/2,10,10);
+  cv::Rect cursor(frameMat.cols/2,frameMat.rows/2,10,10);
   bool update_bg_model = true;
   int fr = 1;
   int register_ctr = 0,register_secondbloc_ctr = 0;
@@ -274,7 +274,7 @@ void* ocvFreenectThread(void* arg) {
 
 
     Mat blobMaskInput = depthf < 255; //anything not white is "real" depth
-    vector<Point> ctr,ctr2;
+    vector<cv::Point> ctr,ctr2;
 
 
     Scalar blb = refineSegments(Mat(),blobMaskInput,blobMaskOutput,ctr,ctr2,midBlob); //find contours in the foreground, choose biggest
@@ -287,7 +287,7 @@ void* ocvFreenectThread(void* arg) {
       //cvtColor(depthf, outC, CV_GRAY2BGR);
 
       //closest point to the camera
-      Point minLoc; double minval,maxval;
+      cv::Point minLoc; double minval,maxval;
       minMaxLoc(depthf, &minval, &maxval, &minLoc, NULL, blobMaskInput);
       circle(outC, minLoc, 5, Scalar(0,255,0), 3);
 
@@ -318,12 +318,12 @@ void* ocvFreenectThread(void* arg) {
         //      Vec4f _line;
         Mat curve(ctr);
         //      fitLine(curve, _line, CV_DIST_L2, 0, 0.01, 0.01);
-        //      line(outC, Point(blb[0]-_line[0]*70,blb[1]-_line[1]*70),
-        //            Point(blb[0]+_line[0]*70,blb[1]+_line[1]*70),
+        //      line(outC, cv::Point(blb[0]-_line[0]*70,blb[1]-_line[1]*70),
+        //            cv::Point(blb[0]+_line[0]*70,blb[1]+_line[1]*70),
         //            Scalar(255,255,0), 1);
 
         //blob center
-        circle(outC, Point(blb[0],blb[1]), 50, Scalar(255,0,0), 3);
+        circle(outC, cv::Point(blb[0],blb[1]), 50, Scalar(255,0,0), 3);
 
 
         //      cout << "min depth " << minval << endl;
@@ -365,7 +365,7 @@ void* ocvFreenectThread(void* arg) {
 
           //---------------------- fist detection ---------------------
           //calc laplacian of curve
-          vector<Point> approxCurve;  //approximate curve
+          vector<cv::Point> approxCurve;  //approximate curve
           approxPolyDP(curve, approxCurve, 10.0, true);
           Mat approxCurveM(approxCurve);
 
@@ -397,7 +397,7 @@ void* ocvFreenectThread(void* arg) {
 
           { //some debug on screen..
             stringstream ss; ss << "high curve pts " << hcr_ctr << ", avg " << _avg[0];
-            putText(outC, ss.str(), Point(50,50), CV_FONT_HERSHEY_PLAIN, 2.0,Scalar(0,0,255), 2);
+            putText(outC, ss.str(), cv::Point(50,50), CV_FONT_HERSHEY_PLAIN, 2.0,Scalar(0,0,255), 2);
           }
         } else {
           //not registered, look for gestures
@@ -412,7 +412,7 @@ void* ocvFreenectThread(void* arg) {
             double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
             if (timediff > .2 && timediff < 1.0) {
               //enough time passed from appearence
-              line(outC, appear, Point(blb[0],blb[1]), Scalar(0,0,255), 3);
+              line(outC, appear, cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
               if (appear.x - blb[0] > 100) {
                 cout << "right"<<endl; appear.x = -1;
                 send_event("SwipeRight", "");
@@ -471,23 +471,8 @@ void* ocvFreenectThread(void* arg) {
   return NULL;
 }
 
-int launchOcvFreenect() {
-  int res = initFreenect();
-  if (res) { return res; }
-
-  //start the freenect thread to poll for events
-  res = pthread_create(&ocv_thread, NULL, ocvFreenectThread, NULL);
-  if (res) {
-    printf("pthread_create of ocv_thread failed\n");
-    return 1;
-  }
-
-  return 0;
-}
-
 void killOcvFreenect() {
   if (die) return;
   die = true;
-  pthread_join(ocv_thread, NULL);
 }
 

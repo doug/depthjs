@@ -13,11 +13,13 @@
 		8D1AC9800486D23B00FE50C9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8D1AC97F0486D23B00FE50C9 /* InfoPlist.strings */; };
 		937655FA13136C7500AC9D36 /* libMallocDebug.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 937655F913136C7500AC9D36 /* libMallocDebug.A.dylib */; };
 		938563E3130E61AF000F4333 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 938563DC130E61AF000F4333 /* Info.plist */; };
-		938564A3130E6EC0000F4333 /* ocv_freenect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 938564A1130E6EC0000F4333 /* ocv_freenect.cpp */; };
+		938564A3130E6EC0000F4333 /* ocv_freenect.mm in Sources */ = {isa = PBXBuildFile; fileRef = 938564A1130E6EC0000F4333 /* ocv_freenect.mm */; };
 		938564A8130E6EE0000F4333 /* bg_fg_blobs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 938564A6130E6EE0000F4333 /* bg_fg_blobs.cpp */; };
 		938DB6F5130F3CDC008C37B1 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 938DB6F4130F3CDC008C37B1 /* IOKit.framework */; };
 		938DB6FE130F3D7D008C37B1 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 938DB6FD130F3D7D008C37B1 /* libz.dylib */; };
 		938DB702130F43F0008C37B1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 938DB701130F43F0008C37B1 /* Accelerate.framework */; };
+		93F690C71321789600F53A8A /* DLog.mm in Sources */ = {isa = PBXBuildFile; fileRef = 93F690C61321789600F53A8A /* DLog.mm */; };
+		93F691821321A45600F53A8A /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93F691811321A45600F53A8A /* JavaScriptCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,13 +60,16 @@
 		93856486130E6E4B000F4333 /* libopencv_objdetect.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libopencv_objdetect.a; path = opencv/libopencv_objdetect.a; sourceTree = "<group>"; };
 		93856488130E6E4B000F4333 /* libopencv_video_pch_dephelp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libopencv_video_pch_dephelp.a; path = opencv/libopencv_video_pch_dephelp.a; sourceTree = "<group>"; };
 		9385648A130E6E4B000F4333 /* libopencv_video.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libopencv_video.a; path = opencv/libopencv_video.a; sourceTree = "<group>"; };
-		938564A1130E6EC0000F4333 /* ocv_freenect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ocv_freenect.cpp; sourceTree = "<group>"; };
+		938564A1130E6EC0000F4333 /* ocv_freenect.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ocv_freenect.mm; sourceTree = "<group>"; };
 		938564A2130E6EC0000F4333 /* ocv_freenect.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ocv_freenect.hpp; sourceTree = "<group>"; };
 		938564A6130E6EE0000F4333 /* bg_fg_blobs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = bg_fg_blobs.cpp; sourceTree = "<group>"; };
 		938564A7130E6EE0000F4333 /* bg_fg_blobs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = bg_fg_blobs.hpp; sourceTree = "<group>"; };
 		938DB6F4130F3CDC008C37B1 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		938DB6FD130F3D7D008C37B1 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		938DB701130F43F0008C37B1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		93F690C51321789600F53A8A /* DLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLog.h; sourceTree = "<group>"; };
+		93F690C61321789600F53A8A /* DLog.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DLog.mm; sourceTree = "<group>"; };
+		93F691811321A45600F53A8A /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		DD92D38A0106425D02CA0E72 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -79,6 +84,7 @@
 				938DB6FE130F3D7D008C37B1 /* libz.dylib in Frameworks */,
 				938DB702130F43F0008C37B1 /* Accelerate.framework in Frameworks */,
 				937655FA13136C7500AC9D36 /* libMallocDebug.A.dylib in Frameworks */,
+				93F691821321A45600F53A8A /* JavaScriptCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,6 +101,7 @@
 				2E58F364FFB232C311CA0CBA /* Frameworks */,
 				938DB701130F43F0008C37B1 /* Accelerate.framework */,
 				937655F913136C7500AC9D36 /* libMallocDebug.A.dylib */,
+				93F691811321A45600F53A8A /* JavaScriptCore.framework */,
 			);
 			name = webkit_plugin_mac;
 			sourceTree = "<group>";
@@ -160,6 +167,8 @@
 			children = (
 				0259C57AFE90428111CA0C5A /* webkit_plugin_macView.h */,
 				0259C576FE90428111CA0C5A /* webkit_plugin_macView.mm */,
+				93F690C51321789600F53A8A /* DLog.h */,
+				93F690C61321789600F53A8A /* DLog.mm */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -167,7 +176,7 @@
 		32DBCF9F0370C38200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				938564A1130E6EC0000F4333 /* ocv_freenect.cpp */,
+				938564A1130E6EC0000F4333 /* ocv_freenect.mm */,
 				938564A2130E6EC0000F4333 /* ocv_freenect.hpp */,
 				938564A6130E6EE0000F4333 /* bg_fg_blobs.cpp */,
 				938564A7130E6EE0000F4333 /* bg_fg_blobs.hpp */,
@@ -257,8 +266,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D1AC96B0486D14A00FE50C9 /* webkit_plugin_macView.mm in Sources */,
-				938564A3130E6EC0000F4333 /* ocv_freenect.cpp in Sources */,
+				938564A3130E6EC0000F4333 /* ocv_freenect.mm in Sources */,
 				938564A8130E6EE0000F4333 /* bg_fg_blobs.cpp in Sources */,
+				93F690C71321789600F53A8A /* DLog.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -384,6 +394,13 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"-I${SOURCE_ROOT}/include",
+					"-I${SOURCE_ROOT}/include/libusb-1.0",
+					"-I${SOURCE_ROOT}/include/opencv",
+					"-I${SOURCE_ROOT}/include/opencv2",
+					"-I${SOURCE_ROOT}/include/libfreenect",
+				);
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = dynamic;
