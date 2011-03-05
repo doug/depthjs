@@ -32,6 +32,7 @@ var DepthJS = {
   panner: {},
   depthose: {},
   browser: {},
+  tabs: {},
   MAX_HANDPLANE_WIDTH: 100,
   MAX_HANDPLANE_HEIGHT: 100
 };
@@ -52,13 +53,13 @@ function print() {
     counts[msg.type] = counts[msg.type] + 1;
     lastByType[msg.type] = msg.data;
   });
-  
+
   var alphabeticalKeys = _.keys(counts).sort();
   console.log("------" + (new Date() + ""));
   _.each(alphabeticalKeys, function(type) {
     console.log(["   " + counts[type] + " " + type + "; last = ", lastByType[type]]);
   });
-  
+
   lastMessages = [];
 }
 setTimeout(print, 1000);
