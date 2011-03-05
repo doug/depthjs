@@ -33,5 +33,6 @@ using namespace cv;
 int initFreenect();
 void* ocvFreenectThread(void *arg);
 void killOcvFreenect();
+BOOL isDead();
 
 #endif // __DEPTHJS_OCV_FREENECT_HPP__
