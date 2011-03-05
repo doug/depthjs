@@ -27,36 +27,29 @@
 
 
 // BRIDGE BACK FROM C++ LAND -----------------------------------------------------------------------
-static volatile webkit_plugin_macView* hostPlugin = nil;
+static webkit_plugin_macView* hostPlugin = nil;
 
 bool SendEventToBrowser(const string& _eventJson) {
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; // Top-level pool
-  
-  NSString *eventJson = [NSString stringWithCString:_eventJson.c_str() encoding:[NSString defaultCStringEncoding]];
-  DLog(@"Going to send the following eventJson nsstring: %@", eventJson);
-  
-
   if (hostPlugin == nil) {
-    DLog(@"DepthJS Plugin: Ignoring event for uninit host");
     return false;
   }
-  
+
+  BOOL success = false;
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; // Top-level pool
   id pluginContainer = [[hostPlugin pluginArguments] objectForKey:WebPlugInContainerKey];
-  if (pluginContainer) {
-    /* retrieve a reference to the webview */
+  if (pluginContainer != nil) {
     WebView *myWebView = [[pluginContainer webFrame] webView];
+    NSString *eventJson = [NSString stringWithCString:_eventJson.c_str() encoding:[NSString defaultCStringEncoding]];
     NSString *js = [NSString stringWithFormat:@"if(DepthJS && DepthJS.npBackend)DepthJS.npBackend.receiveEvent(%@)", eventJson];
-    
-    [[myWebView windowScriptObject] performSelectorOnMainThread:@selector(evaluateWebScript:) withObject:js waitUntilDone:YES];
-    // [[myWebView windowScriptObject] evaluateWebScript:js];
-    DLog(@"Sent to javascript");
-    [pool release];  // Release the objects in the pool.
-    return true;
+    [[myWebView windowScriptObject] performSelectorOnMainThread:@selector(evaluateWebScript:) withObject:js waitUntilDone:NO];
+    DLog(@"[DepthJS] Sent: %@", eventJson);
+    success = true;
   } else {
-    DLog(@"Could not find pluginContainer?!;");
-    [pool release];  // Release the objects in the pool.
+    DLog(@"[DepthJS] Could not find pluginContainer?!;");
     return false;
   }
+  [pool release];  // Release the objects in the pool.
+  return success;
 }
 
 @implementation webkit_plugin_macView
@@ -97,38 +90,18 @@ bool SendEventToBrowser(const string& _eventJson) {
   DLog(@"webPlugInInitialize");
   haveInitDevice = NO;
   ocvThread = nil;
-  hostPlugin = self; // TODO remove later after testing
-}
-
-- (void)webPlugInStart {
-  // The plug-in usually begins drawing, playing sounds and/or animation in this method.
-  // You are not required to implement this method.  It may safely be removed.
-  DLog(@"webPlugInStart");
-}
-
-- (void)webPlugInStop {
-  // The plug-in normally stop animations/sounds in this method.
-  // You are not required to implement this method.  It may safely be removed.
-  DLog(@"webPlugInStop; killing ocv");
-  killOcvFreenect();
+  if (hostPlugin == nil) {
+    hostPlugin = self;
+  }
 }
 
 - (void)webPlugInDestroy {
   DLog(@"webPlugInDestroy");
-  haveInitDevice = FALSE;
-}
-
-- (void)webPlugInSetIsSelected:(BOOL)isSelected {
-  // This is typically used to allow the plug-in to alter its appearance when selected.
-  // You are not required to implement this method.  It may safely be removed.
-  DLog(@"webPlugInSetIsSelected");
+  [self ShutdownDepthJS];
+  DLog(@"webPlugInDestroy finished");
 }
 
 - (id)objectForWebScript {
-  // Returns the object that exposes the plug-in's interface.  The class of this object can implement
-  // methods from the WebScripting informal protocol.
-  // You are not required to implement this method.  It may safely be removed.
-  DLog(@"objectForWebScript");
   return self;
 }
 
@@ -173,6 +146,7 @@ bool SendEventToBrowser(const string& _eventJson) {
 
 - (void) ocvMainLoop {
   ocvThread = [NSThread currentThread];
+  [ocvThread setName:@"ocvMainLoop"];
   ocvFreenectThread(NULL);
 }
 
@@ -199,11 +173,8 @@ NSString* jsRefToTypeString(JSContextRef& ctx, JSValueRef& t) {
   }
 }
 
-
-// This isn't really used... but it shows how the JavaScriptCore framework can be used if needed.
 - (void) CallbackTest {
-  DLog(@"CallbackTest");
-  id pluginContainer = [[hostPlugin pluginArguments] objectForKey:WebPlugInContainerKey];
+  id pluginContainer = [[self pluginArguments] objectForKey:WebPlugInContainerKey];
   WebView *myWebView = [[pluginContainer webFrame] webView];
   JSObjectRef globalObj = [[myWebView windowScriptObject] JSObject];
   JSValueRef exception;
@@ -228,32 +199,43 @@ NSString* jsRefToTypeString(JSContextRef& ctx, JSValueRef& t) {
 }
 
 - (void) InitDepthJS {
-  DLog(@"DepthJS Plugin: InitDepthJS");
+  DLog(@"[DepthJS] InitDepthJS");
+  // If the windowScriptObject is not first referenced from this thread, we will later get a thread
+  // exception. Even though this doesn't do anything. Yah. I have no idea either.
+  id pluginContainer = [[hostPlugin pluginArguments] objectForKey:WebPlugInContainerKey];
+  WebView *myWebView = [[pluginContainer webFrame] webView];
+  [myWebView windowScriptObject];
   
   if (!haveInitDevice) {
-    DLog(@"DepthJS Plugin: Device not yet init; initing");
+    DLog(@"[DepthJS] Device not yet init; initing");
+    hostPlugin = self;
     int failed = initFreenect();
     haveInitDevice = !failed;
     if (haveInitDevice) {
-      DLog(@"DepthJS Plugin: Successfully inited Kinect; Starting ocv thread");
-      hostPlugin = self;
+      DLog(@"[DepthJS] Successfully inited Kinect; Starting ocv thread");
       [NSThread detachNewThreadSelector:@selector(ocvMainLoop) toTarget:self withObject:nil];
     } else {
-      DLog(@"DepthJS Plugin: Failed to init Kinect");
+      DLog(@"[DepthJS] Failed to init Kinect");
+      hostPlugin = nil;
     }
   } else {
-    DLog(@"DepthJS Plugin: Already init, ignoring");
+    DLog(@"[DepthJS] Already init, ignoring");
   }
 }
 
 - (void) ShutdownDepthJS {
-  DLog(@"DepthJS Plugin: ShutdownDepthJS");
-  killOcvFreenect();
-  DLog(@"DepthJS Plugin: ShutdownDepthJS complete");
+  DLog(@"[DepthJS] ShutdownDepthJS");
   haveInitDevice = false;
   if (hostPlugin == self) {
     hostPlugin = NULL;
+    killOcvFreenect();
+    if (ocvThread != nil) [ocvThread cancel];
+    ocvThread = nil;
+    while (!isDead()) {
+      [NSThread sleepForTimeInterval:0.01];
+    }
   }
+  DLog(@"[DepthJS] ShutdownDepthJS complete");
 }
 
 @end

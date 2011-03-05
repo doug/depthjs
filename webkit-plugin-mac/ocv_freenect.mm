@@ -11,30 +11,23 @@
 #include "ocv_freenect.hpp"
 #include <math.h>
 
-pthread_t ocv_thread;
-pthread_t freenect_thread;
-volatile int die = 0;
+static pthread_t freenect_thread = 0;
+static int die = 0;
+static BOOL dead = YES;
 
-int g_argc;
-char **g_argv;
+static pthread_mutex_t buf_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int window;
-
-pthread_mutex_t buf_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-Mat depthMat(cv::Size(640,480),CV_16UC1,Scalar(0)),
-rgbMat(cv::Size(640,480),CV_8UC3,Scalar(0));
+static Mat depthMat(cv::Size(640,480),CV_16UC1,Scalar(0));
+static Mat rgbMat(cv::Size(640,480),CV_8UC3,Scalar(0));
 
 
-freenect_device *f_dev;
-int freenect_angle = 15;
-int freenect_led;
+static freenect_device *f_dev;
+static int freenect_angle = 15;
 
-pthread_cond_t frame_cond = PTHREAD_COND_INITIALIZER;
-int got_frames = 0;
+static pthread_cond_t frame_cond = PTHREAD_COND_INITIALIZER;
+static int got_frames = 0;
 
-uint16_t t_gamma[2048];
-freenect_context *f_ctx;
+static freenect_context *f_ctx;
 
 void *freenect_threadfunc(void* arg);
 //  void depth_cb(freenect_device *dev, void *depth, uint32_t timestamp);
@@ -42,9 +35,9 @@ void *freenect_threadfunc(void* arg);
 void send_event(const string& etype, const string& edata);
 
 void* freenect_threadfunc(void* arg) {  //all this thread does is to fetch events from freenect
-  cout << "freenect thread"<<endl;
+  cout << "freenect thread started"<<endl;
   while(!die && freenect_process_events(f_ctx) >= 0 ) {}
-  cout << "freenect die"<<endl;
+  cout << "freenect dead"<<endl;
   return NULL;
 }
 
@@ -239,6 +232,7 @@ void* ocvFreenectThread(void* arg) {
   vector<int> hc_stack(20); int hc_stack_ptr = 0;
 
   die = false;
+  dead = NO;
   while (!die) {
     fr++;
 
@@ -464,9 +458,8 @@ void* ocvFreenectThread(void* arg) {
   }
 
   printf("-- done!\n");
-
   pthread_join(freenect_thread, NULL);
-  pthread_exit(NULL);
+  dead = YES;
 
   return NULL;
 }
@@ -476,3 +469,6 @@ void killOcvFreenect() {
   die = true;
 }
 
+BOOL isDead() {
+  return dead;
+}
