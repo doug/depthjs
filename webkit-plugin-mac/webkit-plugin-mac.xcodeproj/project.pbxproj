@@ -20,6 +20,7 @@
 		938DB702130F43F0008C37B1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 938DB701130F43F0008C37B1 /* Accelerate.framework */; };
 		93F690C71321789600F53A8A /* DLog.mm in Sources */ = {isa = PBXBuildFile; fileRef = 93F690C61321789600F53A8A /* DLog.mm */; };
 		93F691821321A45600F53A8A /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93F691811321A45600F53A8A /* JavaScriptCore.framework */; };
+		D713093013235B55001594A0 /* gesture_engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D713092E13235B55001594A0 /* gesture_engine.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -70,6 +71,9 @@
 		93F690C51321789600F53A8A /* DLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLog.h; sourceTree = "<group>"; };
 		93F690C61321789600F53A8A /* DLog.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DLog.mm; sourceTree = "<group>"; };
 		93F691811321A45600F53A8A /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		D713092E13235B55001594A0 /* gesture_engine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gesture_engine.cpp; sourceTree = "<group>"; };
+		D713092F13235B55001594A0 /* FreenectDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FreenectDevice.h; sourceTree = "<group>"; };
+		D713093213235BCB001594A0 /* gesture_engine.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gesture_engine.hpp; sourceTree = "<group>"; };
 		DD92D38A0106425D02CA0E72 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -176,6 +180,9 @@
 		32DBCF9F0370C38200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				D713093213235BCB001594A0 /* gesture_engine.hpp */,
+				D713092E13235B55001594A0 /* gesture_engine.cpp */,
+				D713092F13235B55001594A0 /* FreenectDevice.h */,
 				938564A1130E6EC0000F4333 /* ocv_freenect.mm */,
 				938564A2130E6EC0000F4333 /* ocv_freenect.hpp */,
 				938564A6130E6EE0000F4333 /* bg_fg_blobs.cpp */,
@@ -269,6 +276,7 @@
 				938564A3130E6EC0000F4333 /* ocv_freenect.mm in Sources */,
 				938564A8130E6EE0000F4333 /* bg_fg_blobs.cpp in Sources */,
 				93F690C71321789600F53A8A /* DLog.mm in Sources */,
+				D713093013235B55001594A0 /* gesture_engine.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
