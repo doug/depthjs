@@ -1,11 +1,91 @@
 #include "FreenectDevice.h"
 
-Scalar _refineSegments(const Mat& img, 
-					  Mat& mask, 
-					  Mat& dst, 
-					  vector<Point>& contour,
-					  vector<Point>& second_contour,
-					  Point2i& previous)
+#define LABEL_GARBAGE	0
+#define LABEL_OPEN		1
+#define LABEL_FIST		2
+#define LABEL_THUMB		3
+
+class GestureEngine {
+private:
+	
+	bool die;
+	
+	Mat depthMat;
+	Mat depthf;
+	Mat rgbMat;
+	Mat ownMat;
+	
+	Freenect::Freenect<MyFreenectDevice> freenect;
+	MyFreenectDevice& device;
+	
+	bool registered;
+	Mat blobMaskOutput;
+	Mat outC;
+	Point midBlob;
+	
+	//descriptor parameters
+	int startX, sizeX, num_x_reps, num_y_reps;
+	double	height_over_num_y_reps,width_over_num_x_reps;
+	
+	
+	vector<double> _d; //the descriptor
+	Mat descriptorMat;
+	
+	CvKNearest classifier;
+	
+	vector<vector<double> > training_data;
+	vector<int>				label_data;
+	PCA pca;
+	Mat labelMat, dataMat; 
+	vector<float> label_counts;
+	
+	bool trained;
+	bool loaded;
+
+	Scalar _refineSegments(const Mat& img, 
+					Mat& mask, 
+					Mat& dst, 
+					vector<Point>& contour,
+					vector<Point>& second_contour,
+						   Point2i& previous);
+	void TrainModel();
+	void SaveModelData();
+	void LoadModelData();
+	void InterpolateAndInpaint();
+	void ComputeDescriptor(Scalar);
+	
+public:
+	GestureEngine():	die(false),
+						depthMat(Mat(Size(640,480),CV_16UC1)),
+						depthf(Mat(Size(640,480),CV_8UC1)),
+						rgbMat(Mat(Size(640,480),CV_8UC3,Scalar(0))),
+						ownMat(Mat(Size(640,480),CV_8UC3,Scalar(0))),
+						device(freenect.createDevice(0)),
+						registered(false),
+						blobMaskOutput(Mat::zeros(Size(640,480),CV_8UC1)),
+						startX(250),
+						sizeX(150),
+						num_x_reps(10),
+						num_y_reps(10),
+						height_over_num_y_reps(480/num_y_reps),
+						width_over_num_x_reps(sizeX/num_x_reps),
+						_d(vector<double>(num_x_reps * num_y_reps)),
+						descriptorMat(Mat(_d)),
+						label_counts(vector<float>(4)),
+						trained(false),
+						loaded(false)
+	{
+	};
+	
+	void RunEngine();
+};
+
+Scalar GestureEngine::_refineSegments(const Mat& img, 
+					   Mat& mask, 
+					   Mat& dst, 
+					   vector<Point>& contour,
+					   vector<Point>& second_contour,
+					   Point2i& previous)
 {
 	//    int niters = 3;
     
@@ -87,72 +167,148 @@ Scalar _refineSegments(const Mat& img,
 	
 }
 
-#define LABEL_GARBAGE	0
-#define LABEL_OPEN		1
-#define LABEL_FIST		2
-#define LABEL_THUMB		3
+void GestureEngine::TrainModel() {
+	cout << "train model" << endl;
+	if(loaded != true) {
+		dataMat = Mat(training_data.size(),_d.size(),CV_32FC1);	//descriptors as matrix rows
+		for (uint i=0; i<training_data.size(); i++) {
+			Mat v = dataMat(Range(i,i+1),Range::all());
+			Mat(Mat(training_data[i]).t()).convertTo(v,CV_32FC1,1.0);
+		}
+		Mat(label_data).convertTo(labelMat,CV_32FC1);
+	}
+	
+	pca = pca(dataMat,Mat(),CV_PCA_DATA_AS_ROW,15);
+	Mat dataAfterPCA;
+	pca.project(dataMat,dataAfterPCA);
+	
+	classifier.train(&((CvMat)dataAfterPCA), &((CvMat)labelMat));
+	
+	trained = true;
+}	
 
+void GestureEngine::SaveModelData() {
+	cout << "save training data" << endl;
+	//			classifier.save("knn-classifier-open-fist-thumb.yaml"); //not implemented
+	dataMat = Mat(training_data.size(),_d.size(),CV_32FC1);	//descriptors as matrix rows
+	for (uint i=0; i<training_data.size(); i++) {
+		Mat v = dataMat(Range(i,i+1),Range::all());
+		Mat(Mat(training_data[i]).t()).convertTo(v,CV_32FC1,1.0);
+	}
+	Mat(label_data).convertTo(labelMat,CV_32FC1);
+	
+	FileStorage fs;
+	fs.open("data-samples-labels.yaml", CV_STORAGE_WRITE);
+	if (fs.isOpened()) {
+		fs << "samples" << dataMat;
+		fs << "labels" << labelMat;
+		loaded = true;
+		fs.release();
+	} else {
+		cerr << "can't open saved data" << endl;
+	}
+}	
 
-void* gesture_engine(void* _arg) {
-	bool die(false);
-	
-	Mat depthMat(Size(640,480),CV_16UC1);
-	Mat depthf  (Size(640,480),CV_8UC1);
-	Mat rgbMat(Size(640,480),CV_8UC3,Scalar(0));
-	Mat ownMat(Size(640,480),CV_8UC3,Scalar(0));
-	
-	Freenect::Freenect<MyFreenectDevice> freenect;
-	MyFreenectDevice& device = freenect.createDevice(0);
-	
-	bool registered  = false;
-	Mat blobMaskOutput = Mat::zeros(Size(640,480),CV_8UC1),outC;
-	Point midBlob;
-	
-	//descriptor parameters
-	int startX = 250, sizeX = 150, num_x_reps = 10, num_y_reps = 10;
-	double	height_over_num_y_reps = 480/num_y_reps,
-			width_over_num_x_reps = sizeX/num_x_reps;
-	
-	
-	vector<double> _d(num_x_reps * num_y_reps); //the descriptor
-	Mat descriptorMat(_d);
+void GestureEngine::LoadModelData() {
+	FileStorage fs;
+	fs.open("data-samples-labels.yaml", CV_STORAGE_READ);
+	if (fs.isOpened()) {
+		fs["samples"] >> dataMat;
+		fs["labels"] >> labelMat;
+		loaded = true;
+		fs.release();			
+	} else {
+		cerr << "can't open saved data" << endl;
+	}
+}	
 
-	CvKNearest classifier;
+void GestureEngine::InterpolateAndInpaint() {
+	//interpolation & inpainting
+	Mat _tmp,_tmp1; // = (depthMat - 400.0);          //minimum observed value is ~440. so shift a bit
+	Mat(depthMat - 400.0).convertTo(_tmp1,CV_64FC1);
+	_tmp.setTo(Scalar(2048), depthMat > 750.0);   //cut off at 600 to create a "box" where the user interacts
 	
-	vector<vector<double> > training_data;
-	vector<int>				label_data;
-	PCA pca;
-	Mat labelMat, dataMat; 
-	vector<float> label_counts(4);
+	Point minLoc; double minval,maxval;
+	minMaxLoc(_tmp1, &minval, &maxval, NULL, NULL);
+	_tmp1.convertTo(depthf, CV_8UC1, 255.0/maxval);
 	
-	bool trained = false, loaded = false;
- 	
+	Mat small_depthf; resize(depthf,small_depthf,Size(),0.2,0.2);
+	cv::inpaint(small_depthf,(small_depthf == 255),_tmp1,5.0,INPAINT_TELEA);
+	
+	resize(_tmp1, _tmp, depthf.size());
+	_tmp.copyTo(depthf, (depthf == 255));
+}
+	
+void GestureEngine::ComputeDescriptor(Scalar blb) {				
+	Mat blobDepth,blobEdge; 
+	depthf.copyTo(blobDepth,blobMaskOutput);
+	Laplacian(blobDepth, blobEdge, 8);
+	//				equalizeHist(blobEdge, blobEdge);//just for visualization
+	
+	Mat logPolar(depthf.size(),CV_8UC1);
+	cvLogPolar(&((IplImage)blobEdge), &((IplImage)logPolar), Point2f(blb[0],blb[1]), 80.0);
+	
+	//				for (int i=0; i<num_x_reps+1; i++) {
+	//					//verical lines
+	//					line(logPolar, Point(startX+i*width_over_num_x_reps, 0), Point(startX+i*width_over_num_x_reps,479), Scalar(255), 2);
+	//				}
+	//				for(int i=0; i<num_y_reps+1; i++) {			
+	//					//horizontal
+	//					line(logPolar, Point(startX, i*height_over_num_y_reps), Point(startX+sizeX,i*height_over_num_y_reps), Scalar(255), 2);
+	//				}
+	
+	double total = 0.0;
+	
+	//histogram
+	for (int i=0; i<num_x_reps; i++) {
+		for(int j=0; j<num_y_reps; j++) {
+			Mat part = logPolar(
+								Range(j*height_over_num_y_reps,(j+1)*height_over_num_y_reps),
+								Range(startX+i*width_over_num_x_reps,startX+(i+1)*width_over_num_x_reps)
+								);
+			
+			int count = countNonZero(part); //TODO: use calcHist
+			//						part.setTo(Scalar(count/10.0)); //for debug: show the value in the image
+			
+			_d[i*num_x_reps + j] = count;
+			total += count;
+		}
+	}
+	
+	descriptorMat = descriptorMat / total;
+
+	/*
+	 Mat images[1] = {logPolar(Range(0,30),Range(0,30))};
+	 int nimages = 1;
+	 int channels[1] = {0};
+	 int dims = 1;
+	 float range_0[]={0,256};
+	 float* ranges[] = { range_0 };
+	 int histSize[1] = { 5 };
+	 
+	 calcHist(, <#int nimages#>, <#const int *channels#>, <#const Mat mask#>, <#MatND hist#>, <#int dims#>, <#const int *histSize#>, <#const float **ranges#>, <#bool uniform#>, <#bool accumulate#>)
+	 */
+	
+	//				Mat _tmp(logPolar.size(),CV_8UC1);
+	//				cvLogPolar(&((IplImage)logPolar), &((IplImage)_tmp),Point2f(blb[0],blb[1]), 80.0, CV_WARP_INVERSE_MAP);
+	//				imshow("descriptor", _tmp);
+	//				imshow("logpolar", logPolar);
+	
+}	
+
+void GestureEngine::RunEngine() {
 	device.startVideo();
 	device.startDepth();
+	
     while (!die) {
     	device.getVideo(rgbMat);
     	device.getDepth(depthMat);
-		
-		//interpolation & inpainting
-		{
-			Mat _tmp,_tmp1; // = (depthMat - 400.0);          //minimum observed value is ~440. so shift a bit
-			Mat(depthMat - 400.0).convertTo(_tmp1,CV_64FC1);
-			_tmp.setTo(Scalar(2048), depthMat > 750.0);   //cut off at 600 to create a "box" where the user interacts
-			
-			Point minLoc; double minval,maxval;
-			minMaxLoc(_tmp1, &minval, &maxval, NULL, NULL);
-			_tmp1.convertTo(depthf, CV_8UC1, 255.0/maxval);
-			
-			Mat small_depthf; resize(depthf,small_depthf,Size(),0.2,0.2);
-			cv::inpaint(small_depthf,(small_depthf == 255),_tmp1,5.0,INPAINT_TELEA);
-			
-			resize(_tmp1, _tmp, depthf.size());
-			_tmp.copyTo(depthf, (depthf == 255));
-		}
+
+		InterpolateAndInpaint();
 		
 		cvtColor(depthf, outC, CV_GRAY2BGR);
 		
-		Mat blobMaskInput = depthf < 120; //anything not white is "real" depth, TODO: inpainting invalid data
+		Mat blobMaskInput = depthf < 120; //take closer values
 		vector<Point> ctr,ctr2;
 
 		//closest point to the camera
@@ -196,60 +352,8 @@ void* gesture_engine(void* _arg) {
 								
 				//blob center
 				circle(outC, Point(blb[0],blb[1]), 50, Scalar(255,0,0), 3);
-				
-				Mat blobDepth,blobEdge; 
-				depthf.copyTo(blobDepth,blobMaskOutput);
-				Laplacian(blobDepth, blobEdge, 8);
-//				equalizeHist(blobEdge, blobEdge);//just for visualization
-				
-				Mat logPolar(depthf.size(),CV_8UC1);
-				cvLogPolar(&((IplImage)blobEdge), &((IplImage)logPolar), Point2f(blb[0],blb[1]), 80.0);
-				
-//				for (int i=0; i<num_x_reps+1; i++) {
-//					//verical lines
-//					line(logPolar, Point(startX+i*width_over_num_x_reps, 0), Point(startX+i*width_over_num_x_reps,479), Scalar(255), 2);
-//				}
-//				for(int i=0; i<num_y_reps+1; i++) {			
-//					//horizontal
-//					line(logPolar, Point(startX, i*height_over_num_y_reps), Point(startX+sizeX,i*height_over_num_y_reps), Scalar(255), 2);
-//				}
-				
-				double total = 0.0;
-				
-				//histogram
-				for (int i=0; i<num_x_reps; i++) {
-					for(int j=0; j<num_y_reps; j++) {
-						Mat part = logPolar(
-										Range(j*height_over_num_y_reps,(j+1)*height_over_num_y_reps),
-										 Range(startX+i*width_over_num_x_reps,startX+(i+1)*width_over_num_x_reps)
-										 );
-						
-						int count = countNonZero(part); //TODO: use calcHist
-//						part.setTo(Scalar(count/10.0)); //for debug: show the value in the image
-						
-						_d[i*num_x_reps + j] = count;
-						total += count;
-					}
-				}
-				
-				descriptorMat = descriptorMat / total;
-				
-				/*
-				Mat images[1] = {logPolar(Range(0,30),Range(0,30))};
-				int nimages = 1;
-				int channels[1] = {0};
-				int dims = 1;
-				float range_0[]={0,256};
-				float* ranges[] = { range_0 };
-				int histSize[1] = { 5 };
-				
-				calcHist(, <#int nimages#>, <#const int *channels#>, <#const Mat mask#>, <#MatND hist#>, <#int dims#>, <#const int *histSize#>, <#const float **ranges#>, <#bool uniform#>, <#bool accumulate#>)
-				*/
-				
-//				Mat _tmp(logPolar.size(),CV_8UC1);
-//				cvLogPolar(&((IplImage)logPolar), &((IplImage)_tmp),Point2f(blb[0],blb[1]), 80.0, CV_WARP_INVERSE_MAP);
-//				imshow("descriptor", _tmp);
-//				imshow("logpolar", logPolar);
+
+				ComputeDescriptor(blb);
 			}
 		}
 		
@@ -317,61 +421,24 @@ void* gesture_engine(void* _arg) {
 			cout << "learn thumb" << endl;
 		}
 		if (k=='t') {
-			//train model
-			cout << "train model" << endl;
-			if(loaded != true) {
-				dataMat = Mat(training_data.size(),_d.size(),CV_32FC1);	//descriptors as matrix rows
-				for (uint i=0; i<training_data.size(); i++) {
-					Mat v = dataMat(Range(i,i+1),Range::all());
-					Mat(Mat(training_data[i]).t()).convertTo(v,CV_32FC1,1.0);
-				}
-				Mat(label_data).convertTo(labelMat,CV_32FC1);
-			}
-			
-			pca = pca(dataMat,Mat(),CV_PCA_DATA_AS_ROW,15);
-			Mat dataAfterPCA;
-			pca.project(dataMat,dataAfterPCA);
-			
-			classifier.train(&((CvMat)dataAfterPCA), &((CvMat)labelMat));
-			
-			trained = true;
+			TrainModel();
 		}
 		if(k=='s') {
-			cout << "save training data" << endl;
-//			classifier.save("knn-classifier-open-fist-thumb.yaml"); //not implemented
-			dataMat = Mat(training_data.size(),_d.size(),CV_32FC1);	//descriptors as matrix rows
-			for (uint i=0; i<training_data.size(); i++) {
-				Mat v = dataMat(Range(i,i+1),Range::all());
-				Mat(Mat(training_data[i]).t()).convertTo(v,CV_32FC1,1.0);
-			}
-			Mat(label_data).convertTo(labelMat,CV_32FC1);
-
-			FileStorage fs;
-			fs.open("data-samples-labels.yaml", CV_STORAGE_WRITE);
-			if (fs.isOpened()) {
-				fs << "samples" << dataMat;
-				fs << "labels" << labelMat;
-				loaded = true;
-				fs.release();
-			} else {
-				cerr << "can't open saved data" << endl;
-			}
+			SaveModelData();
 		}
 		if(k=='l') {
-			FileStorage fs;
-			fs.open("data-samples-labels.yaml", CV_STORAGE_READ);
-			if (fs.isOpened()) {
-				fs["samples"] >> dataMat;
-				fs["labels"] >> labelMat;
-				loaded = true;
-				fs.release();			
-			} else {
-				cerr << "can't open saved data" << endl;
-			}
+			LoadModelData();
 		}
     }
 	
    	device.stopVideo();
 	device.stopDepth();
-	return 0;
+}
+
+
+void* gesture_engine(void* _arg) {
+
+	GestureEngine ge;
+	ge.RunEngine();
+ 	
 }
