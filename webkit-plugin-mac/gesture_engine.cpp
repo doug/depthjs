@@ -86,7 +86,7 @@ private:
 	void InterpolateAndInpaint();
 	void ComputeDescriptor(Scalar);
 	string GetStringForGestureCode(int);
-	void CheckRegistered(Scalar,int);
+	void CheckRegistered(Scalar,int,Scalar);
 	int GetMostLikelyGesture();
 	
 public:
@@ -376,7 +376,7 @@ string GestureEngine::GetStringForGestureCode(int res) {
 	return "none";
 }	
 
-void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture) {
+void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture, Scalar mn) {
 	if(recognized_gesture != LABEL_GARBAGE) {
 		register_ctr = MIN((register_ctr + 1),60);
 		
@@ -406,7 +406,7 @@ void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture) {
 			stringstream ss;
 			ss  << "\"x\":"  << (int)floor(blb[0]*100.0/640.0)
 				<< ",\"y\":" << (int)floor(blb[1]*100.0/480.0)
-				<< ",\"z\":" << 100; //(int)(mn[0] * 2.0);
+				<< ",\"z\":" << (int)(mn[0] * 2.0);
 			//cout << "move: " << ss.str() << endl;
 			send_event("Move", ss.str());
 					
@@ -415,8 +415,19 @@ void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture) {
 			
 			//if thumb recognized - send "hand click"
 			if (mode == LABEL_FIST && recognized_gesture == LABEL_THUMB) {
-				cout << "Hand click!" << endl;
-				send_event("HandClick", "");
+				bool fireClick  = false;
+				if (appearTS > 0) {
+					double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
+					fireClick = (timediff > 1.0);
+				} else {
+					fireClick = true;
+				}				
+				if(fireClick) {					
+					cout << "Hand click!" << endl;
+					send_event("HandClick", "");
+					
+					appearTS = getTickCount();
+				}					
 			}
 		}
 	} else {
@@ -571,7 +582,7 @@ void GestureEngine::RunEngine() {
 						putText(outC, ss.str(), Point(20,50), CV_FONT_HERSHEY_PLAIN, 3.0, Scalar(0,0,255), 2);
 					}
 					
-					CheckRegistered(blb, gesture_code);
+					CheckRegistered(blb, gesture_code, mn);
 				}
 			}
 		}
