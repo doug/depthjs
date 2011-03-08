@@ -64,15 +64,32 @@ Scalar refineSegments(const Mat& img,
 	//		line(dst, contours[largestComp][idx], contours[largestComp][idx+1], color, 2);
 	//	
 	if(largestComp >= 0) {
+		//find top-left values
+		int maxx = -INT_MAX,miny = INT_MAX;
 		int num = contours[largestComp].size();
-		Point* pts = &(contours[largestComp][0]);
+		for (int i=0; i<num; i++) {
+			if(contours[largestComp][i].x > maxx) maxx = contours[largestComp][i].x;
+			if(contours[largestComp][i].y < miny) miny = contours[largestComp][i].y;
+		}
+		
+		//crop contour to 150x150 "window"
+		vector<Point> newblob;
+		int maxxp150 = MAX(maxx-200,0),minyp150 = MIN(miny+170,480);
+				
+		for (int i=0; i<num; i++) {
+			Point _p = contours[largestComp][i];
+			if(_p.x > maxxp150 && _p.y < minyp150) newblob.push_back(_p);
+		}
+		
+		Point* pts = &(newblob[0]);
+		num = newblob.size();
 		fillPoly(dst, (const Point**)(&pts), &num, 1, color);
 		
-		Scalar b = mean(Mat(contours[largestComp]));
+		Scalar b = mean(Mat(newblob));
 		b[2] = justarea[largestComp];
 		
 		contour.clear();
-		contour = contours[largestComp];
+		contour = newblob;
 		
 		second_contour.clear();
 		if(secondlargest >= 0) {
@@ -111,7 +128,7 @@ int main(int argc, char **argv) {
 	Mat blobMaskOutput = Mat::zeros(Size(640,480),CV_8UC1),outC;
 	Point midBlob;
 	
-	int startX = 250, sizeX = 150, num_x_reps = 10, num_y_reps = 10;
+	int startX = 200, sizeX = 180, num_x_reps = 20, num_y_reps = 50;
 	double	height_over_num_y_reps = 480/num_y_reps,
 			width_over_num_x_reps = sizeX/num_x_reps;
 	
@@ -236,11 +253,11 @@ int main(int argc, char **argv) {
 				
 //				for (int i=0; i<num_x_reps+1; i++) {
 //					//verical lines
-//					line(logPolar, Point(startX+i*width_over_num_x_reps, 0), Point(startX+i*width_over_num_x_reps,479), Scalar(255), 2);
+//					line(logPolar, Point(startX+i*width_over_num_x_reps, 0), Point(startX+i*width_over_num_x_reps,479), Scalar(255), 1);
 //				}
 //				for(int i=0; i<num_y_reps+1; i++) {			
 //					//horizontal
-//					line(logPolar, Point(startX, i*height_over_num_y_reps), Point(startX+sizeX,i*height_over_num_y_reps), Scalar(255), 2);
+//					line(logPolar, Point(startX, i*height_over_num_y_reps), Point(startX+sizeX,i*height_over_num_y_reps), Scalar(255), 1);
 //				}
 				
 				double total = 0.0;
@@ -253,11 +270,15 @@ int main(int argc, char **argv) {
 										 Range(startX+i*width_over_num_x_reps,startX+(i+1)*width_over_num_x_reps)
 										 );
 						
-						int count = countNonZero(part); //TODO: use calcHist
+//						int count = countNonZero(part); //TODO: use calcHist
+//						_d[i*num_x_reps + j] = count;
 						//part.setTo(Scalar(count/10.0)); //for debug: show the value in the image
+
+						Scalar mn = mean(part);						
+						_d[i*num_x_reps + j] = mn[0];
 						
-						_d[i*num_x_reps + j] = count;
-						total += count;
+						
+						total += mn[0];
 					}
 				}
 				
@@ -275,10 +296,10 @@ int main(int argc, char **argv) {
 				calcHist(, <#int nimages#>, <#const int *channels#>, <#const Mat mask#>, <#MatND hist#>, <#int dims#>, <#const int *histSize#>, <#const float **ranges#>, <#bool uniform#>, <#bool accumulate#>)
 				*/
 				
-				Mat _tmp(logPolar.size(),CV_8UC1);
-				cvLogPolar(&((IplImage)logPolar), &((IplImage)_tmp),Point2f(blb[0],blb[1]), 80.0, CV_WARP_INVERSE_MAP);
-				imshow("descriptor", _tmp);
-				imshow("logpolar", logPolar);
+//				Mat _tmp(logPolar.size(),CV_8UC1);
+//				cvLogPolar(&((IplImage)logPolar), &((IplImage)_tmp),Point2f(blb[0],blb[1]), 80.0, CV_WARP_INVERSE_MAP);
+//				imshow("descriptor", _tmp);
+//				imshow("logpolar", logPolar);
 			}
 		}
 		
@@ -314,6 +335,9 @@ int main(int argc, char **argv) {
 			}
 			putText(outC, ss.str(), Point(20,50), CV_FONT_HERSHEY_PLAIN, 3.0, Scalar(0,0,255), 2);
 		}
+		
+		stringstream ss; ss << "samples: " << training_data.size();
+		putText(outC, ss.str(), Point(30,outC.rows - 30), CV_FONT_HERSHEY_PLAIN, 2.0, Scalar(0,0,255), 1);
 		
 		imshow("blobs", outC);
 		
@@ -393,6 +417,12 @@ int main(int argc, char **argv) {
 			if (fs.isOpened()) {
 				fs << "samples" << dataMat;
 				fs << "labels" << labelMat;
+
+				fs << "startX" << startX;
+				fs << "sizeX" << sizeX;
+				fs << "num_x_reps" << num_x_reps;
+				fs << "num_y_reps" << num_y_reps;
+				
 				loaded = true;
 				fs.release();
 			} else {
@@ -400,11 +430,19 @@ int main(int argc, char **argv) {
 			}
 		}
 		if(k=='l') {
+			cout << "try to load training data" << endl;
 			FileStorage fs;
 			fs.open("data-samples-labels.yaml", CV_STORAGE_READ);
 			if (fs.isOpened()) {
 				fs["samples"] >> dataMat;
 				fs["labels"] >> labelMat;
+				fs["startX"] >> startX;
+				fs["sizeX"] >> sizeX;
+				fs["num_x_reps"] >> num_x_reps;
+				fs["num_y_reps"] >> num_y_reps;
+				height_over_num_y_reps = 480/num_y_reps;
+				width_over_num_x_reps = sizeX/num_x_reps;
+				
 				loaded = true;
 				fs.release();			
 			} else {
