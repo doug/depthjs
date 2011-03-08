@@ -103,9 +103,9 @@ public:
 						label_counts(vector<float>(4)),
 						trained(false),
 						loaded(false),
-						die(false),
 						mode(LABEL_GARBAGE),
-						pca_number_of_features(25)
+						pca_number_of_features(50),
+						die(false)
 	{
 		depthMat = Mat(Size(640,480),CV_16UC1);
 		depthf = Mat(Size(640,480),CV_8UC1);
@@ -199,15 +199,36 @@ Scalar GestureEngine::_refineSegments(const Mat& img,
 	//		line(dst, contours[largestComp][idx], contours[largestComp][idx+1], color, 2);
 	//	
 	if(largestComp >= 0) {
+		
+		//find top-left values
+		int maxx = -INT_MAX,miny = INT_MAX;
 		int num = contours[largestComp].size();
-		Point* pts = &(contours[largestComp][0]);
+		for (int i=0; i<num; i++) {
+			if(contours[largestComp][i].x > maxx) maxx = contours[largestComp][i].x;
+			if(contours[largestComp][i].y < miny) miny = contours[largestComp][i].y;
+		}
+		
+		//crop contour to 150x150 "window"
+		vector<Point> newblob;
+		int maxxp150 = MAX(maxx-200,0),minyp150 = MIN(miny+170,480);
+		
+		circle(outC, Point(maxx,miny), 2, Scalar(0,255,0), 1);
+		circle(outC, Point(maxxp150,minyp150), 2, Scalar(0,255,0), 1);
+		
+		for (int i=0; i<num; i++) {
+			Point _p = contours[largestComp][i];
+			if(_p.x > maxxp150 && _p.y < minyp150) newblob.push_back(_p);
+		}
+		
+		Point* pts = &(newblob[0]);
+		num = newblob.size();
 		fillPoly(dst, (const Point**)(&pts), &num, 1, color);
 		
-		Scalar b = mean(Mat(contours[largestComp]));
+		Scalar b = mean(Mat(newblob));
 		b[2] = justarea[largestComp];
 		
 		contour.clear();
-		contour = contours[largestComp];
+		contour = newblob;
 		
 		second_contour.clear();
 		if(secondlargest >= 0) {
@@ -277,6 +298,14 @@ int GestureEngine::LoadModelData(const char* filename) {
 	if (fs.isOpened()) {
 		fs["samples"] >> dataMat;
 		fs["labels"] >> labelMat;
+		fs["startX"] >> startX;
+		fs["sizeX"] >> sizeX;
+		fs["num_x_reps"] >> num_x_reps;
+		fs["num_y_reps"] >> num_y_reps;
+		height_over_num_y_reps = 480/num_y_reps;
+		width_over_num_x_reps = sizeX/num_x_reps;
+		_d = vector<double>(num_x_reps*num_y_reps);
+		descriptorMat = Mat(_d);
 		loaded = true;
 		fs.release();			
 	} else {
@@ -331,11 +360,17 @@ void GestureEngine::ComputeDescriptor(Scalar blb) {
 								Range(startX+i*width_over_num_x_reps,startX+(i+1)*width_over_num_x_reps)
 								);
 			
-			int count = countNonZero(part); //TODO: use calcHist
-			//						part.setTo(Scalar(count/10.0)); //for debug: show the value in the image
+//			int count = countNonZero(part); //TODO: use calcHist
+//			//						part.setTo(Scalar(count/10.0)); //for debug: show the value in the image
+//			
+//			_d[i*num_x_reps + j] = count;
+//			total += count;
+
+			Scalar mn = mean(part);						
+			_d[i*num_x_reps + j] = mn[0];
 			
-			_d[i*num_x_reps + j] = count;
-			total += count;
+			
+			total += mn[0];
 		}
 	}
 	
@@ -428,6 +463,8 @@ void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture, Scalar m
 					
 					appearTS = getTickCount();
 				}					
+			} else {
+				appearTS = -1;
 			}
 		}
 	} else {
@@ -586,7 +623,10 @@ void GestureEngine::RunEngine() {
 				}
 			}
 		}
-				
+		
+		stringstream ss; ss << "samples: " << dataMat.rows;
+		putText(outC, ss.str(), Point(30,outC.rows - 30), CV_FONT_HERSHEY_PLAIN, 2.0, Scalar(0,0,255), 1);
+
 		imshow("blobs", outC);
 		
 		char k = cvWaitKey(5);
