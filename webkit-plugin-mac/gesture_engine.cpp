@@ -587,13 +587,13 @@ void GestureEngine::RunEngine() {
 			//cout << "min: " << minval << ", max: " << maxval << ", mean: " << mn[0] << endl;
 			
 			//now refining blob by looking at the mean depth value it has...
-			blobMaskInput = depthf < (mn[0] + stdv[0]*.5);
-			
-			blb = _refineSegments(Mat(),blobMaskInput,blobMaskOutput,ctr,ctr2,midBlob);
-			
-//			imshow("blob", blobMaskOutput);
-			
-			if(blb[0] >= 0 && blb[2] > 300) {
+//			blobMaskInput = depthf < (mn[0] + stdv[0]*.5);
+//			
+//			blb = _refineSegments(Mat(),blobMaskInput,blobMaskOutput,ctr,ctr2,midBlob);
+//			
+////			imshow("blob", blobMaskOutput);
+//			
+//			if(blb[0] >= 0 && blb[2] > 300) {
 				//draw contour
 				Scalar color(0,0,255);
 				for (int idx=0; idx<ctr.size()-1; idx++)
@@ -621,7 +621,7 @@ void GestureEngine::RunEngine() {
 					
 					CheckRegistered(blb, gesture_code, mn);
 				}
-			}
+//			}
 		}
 		
 		stringstream ss; ss << "samples: " << dataMat.rows;
