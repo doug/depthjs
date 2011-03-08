@@ -27,6 +27,8 @@
 
 
 int gesture_engine(void* _arg);
-
+void kill_gesture_engine();
+bool is_gesture_engine_dead();
+int init_gesture_engine(const char* data);
 
 #endif

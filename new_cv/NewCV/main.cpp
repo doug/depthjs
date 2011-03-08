@@ -140,8 +140,8 @@ int main(int argc, char **argv) {
     	device.getVideo(rgbMat);
     	device.getDepth(depthMat);
 //        cv::imshow("rgb", rgbMat);
-//    	depthMat.convertTo(depthf, CV_8UC1, 255.0/2048.0);
-//        cv::imshow("depth",depthf);
+    	depthMat.convertTo(depthf, CV_8UC1, 255.0/2048.0);
+        cv::imshow("depth",depthf);
 		
 		//interpolation & inpainting
 		{
@@ -254,7 +254,7 @@ int main(int argc, char **argv) {
 										 );
 						
 						int count = countNonZero(part); //TODO: use calcHist
-//						part.setTo(Scalar(count/10.0)); //for debug: show the value in the image
+						//part.setTo(Scalar(count/10.0)); //for debug: show the value in the image
 						
 						_d[i*num_x_reps + j] = count;
 						total += count;
@@ -275,10 +275,10 @@ int main(int argc, char **argv) {
 				calcHist(, <#int nimages#>, <#const int *channels#>, <#const Mat mask#>, <#MatND hist#>, <#int dims#>, <#const int *histSize#>, <#const float **ranges#>, <#bool uniform#>, <#bool accumulate#>)
 				*/
 				
-//				Mat _tmp(logPolar.size(),CV_8UC1);
-//				cvLogPolar(&((IplImage)logPolar), &((IplImage)_tmp),Point2f(blb[0],blb[1]), 80.0, CV_WARP_INVERSE_MAP);
-//				imshow("descriptor", _tmp);
-//				imshow("logpolar", logPolar);
+				Mat _tmp(logPolar.size(),CV_8UC1);
+				cvLogPolar(&((IplImage)logPolar), &((IplImage)_tmp),Point2f(blb[0],blb[1]), 80.0, CV_WARP_INVERSE_MAP);
+				imshow("descriptor", _tmp);
+				imshow("logpolar", logPolar);
 			}
 		}
 		
@@ -286,7 +286,7 @@ int main(int argc, char **argv) {
 			Mat results(1,1,CV_32FC1);
 			Mat samples; Mat(Mat(_d).t()).convertTo(samples,CV_32FC1);
 			
-			Mat samplesAfterPCA = pca.project(samples);
+			Mat samplesAfterPCA = samples; //pca.project(samples);
 			
 			classifier.find_nearest(&((CvMat)samplesAfterPCA), 1, &((CvMat)results));
 //			((float*)results.data)[0] = classifier.predict(&((CvMat)samples))->value;
@@ -363,9 +363,9 @@ int main(int argc, char **argv) {
 				Mat(label_data).convertTo(labelMat,CV_32FC1);
 			}
 			
-			pca = pca(dataMat,Mat(),CV_PCA_DATA_AS_ROW,15);
-			Mat dataAfterPCA;
-			pca.project(dataMat,dataAfterPCA);
+//			pca = pca(dataMat,Mat(),CV_PCA_DATA_AS_ROW,15);
+			Mat dataAfterPCA = dataMat;
+//			pca.project(dataMat,dataAfterPCA);
 			
 			classifier.train(&((CvMat)dataAfterPCA), &((CvMat)labelMat));
 			

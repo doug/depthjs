@@ -10,7 +10,8 @@
 #import <stdlib.h>
 #import <string.h>
 #import <JavaScriptCore/JavaScriptCore.h>
-#include "ocv_freenect.hpp"
+//#include "ocv_freenect.hpp"
+#include "gesture_engine.hpp"
 
 // PRIVATE METHODS ---------------------------------------------------------------------------------
 
@@ -147,7 +148,8 @@ bool SendEventToBrowser(const string& _eventJson) {
 - (void) ocvMainLoop {
   ocvThread = [NSThread currentThread];
   [ocvThread setName:@"ocvMainLoop"];
-  ocvFreenectThread(NULL);
+//  ocvFreenectThread(NULL);
+	gesture_engine(NULL);
 }
 
 @end
@@ -209,8 +211,9 @@ NSString* jsRefToTypeString(JSContextRef& ctx, JSValueRef& t) {
   if (!haveInitDevice) {
     DLog(@"[DepthJS] Device not yet init; initing");
     hostPlugin = self;
-    int failed = initFreenect();
-    haveInitDevice = !failed;
+	NSString* pathToData = [[NSBundle bundleWithIdentifier:@"edu.mit.media.depthjs"] pathForResource:@"data-samples-labels" ofType:@"yaml"];
+	int success = init_gesture_engine([pathToData cStringUsingEncoding:NSASCIIStringEncoding]);
+    haveInitDevice = success;
     if (haveInitDevice) {
       DLog(@"[DepthJS] Successfully inited Kinect; Starting ocv thread");
       [NSThread detachNewThreadSelector:@selector(ocvMainLoop) toTarget:self withObject:nil];
@@ -228,10 +231,11 @@ NSString* jsRefToTypeString(JSContextRef& ctx, JSValueRef& t) {
   haveInitDevice = false;
   if (hostPlugin == self) {
     hostPlugin = NULL;
-    killOcvFreenect();
+//    killOcvFreenect();
+	kill_gesture_engine();
     if (ocvThread != nil) [ocvThread cancel];
     ocvThread = nil;
-    while (!isDead()) {
+    while (!is_gesture_engine_dead()) {
       [NSThread sleepForTimeInterval:0.01];
     }
   }

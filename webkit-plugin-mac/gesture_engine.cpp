@@ -22,10 +22,11 @@
 #define LABEL_FIST		2
 #define LABEL_THUMB		3
 
+extern void send_event(const string& etype, const string& edata);
+
 class GestureEngine {
 private:
-	
-	bool die;
+	bool running;
 	
 	Mat depthMat;
 	Mat depthf;
@@ -33,7 +34,7 @@ private:
 	Mat ownMat;
 	
 	Freenect::Freenect<MyFreenectDevice> freenect;
-	MyFreenectDevice& device;
+	MyFreenectDevice* device;
 	
 	bool registered;
 	Mat blobMaskOutput;
@@ -58,6 +59,20 @@ private:
 	
 	bool trained;
 	bool loaded;
+	
+	int mode;
+	
+	int register_ctr,register_secondbloc_ctr;
+	
+	Point2i appear; double appearTS;
+	
+	Point2i lastMove;
+	
+	int hcr_ctr;
+	vector<int> hc_stack; 
+	int hc_stack_ptr;
+	
+	int pca_number_of_features;
 
 	Scalar _refineSegments(const Mat& img, 
 					Mat& mask, 
@@ -65,36 +80,59 @@ private:
 					vector<Point>& contour,
 					vector<Point>& second_contour,
 						   Point2i& previous);
-	void TrainModel();
+	int TrainModel();
 	void SaveModelData();
-	void LoadModelData();
+	int LoadModelData(const char* filename);
 	void InterpolateAndInpaint();
 	void ComputeDescriptor(Scalar);
+	string GetStringForGestureCode(int);
+	void CheckRegistered(Scalar,int);
+	int GetMostLikelyGesture();
 	
 public:
-	GestureEngine():	die(false),
-						depthMat(Mat(Size(640,480),CV_16UC1)),
-						depthf(Mat(Size(640,480),CV_8UC1)),
-						rgbMat(Mat(Size(640,480),CV_8UC3,Scalar(0))),
-						ownMat(Mat(Size(640,480),CV_8UC3,Scalar(0))),
-						device(freenect.createDevice(0)),
+	bool die;
+
+	GestureEngine():	running(false),
 						registered(false),
-						blobMaskOutput(Mat::zeros(Size(640,480),CV_8UC1)),
 						startX(250),
 						sizeX(150),
 						num_x_reps(10),
 						num_y_reps(10),
 						height_over_num_y_reps(480/num_y_reps),
 						width_over_num_x_reps(sizeX/num_x_reps),
-						_d(vector<double>(num_x_reps * num_y_reps)),
-						descriptorMat(Mat(_d)),
 						label_counts(vector<float>(4)),
 						trained(false),
-						loaded(false)
+						loaded(false),
+						die(false),
+						mode(LABEL_GARBAGE),
+						pca_number_of_features(15)
 	{
+		depthMat = Mat(Size(640,480),CV_16UC1);
+		depthf = Mat(Size(640,480),CV_8UC1);
+		rgbMat = Mat(Size(640,480),CV_8UC3,Scalar(0));
+		ownMat = Mat(Size(640,480),CV_8UC3,Scalar(0));
+		blobMaskOutput = Mat(Size(640,480),CV_8UC1,Scalar(0));
+		
+		_d = vector<double>(num_x_reps*num_y_reps);
+		descriptorMat = Mat(_d);
+		
+		register_ctr = register_secondbloc_ctr = 0;
+		registered = false;
+		
+		appear = Point2i(-1,-1); 
+		appearTS = -1;
+		
+		midBlob = Point2i(-1,-1);
+		lastMove = Point2i(-1,-1);
+		
+		hcr_ctr = -1;
+		hc_stack = vector<int>(20); 
+		hc_stack_ptr = 0;
 	};
 	
 	void RunEngine();
+	bool getRunning() { return running; }
+	int InitializeFreenect(const char* );
 };
 
 Scalar GestureEngine::_refineSegments(const Mat& img, 
@@ -184,7 +222,7 @@ Scalar GestureEngine::_refineSegments(const Mat& img,
 	
 }
 
-void GestureEngine::TrainModel() {
+int GestureEngine::TrainModel() {
 	cout << "train model" << endl;
 	if(loaded != true) {
 		dataMat = Mat(training_data.size(),_d.size(),CV_32FC1);	//descriptors as matrix rows
@@ -195,13 +233,20 @@ void GestureEngine::TrainModel() {
 		Mat(label_data).convertTo(labelMat,CV_32FC1);
 	}
 	
-	pca = pca(dataMat,Mat(),CV_PCA_DATA_AS_ROW,15);
-	Mat dataAfterPCA;
-	pca.project(dataMat,dataAfterPCA);
+	try {
+		pca = pca(dataMat,Mat(),CV_PCA_DATA_AS_ROW,pca_number_of_features);
+		Mat dataAfterPCA;
+		pca.project(dataMat,dataAfterPCA);
+		
+		classifier.train(&((CvMat)dataAfterPCA), &((CvMat)labelMat));
+		
+		trained = true;
+	} catch (cv::Exception e) {
+		cerr << "Can't train model: " << e.what();
+		return 0;
+	}
 	
-	classifier.train(&((CvMat)dataAfterPCA), &((CvMat)labelMat));
-	
-	trained = true;
+	return 1;
 }	
 
 void GestureEngine::SaveModelData() {
@@ -226,9 +271,9 @@ void GestureEngine::SaveModelData() {
 	}
 }	
 
-void GestureEngine::LoadModelData() {
+int GestureEngine::LoadModelData(const char* filename) {
 	FileStorage fs;
-	fs.open("data-samples-labels.yaml", CV_STORAGE_READ);
+	fs.open(filename, CV_STORAGE_READ);
 	if (fs.isOpened()) {
 		fs["samples"] >> dataMat;
 		fs["labels"] >> labelMat;
@@ -236,14 +281,16 @@ void GestureEngine::LoadModelData() {
 		fs.release();			
 	} else {
 		cerr << "can't open saved data" << endl;
+		return 0;
 	}
+	return 1;
 }	
 
 void GestureEngine::InterpolateAndInpaint() {
 	//interpolation & inpainting
 	Mat _tmp,_tmp1; // = (depthMat - 400.0);          //minimum observed value is ~440. so shift a bit
 	Mat(depthMat - 400.0).convertTo(_tmp1,CV_64FC1);
-	_tmp.setTo(Scalar(2048), depthMat > 750.0);   //cut off at 600 to create a "box" where the user interacts
+//	_tmp1.setTo(Scalar(2048-400.0), depthMat > 750.0);   //cut off at 600 to create a "box" where the user interacts
 	
 	Point minLoc; double minval,maxval;
 	minMaxLoc(_tmp1, &minval, &maxval, NULL, NULL);
@@ -313,13 +360,141 @@ void GestureEngine::ComputeDescriptor(Scalar blb) {
 	
 }	
 
+string GestureEngine::GetStringForGestureCode(int res) {
+	if (res == LABEL_OPEN) {
+		return "Open hand";
+	}
+	if (res == LABEL_FIST) {
+		return "Fist";
+	}
+	if (res == LABEL_THUMB) {
+		return "Thumb";
+	}
+	if (res == LABEL_GARBAGE) {
+		return "Garbage";
+	}
+	return "none";
+}	
+
+void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture) {
+	register_ctr = MIN((register_ctr + 1),60);
+	
+	if(blb[3] > 5000)
+		register_secondbloc_ctr = MIN((register_secondbloc_ctr + 1),60);
+	
+	if (register_ctr > 30 && !registered) {
+		registered = true;
+		appear.x = -1;
+		lastMove.x = blb[0]; lastMove.y = blb[1];
+		
+		cout << "blob size " << blb[2] << endl;
+		
+		if(register_secondbloc_ctr < 30) {
+			cout << "register pointer" << endl;
+			stringstream ss; ss << "\"mode\":\""<< GetStringForGestureCode(recognized_gesture) <<"\"";
+			send_event("Register", ss.str());
+		} else {
+            cout << "register tab swithcer" << endl;
+            send_event("Register", "\"mode\":\"twohands\"");
+		}
+	}
+	
+	if(registered) {
+		stringstream ss;
+		ss  << "\"x\":"  << (int)floor(blb[0]*100.0/640.0)
+			<< ",\"y\":" << (int)floor(blb[1]*100.0/480.0)
+			<< ",\"z\":" << 100; //(int)(mn[0] * 2.0);
+		//cout << "move: " << ss.str() << endl;
+		send_event("Move", ss.str());
+				
+		hc_stack.at(hc_stack_ptr) = hcr_ctr;
+		hc_stack_ptr = (hc_stack_ptr + 1) % hc_stack.size();
+		
+		//if thumb recognized - send "hand click"
+		if (recognized_gesture == LABEL_THUMB) {
+			cout << "Hand click!" << endl;
+            send_event("HandClick", "");
+		}
+	} else {
+		//not registered, look for gestures
+		if(appear.x<0) {
+            //first appearence of blob
+            appear = midBlob;
+            //          update_bg_model = false;
+            appearTS = getTickCount();
+            cout << "appear ("<<appearTS<<") " << appear.x << "," << appear.y << endl;
+		} else {
+            //blob was seen before, how much time passed
+            double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
+            if (timediff > .2 && timediff < 1.0) {
+				//enough time passed from appearence
+				line(outC, appear, cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
+				if (appear.x - blb[0] > 100) {
+					cout << "right"<<endl; appear.x = -1;
+					send_event("SwipeRight", "");
+					register_ctr = 0;
+				} else if (appear.x - blb[0] < -100) {
+					cout << "left" <<endl; appear.x = -1;
+					send_event("SwipeLeft", "");
+					register_ctr = 0;
+				} else if (appear.y - blb[1] > 100) {
+					cout << "up" << endl; appear.x = -1;
+					send_event("SwipeUp", "");
+					register_ctr = 0;
+				} else if (appear.y - blb[1] < -100) {
+					cout << "down" << endl; appear.x = -1;
+					send_event("SwipeDown", "");
+					register_ctr = 0;
+				}
+            }
+            if(timediff >= 1.0) {
+				cout << "a ghost..."<<endl;
+				//a second passed from appearence - reset 1st appear
+				appear.x = -1;
+				appearTS = -1;
+				midBlob.x = midBlob.y = -1;
+            }
+		}
+	}
+//	send_image(outC);
+}
+
+int GestureEngine::InitializeFreenect(const char* data) {
+	try {
+		device = &freenect.createDevice(0);
+		device->startVideo();
+		device->startDepth();		
+	}
+	catch (std::runtime_error e) {
+		return 0;
+	}
+	if(!LoadModelData(data)) return 0;
+	if(!TrainModel()) return 0;
+	
+	return 1;
+}
+
+int GestureEngine::GetMostLikelyGesture() {
+	Mat results(1,1,CV_32FC1);
+	Mat samples; Mat(Mat(_d).t()).convertTo(samples,CV_32FC1);
+	Mat samplesAfterPCA = pca.project(samples);
+	
+	classifier.find_nearest(&((CvMat)samplesAfterPCA), 1, &((CvMat)results));
+	
+	Mat lc(label_counts); lc *= 0.9;
+	label_counts[(int)((float*)results.data)[0]] += 0.1;
+	Point maxLoc;
+	minMaxLoc(lc, NULL, NULL, NULL, &maxLoc);
+	return maxLoc.y;
+}	
+
 void GestureEngine::RunEngine() {
-	device.startVideo();
-	device.startDepth();
+	
+	running = true;
 	
     while (!die) {
-    	device.getVideo(rgbMat);
-    	device.getDepth(depthMat);
+    	device->getVideo(rgbMat);
+    	device->getDepth(depthMat);
 
 		InterpolateAndInpaint();
 		
@@ -370,49 +545,27 @@ void GestureEngine::RunEngine() {
 				//blob center
 				circle(outC, Point(blb[0],blb[1]), 50, Scalar(255,0,0), 3);
 
-				ComputeDescriptor(blb);
+				if(trained) {
+					ComputeDescriptor(blb);
+					int gesture_code = GetMostLikelyGesture();
+					
+					{ //debug
+						stringstream ss; ss << "prediction: " << GetStringForGestureCode(gesture_code);
+						putText(outC, ss.str(), Point(20,50), CV_FONT_HERSHEY_PLAIN, 3.0, Scalar(0,0,255), 2);
+					}
+					
+					CheckRegistered(blb, gesture_code);
+				}
 			}
 		}
-		
-		if(trained) {
-			Mat results(1,1,CV_32FC1);
-			Mat samples; Mat(Mat(_d).t()).convertTo(samples,CV_32FC1);
-			
-			Mat samplesAfterPCA = pca.project(samples);
-			
-			classifier.find_nearest(&((CvMat)samplesAfterPCA), 1, &((CvMat)results));
-//			((float*)results.data)[0] = classifier.predict(&((CvMat)samples))->value;
-			
-			Mat lc(label_counts); lc *= 0.9;
-			
-//			label_counts[(int)((float*)results.data)[0]] *= 0.9;
-			label_counts[(int)((float*)results.data)[0]] += 0.1;
-			Point maxLoc;
-			minMaxLoc(lc, NULL, NULL, NULL, &maxLoc);
-			int res = maxLoc.y;
-			
-			stringstream ss; ss << "prediction: ";
-			if (res == LABEL_OPEN) {
-				ss << "Open hand";
-			}
-			if (res == LABEL_FIST) {
-				ss << "Fist";
-			}
-			if (res == LABEL_THUMB) {
-				ss << "Thumb";
-			}
-			if (res == LABEL_GARBAGE) {
-				ss << "Garbage";
-			}
-			putText(outC, ss.str(), Point(20,50), CV_FONT_HERSHEY_PLAIN, 3.0, Scalar(0,0,255), 2);
-		}
-		
+				
 		imshow("blobs", outC);
 		
 		char k = cvWaitKey(5);
 		if( k == 27 ){
 			break;
 		}
+		/*
 		if (k == 'g') {
 			//put into training as 'garbage'
 			training_data.push_back(_d);
@@ -446,16 +599,27 @@ void GestureEngine::RunEngine() {
 		if(k=='l') {
 			LoadModelData();
 		}
+		 */
     }
 	
-   	device.stopVideo();
-	device.stopDepth();
+   	device->stopVideo();
+	device->stopDepth();
+	
+	running = false;
 }
 
+GestureEngine ge;
 
 void* gesture_engine(void* _arg) {
 
-	GestureEngine ge;
 	ge.RunEngine();
  	
 }
+
+void kill_gesture_engine() {
+	ge.die = true;
+}
+
+bool is_gesture_engine_dead() { return !ge.getRunning(); }
+
+int init_gesture_engine(const char* data) { return ge.InitializeFreenect(data); }
