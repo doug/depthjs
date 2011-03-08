@@ -105,7 +105,7 @@ public:
 						loaded(false),
 						die(false),
 						mode(LABEL_GARBAGE),
-						pca_number_of_features(15)
+						pca_number_of_features(25)
 	{
 		depthMat = Mat(Size(640,480),CV_16UC1);
 		depthf = Mat(Size(640,480),CV_8UC1);
@@ -362,10 +362,10 @@ void GestureEngine::ComputeDescriptor(Scalar blb) {
 
 string GestureEngine::GetStringForGestureCode(int res) {
 	if (res == LABEL_OPEN) {
-		return "Open hand";
+		return "openhand";
 	}
 	if (res == LABEL_FIST) {
-		return "Fist";
+		return "theforce";
 	}
 	if (res == LABEL_THUMB) {
 		return "Thumb";
@@ -377,84 +377,101 @@ string GestureEngine::GetStringForGestureCode(int res) {
 }	
 
 void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture) {
-	register_ctr = MIN((register_ctr + 1),60);
-	
-	if(blb[3] > 5000)
-		register_secondbloc_ctr = MIN((register_secondbloc_ctr + 1),60);
-	
-	if (register_ctr > 30 && !registered) {
-		registered = true;
-		appear.x = -1;
-		lastMove.x = blb[0]; lastMove.y = blb[1];
+	if(recognized_gesture != LABEL_GARBAGE) {
+		register_ctr = MIN((register_ctr + 1),60);
 		
-		cout << "blob size " << blb[2] << endl;
+		if(blb[3] > 5000)
+			register_secondbloc_ctr = MIN((register_secondbloc_ctr + 1),60);
 		
-		if(register_secondbloc_ctr < 30) {
-			cout << "register pointer" << endl;
-			stringstream ss; ss << "\"mode\":\""<< GetStringForGestureCode(recognized_gesture) <<"\"";
-			send_event("Register", ss.str());
-		} else {
-            cout << "register tab swithcer" << endl;
-            send_event("Register", "\"mode\":\"twohands\"");
-		}
-	}
-	
-	if(registered) {
-		stringstream ss;
-		ss  << "\"x\":"  << (int)floor(blb[0]*100.0/640.0)
-			<< ",\"y\":" << (int)floor(blb[1]*100.0/480.0)
-			<< ",\"z\":" << 100; //(int)(mn[0] * 2.0);
-		//cout << "move: " << ss.str() << endl;
-		send_event("Move", ss.str());
+		if (register_ctr > 30 && !registered) {
+			registered = true;
+			appear.x = -1;
+			lastMove.x = blb[0]; lastMove.y = blb[1];
+			
+			cout << "blob size " << blb[2] << endl;
+			
+			if(register_secondbloc_ctr < 30) {
+				cout << "register pointer" << endl;
+				stringstream ss; ss << "\"mode\":\""<< GetStringForGestureCode(recognized_gesture) <<"\"";
+				send_event("Register", ss.str());
 				
-		hc_stack.at(hc_stack_ptr) = hcr_ctr;
-		hc_stack_ptr = (hc_stack_ptr + 1) % hc_stack.size();
+				mode = recognized_gesture;
+			} else {
+				cout << "register tab swithcer" << endl;
+				send_event("Register", "\"mode\":\"twohands\"");
+			}
+		}
 		
-		//if thumb recognized - send "hand click"
-		if (recognized_gesture == LABEL_THUMB) {
-			cout << "Hand click!" << endl;
-            send_event("HandClick", "");
+		if(registered) {
+			stringstream ss;
+			ss  << "\"x\":"  << (int)floor(blb[0]*100.0/640.0)
+				<< ",\"y\":" << (int)floor(blb[1]*100.0/480.0)
+				<< ",\"z\":" << 100; //(int)(mn[0] * 2.0);
+			//cout << "move: " << ss.str() << endl;
+			send_event("Move", ss.str());
+					
+			hc_stack.at(hc_stack_ptr) = hcr_ctr;
+			hc_stack_ptr = (hc_stack_ptr + 1) % hc_stack.size();
+			
+			//if thumb recognized - send "hand click"
+			if (mode == LABEL_FIST && recognized_gesture == LABEL_THUMB) {
+				cout << "Hand click!" << endl;
+				send_event("HandClick", "");
+			}
 		}
 	} else {
-		//not registered, look for gestures
-		if(appear.x<0) {
-            //first appearence of blob
-            appear = midBlob;
-            //          update_bg_model = false;
-            appearTS = getTickCount();
-            cout << "appear ("<<appearTS<<") " << appear.x << "," << appear.y << endl;
-		} else {
-            //blob was seen before, how much time passed
-            double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
-            if (timediff > .2 && timediff < 1.0) {
-				//enough time passed from appearence
-				line(outC, appear, cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
-				if (appear.x - blb[0] > 100) {
-					cout << "right"<<endl; appear.x = -1;
-					send_event("SwipeRight", "");
-					register_ctr = 0;
-				} else if (appear.x - blb[0] < -100) {
-					cout << "left" <<endl; appear.x = -1;
-					send_event("SwipeLeft", "");
-					register_ctr = 0;
-				} else if (appear.y - blb[1] > 100) {
-					cout << "up" << endl; appear.x = -1;
-					send_event("SwipeUp", "");
-					register_ctr = 0;
-				} else if (appear.y - blb[1] < -100) {
-					cout << "down" << endl; appear.x = -1;
-					send_event("SwipeDown", "");
-					register_ctr = 0;
+		if(!registered) {
+			//not registered, look for gestures
+			if(appear.x<0) {
+				//first appearence of blob
+				appear = midBlob;
+				//          update_bg_model = false;
+				appearTS = getTickCount();
+				cout << "appear ("<<appearTS<<") " << appear.x << "," << appear.y << endl;
+			} else {
+				//blob was seen before, how much time passed
+				double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
+				if (timediff > .2 && timediff < 1.0) {
+					//enough time passed from appearence
+					line(outC, appear, cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
+					if (appear.x - blb[0] > 100) {
+						cout << "right"<<endl; appear.x = -1;
+						send_event("SwipeRight", "");
+						register_ctr = 0;
+					} else if (appear.x - blb[0] < -100) {
+						cout << "left" <<endl; appear.x = -1;
+						send_event("SwipeLeft", "");
+						register_ctr = 0;
+					} else if (appear.y - blb[1] > 100) {
+						cout << "up" << endl; appear.x = -1;
+						send_event("SwipeUp", "");
+						register_ctr = 0;
+					} else if (appear.y - blb[1] < -100) {
+						cout << "down" << endl; appear.x = -1;
+						send_event("SwipeDown", "");
+						register_ctr = 0;
+					}
 				}
-            }
-            if(timediff >= 1.0) {
-				cout << "a ghost..."<<endl;
-				//a second passed from appearence - reset 1st appear
-				appear.x = -1;
-				appearTS = -1;
-				midBlob.x = midBlob.y = -1;
-            }
+				if(timediff >= 1.0) {
+					cout << "a ghost..."<<endl;
+					//a second passed from appearence - reset 1st appear
+					appear.x = -1;
+					appearTS = -1;
+					midBlob.x = midBlob.y = -1;
+				}
+			}
 		}
+		
+		register_ctr = MAX((register_ctr - 1),0);
+		register_secondbloc_ctr = MAX((register_secondbloc_ctr - 1),0);
+		
+		if (register_ctr <= 15 && registered) {
+			midBlob.x = midBlob.y = -1;
+			registered = false;
+			mode = -1;
+			cout << "unregister" << endl;
+			send_event("Unregister", "");
+		}		
 	}
 //	send_image(outC);
 }
@@ -508,7 +525,7 @@ void GestureEngine::RunEngine() {
 		minMaxLoc(depthf, &minval, &maxval, &minLoc, NULL, blobMaskInput);
 		circle(outC, minLoc, 5, Scalar(0,255,0), 3);
 		
-		blobMaskInput = depthf < (minval + 18);
+		blobMaskInput = depthf < (minval + 20);
 		
 		Scalar blb = _refineSegments(Mat(),blobMaskInput,blobMaskOutput,ctr,ctr2,midBlob); //find contours in the foreground, choose biggest
 		/////// blb :
@@ -526,7 +543,7 @@ void GestureEngine::RunEngine() {
 			
 			blb = _refineSegments(Mat(),blobMaskInput,blobMaskOutput,ctr,ctr2,midBlob);
 			
-			imshow("blob", blobMaskOutput);
+//			imshow("blob", blobMaskOutput);
 			
 			if(blb[0] >= 0 && blb[2] > 300) {
 				//draw contour
