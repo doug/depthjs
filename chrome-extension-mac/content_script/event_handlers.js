@@ -30,16 +30,25 @@ console.log("DepthJS: Loading event handlers");
 DepthJS.state = null;
 DepthJS.lastRegisterTime = null;
 
+DepthJS.trigger = function(element, name) {
+  var event = document.createEvent("Events")
+  event.initEvent(name, true, true); //true for can bubble, true for cancelable
+  element.dispatchEvent(event);
+}
+
 DepthJS.eventHandlers.onSwipeLeft = function() {
+  DepthJS.trigger(window, "swipeLeft");
    // history.back();
 };
 
 DepthJS.eventHandlers.onSwipeRight = function() {
+  DepthJS.trigger(window, "swipeRight");
   // We interpret as "forward".
   // history.forward();
 };
 
 DepthJS.eventHandlers.onSwipeDown = function() {
+  DepthJS.trigger(window, "swipeDown");
   // We interpret as "scroll down 75% of window".
   // var scrollAmount = Math.floor($(window).height() * 0.75);
   // $("html, body").animate({
@@ -48,6 +57,7 @@ DepthJS.eventHandlers.onSwipeDown = function() {
 };
 
 DepthJS.eventHandlers.onSwipeUp = function() {
+  DepthJS.trigger(window, "swipeUp");
   // We interpret as "scroll up 75% of window".
   // var scrollAmount = Math.floor($(window).height() * 0.75);
   // $("html, body").animate({
@@ -56,12 +66,14 @@ DepthJS.eventHandlers.onSwipeUp = function() {
 };
 
 DepthJS.eventHandlers.onHandPointer = function(){
+  DepthJS.trigger(window, "handPointer");
   if (DepthJS.verbose) console.log("DepthJS. Hand Pointer");
   DepthJS.eventHandlers.onUnregister();
   DepthJS.state = "selectorBox";
 };
 
 DepthJS.eventHandlers.onHandOpen = function(){
+  DepthJS.trigger(window, "handOpen");
   if (DepthJS.verbose) console.log("DepthJS. Hand Open");
   DepthJS.eventHandlers.onUnregister();
   DepthJS.state = "panner";
@@ -83,7 +95,7 @@ DepthJS.eventHandlers.onSelectorBoxMode = function() {
 // POINTER -----------------------------------------------------------------------------------------
 DepthJS.eventHandlers.onRegister = function(data) {
   if (DepthJS.verbose) console.log("DepthJS: User registered their hand");
-  $(window).trigger("touchstart");
+  DepthJS.trigger(window, "touchstart");
   if (data.mode == "twohands") {
     console.log("Ignoring in two hands for now");
     return;

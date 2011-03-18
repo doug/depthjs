@@ -74,20 +74,14 @@ DepthJS.selectorBox.handleHover = function() {
   var lastElement = $('.depthjs-hover')[0];
   var element = DepthJS.selectorBox.elementAtCursor();
   
-  var trigger = function(element, name) {
-    var event = document.createEvent("Events")
-    event.initEvent(name, true, true); //true for can bubble, true for cancelable
-    element.dispatchEvent(event);
-  }
-  
   if (element == lastElement) { // same element
     // do nothing
   } else { 
     if (lastElement) {
-      trigger($(lastElement).removeClass('depthjs-hover')[0], 'hoverOut');
+      DepthJS.trigger($(lastElement).removeClass('depthjs-hover')[0], 'hoverOut');
     }
     if (element) {
-      trigger($(element).addClass("depthjs-hover")[0], "hoverOver");
+      DepthJS.trigger($(element).addClass("depthjs-hover")[0], "hoverOver");
     }
   }
 };
