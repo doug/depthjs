@@ -18,15 +18,8 @@ $(function() {
                   left: "20px"
                })
                .appendTo("body");
-    $("<div id='kinect-help'/>").text("move your hand closer until you see your hand on the screen")
-                                .css({
-                                  position: "fixed",
-                                  left: "55px",
-                                  bottom: "20px",
-                                  backgroundColor: "white",
-                                  padding: 4
-                                })
-                                .appendTo("body");
+               
+               
     // console.log($("img"));
 
 

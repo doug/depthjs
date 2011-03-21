@@ -95,7 +95,7 @@ DepthJS.eventHandlers.onSelectorBoxMode = function() {
 // POINTER -----------------------------------------------------------------------------------------
 DepthJS.eventHandlers.onRegister = function(data) {
   if (DepthJS.verbose) console.log("DepthJS: User registered their hand");
-  DepthJS.trigger(window, "touchstart");
+  DepthJS.trigger(window, "touchStart");
   if (data.mode == "twohands") {
     console.log("Ignoring in two hands for now");
     return;
@@ -113,7 +113,6 @@ DepthJS.eventHandlers.onRegister = function(data) {
   DepthJS.lastRegisterTime = new Date();
   DepthJS.state = DepthJS.registerMode;
   DepthJS[DepthJS.registerMode].show();
-  $("#kinect-help").hide();
 };
 
 DepthJS.eventHandlers.onUnregister = function() {
@@ -123,7 +122,7 @@ DepthJS.eventHandlers.onUnregister = function() {
   DepthJS.selectorBox.hide();
   DepthJS.selectorBoxPopup.hide();
   DepthJS.depthose.hide();
-  $("#kinect-help").show();
+  DepthJS.trigger(window, "touchStop");  
 };
 
 DepthJS.eventHandlers.onHandClick = function() {
