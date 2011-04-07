@@ -18,6 +18,7 @@ $(function() {
                   left: "20px"
                })
                .appendTo("body");
+    $("body").addClass("depthjs-started");
                
                
     // console.log($("img"));
