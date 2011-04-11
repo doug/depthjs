@@ -36,6 +36,8 @@ DepthJS.trigger = function(element, name) {
   element.dispatchEvent(event);
 }
 
+DepthJS.trigger(window, "depthjs-loading");
+
 DepthJS.eventHandlers.onSwipeLeft = function() {
   DepthJS.trigger(window, "swipeLeft");
    // history.back();
