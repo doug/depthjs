@@ -32,6 +32,7 @@ private:
 	Mat depthf;
 	Mat rgbMat;
 	Mat ownMat;
+	Mat hsv;
 	
 	Freenect::Freenect<MyFreenectDevice> freenect;
 	MyFreenectDevice* device;
@@ -39,7 +40,7 @@ private:
 	bool registered;
 	Mat blobMaskOutput;
 	Mat outC;
-	Point midBlob;
+	Point3i midBlob;
 	
 	//descriptor parameters
 	int startX, sizeX, num_x_reps, num_y_reps;
@@ -64,30 +65,34 @@ private:
 	
 	int register_ctr,register_secondbloc_ctr;
 	
-	Point2i appear; double appearTS;
+	Point3i appear; double appearTS;
 	
-	Point2i lastMove;
+	Point3i lastMove;
 	
 	int hcr_ctr;
 	vector<int> hc_stack; 
 	int hc_stack_ptr;
 	
 	int pca_number_of_features;
+	
+	Vec2i mean_hue_sat_blob;
 
-	Scalar _refineSegments(const Mat& img, 
+	vector<int> _refineSegments(const Mat& img, 
 					Mat& mask, 
 					Mat& dst, 
 					vector<Point>& contour,
 					vector<Point>& second_contour,
-						   Point2i& previous);
+					Point3i& previous);
+	
 	int TrainModel();
 	void SaveModelData();
 	int LoadModelData(const char* filename);
 	void InterpolateAndInpaint();
 	void ComputeDescriptor(Scalar);
 	string GetStringForGestureCode(int);
-	void CheckRegistered(Scalar,int,Scalar);
+	void CheckRegistered(vector<int>&,int,Scalar);
 	int GetMostLikelyGesture();
+	void BiasHandColor(Mat &);
 	
 public:
 	bool die;
@@ -104,7 +109,7 @@ public:
 						trained(false),
 						loaded(false),
 						mode(LABEL_GARBAGE),
-						pca_number_of_features(50),
+						pca_number_of_features(25),
 						die(false)
 	{
 		depthMat = Mat(Size(640,480),CV_16UC1);
@@ -119,15 +124,17 @@ public:
 		register_ctr = register_secondbloc_ctr = 0;
 		registered = false;
 		
-		appear = Point2i(-1,-1); 
+		appear = Point3i(-1,-1,-1); 
 		appearTS = -1;
 		
-		midBlob = Point2i(-1,-1);
-		lastMove = Point2i(-1,-1);
+		midBlob = Point3i(-1,-1,-1);
+		lastMove = Point3i(-1,-1,-1);
 		
 		hcr_ctr = -1;
 		hc_stack = vector<int>(20); 
 		hc_stack_ptr = 0;
+		
+		mean_hue_sat_blob = Vec2i(-1,-1);
 	};
 	
 	void RunEngine();
@@ -135,17 +142,19 @@ public:
 	int InitializeFreenect(const char* );
 };
 
-Scalar GestureEngine::_refineSegments(const Mat& img, 
+vector<int> GestureEngine::_refineSegments(const Mat& img, 
 					   Mat& mask, 
 					   Mat& dst, 
 					   vector<Point>& contour,
 					   vector<Point>& second_contour,
-					   Point2i& previous)
+					   Point3i& previous)
 {
 	//    int niters = 3;
     
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
+	
+	vector<int> b(5,-1); //return value
     
     Mat temp;
     
@@ -160,7 +169,7 @@ Scalar GestureEngine::_refineSegments(const Mat& img,
 		dst.setTo(Scalar(0));
     
     if( contours.size() == 0 )
-        return Scalar(-1,-1);
+        return b;
 	
     // iterate through all the top-level contours,
     // draw each connected component with its own random color
@@ -168,15 +177,36 @@ Scalar GestureEngine::_refineSegments(const Mat& img,
     double maxWArea = 0, maxJArea = 0;
     vector<double> justarea(contours.size());
 	vector<double> weightedarea(contours.size());
+	Scalar color( 255 );
+	Mat _blob_mask = Mat::zeros(mask.size(),CV_8UC1);
 	
 	//    for( ; idx >= 0; idx = hierarchy[idx][0] )
 	for (; idx<contours.size(); idx++)
     {
-        const vector<Point>& c = contours[idx];
+        vector<Point>& c = contours[idx];
 		Scalar _mean = mean(Mat(contours[idx]));
 		justarea[idx] = fabs(contourArea(Mat(c)));
-		weightedarea[idx] = fabs(contourArea(Mat(c))) / 
-		((previous.x >- 1) ? (1.0 + norm(Point(_mean[0],_mean[1])-previous)) : 1.0);	//consider distance from last blob
+		
+		double dist_to_prev = 1.0; 
+		if ((previous.x >- 1)) { 
+			//consider distance from last blob
+			double _n = norm(Point2i(_mean[0],_mean[1])-Point2i(previous.x,previous.y));
+			if(_n > 100) _n *= 10; //if dist_to_prev > 100 then it's too fast movement... penalize
+			dist_to_prev = _n;
+			
+			//consider colors shift by L2 distance on Hue-Sat plane
+			_blob_mask.setTo(Scalar(0));
+			Point* pts = &(c[0]);
+			int _num = (c.size());
+			fillPoly(_blob_mask, (const Point**)(&pts), &_num, 1, color);
+			
+			//calc mean hue-sat for this blob
+			Scalar _h_s_mean,_stddv; meanStdDev(img, _h_s_mean, _stddv, _blob_mask);
+			Vec2i hue_sat_blob(_h_s_mean[0], _h_s_mean[1]);
+			dist_to_prev *= norm(hue_sat_blob - mean_hue_sat_blob);
+		}
+		
+		weightedarea[idx] = justarea[idx] / dist_to_prev;
     }
 	for (idx = 0; idx<contours.size(); idx++) {
 		if( weightedarea[idx] > maxWArea )
@@ -192,23 +222,24 @@ Scalar GestureEngine::_refineSegments(const Mat& img,
 		}
 	}
 	
-    Scalar color( 255 );
+    
 	//	cout << "largest cc " << largestComp << endl;
 	//   drawContours( dst, contours, largestComp, color, CV_FILLED); //, 8, hierarchy );
 	//	for (idx=0; idx<contours[largestComp].size()-1; idx++) {
 	//		line(dst, contours[largestComp][idx], contours[largestComp][idx+1], color, 2);
 	//	
 	if(largestComp >= 0) {
-		
-		//find top-left values
-		int maxx = -INT_MAX,miny = INT_MAX;
 		int num = contours[largestComp].size();
+		
+		/*find top-left values
+		int maxx = -INT_MAX,miny = INT_MAX;
+		
 		for (int i=0; i<num; i++) {
 			if(contours[largestComp][i].x > maxx) maxx = contours[largestComp][i].x;
 			if(contours[largestComp][i].y < miny) miny = contours[largestComp][i].y;
 		}
 		
-		//crop contour to 150x150 "window"
+		/*crop contour to 150x150 "window"*
 		vector<Point> newblob;
 		int maxxp150 = MAX(maxx-200,0),minyp150 = MIN(miny+170,480);
 		
@@ -218,14 +249,26 @@ Scalar GestureEngine::_refineSegments(const Mat& img,
 		for (int i=0; i<num; i++) {
 			Point _p = contours[largestComp][i];
 			if(_p.x > maxxp150 && _p.y < minyp150) newblob.push_back(_p);
+			else newblob.push_back(Point(MAX(_p.x,maxxp150),MIN(_p.y,minyp150)));
 		}
+		 /**/
+
+		vector<Point>& newblob = contours[largestComp];
 		
 		Point* pts = &(newblob[0]);
 		num = newblob.size();
 		fillPoly(dst, (const Point**)(&pts), &num, 1, color);
 		
-		Scalar b = mean(Mat(newblob));
-		b[2] = justarea[largestComp];
+		//calc mean hue-sat for this blob
+		Scalar _h_s_mean,_stddv; meanStdDev(hsv, _h_s_mean, _stddv, dst);
+		mean_hue_sat_blob = Vec2i(_h_s_mean[0],_h_s_mean[1]);
+		
+		
+		Scalar _b = mean(Mat(newblob));
+		b[0] = _b[0]; b[1] = _b[1]; b[2] = depthf.at<uchar>(b[0],b[1]);	//z value
+		
+		b[0] += 40; b[1] -= 40;
+		b[3] = justarea[largestComp];
 		
 		contour.clear();
 		contour = newblob;
@@ -233,13 +276,13 @@ Scalar GestureEngine::_refineSegments(const Mat& img,
 		second_contour.clear();
 		if(secondlargest >= 0) {
 			second_contour = contours[secondlargest];
-			b[3] = maxJArea;
+			b[4] = maxJArea;
 		}
 		
-		previous.x = b[0]; previous.y = b[1];
+		previous.x = b[0]; previous.y = b[1]; previous.z = b[2];
 		return b;
 	} else
-		return Scalar(-1,-1);
+		return b;
 	
 }
 
@@ -411,7 +454,7 @@ string GestureEngine::GetStringForGestureCode(int res) {
 	return "none";
 }	
 
-void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture, Scalar mn) {
+void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Scalar mn) {
 	if(recognized_gesture != LABEL_GARBAGE) {
 		register_ctr = MIN((register_ctr + 1),60);
 		
@@ -421,9 +464,9 @@ void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture, Scalar m
 		if (register_ctr > 30 && !registered) {
 			registered = true;
 			appear.x = -1;
-			lastMove.x = blb[0]; lastMove.y = blb[1];
+			lastMove.x = blb[0]; lastMove.y = blb[1]; lastMove.z = blb[2];
 			
-			cout << "blob size " << blb[2] << endl;
+			cout << "blob size " << blb[4] << endl;
 			
 			if(register_secondbloc_ctr < 30) {
 				cout << "register pointer" << endl;
@@ -475,29 +518,40 @@ void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture, Scalar m
 				appear = midBlob;
 				//          update_bg_model = false;
 				appearTS = getTickCount();
-				cout << "appear ("<<appearTS<<") " << appear.x << "," << appear.y << endl;
+				cout << "appear ("<<appearTS<<") " << appear.x << "," << appear.y << "," << appear.z << endl;
 			} else {
 				//blob was seen before, how much time passed
 				double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
 				if (timediff > .2 && timediff < 1.0) {
 					//enough time passed from appearence
-					line(outC, appear, cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
+					line(outC, Point(appear.x,appear.y), cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
 					if (appear.x - blb[0] > 100) {
 						cout << "right"<<endl; appear.x = -1;
 						send_event("SwipeRight", "");
 						register_ctr = 0;
-					} else if (appear.x - blb[0] < -100) {
+					} else 
+					if (appear.x - blb[0] < -100) {
 						cout << "left" <<endl; appear.x = -1;
 						send_event("SwipeLeft", "");
 						register_ctr = 0;
-					} else if (appear.y - blb[1] > 100) {
+					} else 
+					if (appear.y - blb[1] > 100) {
 						cout << "up" << endl; appear.x = -1;
 						send_event("SwipeUp", "");
 						register_ctr = 0;
-					} else if (appear.y - blb[1] < -100) {
+					} else 
+					if (appear.y - blb[1] < -100) {
 						cout << "down" << endl; appear.x = -1;
 						send_event("SwipeDown", "");
 						register_ctr = 0;
+					} else
+					if (appear.z - blb[2] < -30) {
+						cout << "Pull" << endl; appear.x = -1;
+						send_event("Pull", "");
+					} else
+					if (appear.z - blb[2] > 30) {
+						cout << "Push" << endl; appear.x = -1;
+						send_event("Push", "");
 					}
 				}
 				if(timediff >= 1.0) {
@@ -505,7 +559,7 @@ void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture, Scalar m
 					//a second passed from appearence - reset 1st appear
 					appear.x = -1;
 					appearTS = -1;
-					midBlob.x = midBlob.y = -1;
+					midBlob.x = midBlob.y = midBlob.z = -1;
 				}
 			}
 		}
@@ -514,7 +568,7 @@ void GestureEngine::CheckRegistered(Scalar blb, int recognized_gesture, Scalar m
 		register_secondbloc_ctr = MAX((register_secondbloc_ctr - 1),0);
 		
 		if (register_ctr <= 15 && registered) {
-			midBlob.x = midBlob.y = -1;
+			midBlob.x = midBlob.y = midBlob.z = -1;
 			registered = false;
 			mode = -1;
 			cout << "unregister" << endl;
@@ -550,8 +604,43 @@ int GestureEngine::GetMostLikelyGesture() {
 	label_counts[(int)((float*)results.data)[0]] += 0.1;
 	Point maxLoc;
 	minMaxLoc(lc, NULL, NULL, NULL, &maxLoc);
+	
+	for (int i=0; i<4; i++) {
+		rectangle(outC, Point(50+i*20,50), Point(50+(i+1)*20,50+50*label_counts[i]), Scalar(255), CV_FILLED);
+	}	
+	
 	return maxLoc.y;
 }	
+
+void GestureEngine::BiasHandColor(Mat &blobMaskInput) 		//(very simple) bias with hand color
+{
+	Mat _col_p(hsv.size(),CV_32FC1);
+	int jump = 5;
+	for (int x=0; x < hsv.cols; x+=jump) {
+		for (int y=0; y < hsv.rows; y+=jump) {
+			Mat _i = hsv(Range(y,MIN(y+jump,hsv.rows-1)),Range(x,MIN(x+jump,hsv.cols-1)));
+			Scalar hsv_mean = mean(_i);
+			Vec2i u; u[0] = hsv_mean[0]; u[1] = hsv_mean[1];
+			Vec2i v; v[0] = 120; v[1] = 110;
+			rectangle(_col_p, Point(x,y), Point(x+jump,y+jump), Scalar(1.0-MIN(norm(u-v)/105.0,1.0)), CV_FILLED);
+		}
+	}
+	//			hsv = hsv - Scalar(0,0,255);
+	Mat _t = (Mat_<double>(2,3) << 1, 0, 15,    0, 1, -20);
+	Mat col_p(_col_p.size(),CV_32FC1);
+	warpAffine(_col_p, col_p, _t, col_p.size());
+	GaussianBlur(col_p, col_p, Size(11.0,11.0), 2.5);
+	//			imshow("hand color",col_p);
+	//			imshow("rgb",rgbMat);
+	Mat blobMaskInput_32FC1; blobMaskInput.convertTo(blobMaskInput_32FC1, CV_32FC1, 1.0/255.0);
+	blobMaskInput_32FC1 = blobMaskInput_32FC1.mul(col_p, 1.0);
+	blobMaskInput_32FC1.convertTo(blobMaskInput, CV_8UC1, 255.0);
+	
+	blobMaskInput = blobMaskInput > 128;
+	
+	//			imshow("blob bias", blobMaskInput);
+}
+
 
 void GestureEngine::RunEngine() {
 	
@@ -560,12 +649,13 @@ void GestureEngine::RunEngine() {
     while (!die) {
     	device->getVideo(rgbMat);
     	device->getDepth(depthMat);
-
+		cvtColor(rgbMat, hsv, CV_RGB2HSV);
+		
 		InterpolateAndInpaint();
 		
 		cvtColor(depthf, outC, CV_GRAY2BGR);
 		
-		Mat blobMaskInput = depthf < 120; //take closer values
+		Mat blobMaskInput = depthf < 30; //take closer values
 		vector<Point> ctr,ctr2;
 
 		//closest point to the camera
@@ -574,11 +664,13 @@ void GestureEngine::RunEngine() {
 		circle(outC, minLoc, 5, Scalar(0,255,0), 3);
 		
 		blobMaskInput = depthf < (minval + 20);
+
+		BiasHandColor(blobMaskInput);
 		
-		Scalar blb = _refineSegments(Mat(),blobMaskInput,blobMaskOutput,ctr,ctr2,midBlob); //find contours in the foreground, choose biggest
+		vector<int> blb = _refineSegments(depthf,blobMaskInput,blobMaskOutput,ctr,ctr2,midBlob); //find contours in the foreground, choose biggest
 		/////// blb :
 		//blb[0] = x, blb[1] = y, blb[2] = 1st blob size, blb[3] = 2nd blob size.
-		if(blb[0]>=0 && blb[2] > 500) { //1st blob detected, and is big enough
+		if(blb[0]>=0 && blb[3] > 500) { //1st blob detected, and is big enough
 			//cvtColor(depthf, outC, CV_GRAY2BGR);
 			
 			Scalar mn,stdv;
@@ -610,17 +702,17 @@ void GestureEngine::RunEngine() {
 				//blob center
 				circle(outC, Point(blb[0],blb[1]), 50, Scalar(255,0,0), 3);
 
-				if(trained) {
-					ComputeDescriptor(blb);
-					int gesture_code = GetMostLikelyGesture();
+//				if(trained) {
+//					ComputeDescriptor(blb);
+//					int gesture_code = GetMostLikelyGesture();
+//					
+//					{ //debug
+//						stringstream ss; ss << "prediction: " << GetStringForGestureCode(gesture_code);
+//						putText(outC, ss.str(), Point(20,50), CV_FONT_HERSHEY_PLAIN, 3.0, Scalar(0,0,255), 2);
+//					}
 					
-					{ //debug
-						stringstream ss; ss << "prediction: " << GetStringForGestureCode(gesture_code);
-						putText(outC, ss.str(), Point(20,50), CV_FONT_HERSHEY_PLAIN, 3.0, Scalar(0,0,255), 2);
-					}
-					
-					CheckRegistered(blb, gesture_code, mn);
-				}
+					CheckRegistered(blb, LABEL_GARBAGE, mn);
+//				}
 //			}
 		}
 		

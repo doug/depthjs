@@ -9,7 +9,7 @@ $(function() {
 
     // Let us know its running
     console.log("Finished initing, sticking in logo");
-    $("<img src='https://github.com/doug/depthjs/raw/master/chrome-extension/logo_128x128.png'>").css({
+    $("<img src='https://github.com/doug/depthjs/raw/master/chrome-extension-mac/images/logo_128x128.png'>").css({
       position: "fixed",
       width: "32px",
       height: "32px",

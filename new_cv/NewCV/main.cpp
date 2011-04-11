@@ -73,19 +73,21 @@ Scalar refineSegments(const Mat& img,
 		}
 		
 		//crop contour to 150x150 "window"
-		vector<Point> newblob;
-		int maxxp150 = MAX(maxx-200,0),minyp150 = MIN(miny+170,480);
-				
-		for (int i=0; i<num; i++) {
-			Point _p = contours[largestComp][i];
-			if(_p.x > maxxp150 && _p.y < minyp150) newblob.push_back(_p);
-		}
+		vector<Point> newblob = contours[largestComp];
+//		int maxxp150 = MAX(maxx-200,0),minyp150 = MIN(miny+170,480);
+//				
+//		for (int i=0; i<num; i++) {
+//			Point _p = contours[largestComp][i];
+//			if(_p.x > maxxp150 && _p.y < minyp150) newblob.push_back(_p);
+//				else newblob.push_back(Point(MAX(_p.x,maxxp150),MIN(_p.y,minyp150)));
+//		}
 		
 		Point* pts = &(newblob[0]);
 		num = newblob.size();
 		fillPoly(dst, (const Point**)(&pts), &num, 1, color);
 		
-		Scalar b = mean(Mat(newblob));
+		Scalar b = mean(Mat(newblob)); //center of the blob
+		b[0] += 40; b[1] -= 40;
 		b[2] = justarea[largestComp];
 		
 		contour.clear();
@@ -124,11 +126,13 @@ int main(int argc, char **argv) {
 	Freenect::Freenect<MyFreenectDevice> freenect;
 	MyFreenectDevice& device = freenect.createDevice(0);
 	
+	device.setTiltDegrees(10.0);
+	
 	bool registered  = false;
 	Mat blobMaskOutput = Mat::zeros(Size(640,480),CV_8UC1),outC;
 	Point midBlob;
 	
-	int startX = 200, sizeX = 180, num_x_reps = 20, num_y_reps = 50;
+	int startX = 200, sizeX = 180, num_x_reps = 18, num_y_reps = 48;
 	double	height_over_num_y_reps = 480/num_y_reps,
 			width_over_num_x_reps = sizeX/num_x_reps;
 	
@@ -158,6 +162,7 @@ int main(int argc, char **argv) {
     	device.getDepth(depthMat);
 //        cv::imshow("rgb", rgbMat);
     	depthMat.convertTo(depthf, CV_8UC1, 255.0/2048.0);
+				
         cv::imshow("depth",depthf);
 		
 		//interpolation & inpainting
@@ -189,7 +194,24 @@ int main(int argc, char **argv) {
 			resize(_tmp1, _tmp, depthf.size());
 			_tmp.copyTo(depthf, (depthf == 255));
 		}
+
+		{
+//			Mat smallDepth = depthf; //cv::resize(depthf,smallDepth,Size(),0.5,0.5);
+//			Mat edges; //Laplacian(smallDepth, edges, -1, 7, 1.0);
+//			Sobel(smallDepth, edges, -1, 1, 1, 7);
+			//medianBlur(edges, edges, 11);
+//			for (int x=0; x < edges.cols; x+=20) {
+//				for (int y=0; y < edges.rows; y+=20) {
+//					//int nz = countNonZero(edges(Range(y,MIN(y+20,edges.rows-1)),Range(x,MIN(x+20,edges.cols-1))));
+//					Mat _i = edges(Range(y,MIN(y+20,edges.rows-1)),Range(x,MIN(x+20,edges.cols-1)));
+//					medianBlur(_i, _i, 7);
+//					//rectangle(edges, Point(x,y), Point(x+20,y+20), Scalar(nz), CV_FILLED);
+//				}
+//			}
 		
+//			imshow("edges", edges);
+		}
+				
 		cvtColor(depthf, outC, CV_GRAY2BGR);
 		
 		Mat blobMaskInput = depthf < 120; //anything not white is "real" depth, TODO: inpainting invalid data
@@ -222,6 +244,37 @@ int main(int argc, char **argv) {
 			//now refining blob by looking at the mean depth value it has...
 			blobMaskInput = depthf < (mn[0] + stdv[0]);
 			
+			//(very simple) bias with hand color
+			{
+				Mat hsv; cvtColor(rgbMat, hsv, CV_RGB2HSV);
+				Mat _col_p(hsv.size(),CV_32FC1);
+				int jump = 5;
+				for (int x=0; x < hsv.cols; x+=jump) {
+					for (int y=0; y < hsv.rows; y+=jump) {
+						Mat _i = hsv(Range(y,MIN(y+jump,hsv.rows-1)),Range(x,MIN(x+jump,hsv.cols-1)));
+						Scalar hsv_mean = mean(_i);
+						Vec2i u; u[0] = hsv_mean[0]; u[1] = hsv_mean[1];
+						Vec2i v; v[0] = 120; v[1] = 110;
+						rectangle(_col_p, Point(x,y), Point(x+jump,y+jump), Scalar(1.0-MIN(norm(u-v)/125.0,1.0)), CV_FILLED);
+					}
+				}
+				//			hsv = hsv - Scalar(0,0,255);
+				Mat _t = (Mat_<double>(2,3) << 1, 0, 15,    0, 1, -20);
+				Mat col_p(_col_p.size(),CV_32FC1);
+				warpAffine(_col_p, col_p, _t, col_p.size());
+				GaussianBlur(col_p, col_p, Size(11.0,11.0), 2.5);
+				imshow("hand color",col_p);
+				//			imshow("rgb",rgbMat);
+				Mat blobMaskInput_32FC1; blobMaskInput.convertTo(blobMaskInput_32FC1, CV_32FC1, 1.0/255.0);
+				blobMaskInput_32FC1 = blobMaskInput_32FC1.mul(col_p, 1.0);
+				blobMaskInput_32FC1.convertTo(blobMaskInput, CV_8UC1, 255.0);
+				
+				blobMaskInput = blobMaskInput > 128;
+				
+				imshow("blob bias", blobMaskInput);
+			}
+			
+			
 			blb = refineSegments(Mat(),blobMaskInput,blobMaskOutput,ctr,ctr2,midBlob);
 			
 			imshow("blob", blobMaskOutput);
@@ -242,6 +295,14 @@ int main(int argc, char **argv) {
 								
 				//blob center
 				circle(outC, Point(blb[0],blb[1]), 50, Scalar(255,0,0), 3);
+				
+				{
+					Mat hsv; cvtColor(rgbMat, hsv, CV_RGB2HSV);
+					Scalar hsv_mean,hsv_stddev; meanStdDev(hsv, hsv_mean, hsv_stddev, blobMaskOutput);
+					stringstream ss; ss << hsv_mean[0] << "," << hsv_mean[1] << "," << hsv_mean[2];
+					putText(outC, ss.str(), Point(blb[0],blb[1]), CV_FONT_HERSHEY_PLAIN, 1.0, Scalar(0,255,255));
+				}
+				
 				
 				Mat blobDepth,blobEdge; 
 				depthf.copyTo(blobDepth,blobMaskOutput);
@@ -272,9 +333,9 @@ int main(int argc, char **argv) {
 						
 //						int count = countNonZero(part); //TODO: use calcHist
 //						_d[i*num_x_reps + j] = count;
-						//part.setTo(Scalar(count/10.0)); //for debug: show the value in the image
 
 						Scalar mn = mean(part);						
+//						part.setTo(Scalar(mn[0])); //for debug: show the value in the image
 						_d[i*num_x_reps + j] = mn[0];
 						
 						
