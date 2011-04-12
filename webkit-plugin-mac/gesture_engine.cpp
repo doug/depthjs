@@ -24,6 +24,9 @@
 
 extern void send_event(const string& etype, const string& edata);
 
+#include <deque>
+using namespace std;
+
 class GestureEngine {
 private:
 	bool running;
@@ -76,6 +79,8 @@ private:
 	int pca_number_of_features;
 	
 	Vec2i mean_hue_sat_blob;
+	
+	std::deque<Point3i> positionQueue;
 
 	vector<int> _refineSegments(const Mat& img, 
 					Mat& mask, 
@@ -135,6 +140,8 @@ public:
 		hc_stack_ptr = 0;
 		
 		mean_hue_sat_blob = Vec2i(-1,-1);
+		
+		//positionQueue = deque<Point3i>();
 	};
 	
 	void RunEngine();
@@ -454,17 +461,23 @@ string GestureEngine::GetStringForGestureCode(int res) {
 	return "none";
 }	
 
+/*
+ Blob registartion hysterisis: 
+	when count goes above higher threshold -> Register, 
+	when count goes below lower threshold -> Unregister.
+ */
 void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Scalar mn) {
-	if(recognized_gesture != LABEL_GARBAGE) {
+//	if(recognized_gesture != LABEL_GARBAGE) {
 		register_ctr = MIN((register_ctr + 1),60);
 		
-		if(blb[3] > 5000)
+		if(blb[4] > 5000)
 			register_secondbloc_ctr = MIN((register_secondbloc_ctr + 1),60);
 		
-		if (register_ctr > 30 && !registered) {
+		if (register_ctr > 30 && !registered) { //upper threshold of hysterisis
 			registered = true;
 			appear.x = -1;
 			lastMove.x = blb[0]; lastMove.y = blb[1]; lastMove.z = blb[2];
+			positionQueue.clear();
 			
 			cout << "blob size " << blb[4] << endl;
 			
@@ -480,6 +493,8 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 			}
 		}
 		
+		positionQueue.push_back(Point3i(blb[0],blb[1],(int)(mn[0] * 2.0)));
+		
 		if(registered) {
 			stringstream ss;
 			ss  << "\"x\":"  << (int)floor(blb[0]*100.0/640.0)
@@ -490,91 +505,102 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 					
 			hc_stack.at(hc_stack_ptr) = hcr_ctr;
 			hc_stack_ptr = (hc_stack_ptr + 1) % hc_stack.size();
+
+			if (positionQueue.size() > 20) {	//store last 20 positions in the queue
+				if(positionQueue.front().z - blb[2] > 30) {	//compare to oldest position in queue
+					cout << "Push" << endl; appear.x = -1;
+					send_event("Push", "");
+					positionQueue.clear();
+				} else
+					positionQueue.pop_front();
+			}
 			
 			//if thumb recognized - send "hand click"
-			if (mode == LABEL_FIST && recognized_gesture == LABEL_THUMB) {
-				bool fireClick  = false;
-				if (appearTS > 0) {
-					double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
-					fireClick = (timediff > 1.0);
-				} else {
-					fireClick = true;
-				}				
-				if(fireClick) {					
-					cout << "Hand click!" << endl;
-					send_event("HandClick", "");
-					
-					appearTS = getTickCount();
-				}					
-			} else {
-				appearTS = -1;
-			}
+//			if (mode == LABEL_FIST && recognized_gesture == LABEL_THUMB) {
+//				bool fireClick  = false;
+//				if (appearTS > 0) {
+//					double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
+//					fireClick = (timediff > 1.0);
+//				} else {
+//					fireClick = true;
+//				}				
+//				if(fireClick) {					
+//					cout << "Hand click!" << endl;
+//					send_event("HandClick", "");
+//					
+//					appearTS = getTickCount();
+//				}					
+//			} else {
+//				appearTS = -1;
+//			}
 		}
-	} else {
+//	} else {
 		if(!registered) {
 			//not registered, look for gestures
-			if(appear.x<0) {
-				//first appearence of blob
-				appear = midBlob;
-				//          update_bg_model = false;
-				appearTS = getTickCount();
-				cout << "appear ("<<appearTS<<") " << appear.x << "," << appear.y << "," << appear.z << endl;
-			} else {
+//			if(appear.x<0) {
+//				//first appearence of blob
+//				appear = midBlob;
+//				//          update_bg_model = false;
+//				appearTS = getTickCount();
+//				cout << "appear ("<<appearTS<<") " << appear.x << "," << appear.y << "," << appear.z << endl;
+//			} else {
 				//blob was seen before, how much time passed
-				double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
-				if (timediff > .2 && timediff < 1.0) {
+//				double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
+//				if (timediff > .2 && timediff < 1.0) {
 					//enough time passed from appearence
-					line(outC, Point(appear.x,appear.y), cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
-					if (appear.x - blb[0] > 100) {
-						cout << "right"<<endl; appear.x = -1;
-						send_event("SwipeRight", "");
-						register_ctr = 0;
-					} else 
-					if (appear.x - blb[0] < -100) {
-						cout << "left" <<endl; appear.x = -1;
-						send_event("SwipeLeft", "");
-						register_ctr = 0;
-					} else 
-					if (appear.y - blb[1] > 100) {
-						cout << "up" << endl; appear.x = -1;
-						send_event("SwipeUp", "");
-						register_ctr = 0;
-					} else 
-					if (appear.y - blb[1] < -100) {
-						cout << "down" << endl; appear.x = -1;
-						send_event("SwipeDown", "");
-						register_ctr = 0;
-					} else
-					if (appear.z - blb[2] < -30) {
-						cout << "Pull" << endl; appear.x = -1;
-						send_event("Pull", "");
-					} else
-					if (appear.z - blb[2] > 30) {
-						cout << "Push" << endl; appear.x = -1;
-						send_event("Push", "");
-					}
+			
+			if (positionQueue.size() > 10) {
+				appear = positionQueue.front(); 
+				line(outC, Point(appear.x,appear.y), cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
+				if (appear.x - blb[0] > 100) {
+					cout << "right"<<endl; appear.x = -1;
+					send_event("SwipeRight", "");
+					register_ctr = 0;
+					positionQueue.clear();
+				} else 
+				if (appear.x - blb[0] < -100) {
+					cout << "left" <<endl; appear.x = -1;
+					send_event("SwipeLeft", "");
+					register_ctr = 0;
+					positionQueue.clear();
+				} else 
+				if (appear.y - blb[1] > 100) {
+					cout << "up" << endl; appear.x = -1;
+					send_event("SwipeUp", "");
+					register_ctr = 0;
+					positionQueue.clear();
+				} else 
+				if (appear.y - blb[1] < -100) {
+					cout << "down" << endl; appear.x = -1;
+					send_event("SwipeDown", "");
+					register_ctr = 0;
+					positionQueue.clear();
 				}
-				if(timediff >= 1.0) {
-					cout << "a ghost..."<<endl;
-					//a second passed from appearence - reset 1st appear
-					appear.x = -1;
-					appearTS = -1;
-					midBlob.x = midBlob.y = midBlob.z = -1;
-				}
+				positionQueue.pop_front();
 			}
+							
+//				}
+//				if(timediff >= 1.0) {
+//					cout << "a ghost..."<<endl;
+//					//a second passed from appearence - reset 1st appear
+//					appear.x = -1;
+//					appearTS = -1;
+//					midBlob.x = midBlob.y = midBlob.z = -1;
+//				}
+//			}
 		}
 		
-		register_ctr = MAX((register_ctr - 1),0);
-		register_secondbloc_ctr = MAX((register_secondbloc_ctr - 1),0);
+//		register_ctr = MAX((register_ctr - 1),0);
+//		register_secondbloc_ctr = MAX((register_secondbloc_ctr - 1),0);
 		
-		if (register_ctr <= 15 && registered) {
+		if (register_ctr <= 15 && registered) {	//lower threshold of hysterisis
 			midBlob.x = midBlob.y = midBlob.z = -1;
 			registered = false;
 			mode = -1;
 			cout << "unregister" << endl;
 			send_event("Unregister", "");
 		}		
-	}
+//	}
 //	send_image(outC);
 }
 
@@ -582,7 +608,8 @@ int GestureEngine::InitializeFreenect() {
 	try {
 		device = &freenect.createDevice(0);
 		device->startVideo();
-		device->startDepth();		
+		device->startDepth();
+		device->setTiltDegrees(10.0);
 	}
 	catch (std::runtime_error e) {
 		return 0;
@@ -632,15 +659,16 @@ void GestureEngine::BiasHandColor(Mat &blobMaskInput) 		//(very simple) bias wit
 	Mat col_p(_col_p.size(),CV_32FC1);
 	warpAffine(_col_p, col_p, _t, col_p.size());
 	GaussianBlur(col_p, col_p, Size(11.0,11.0), 2.5);
-	//			imshow("hand color",col_p);
-	//			imshow("rgb",rgbMat);
+	imshow("hand color",col_p);
+	imshow("rgb",rgbMat);
+	
 	Mat blobMaskInput_32FC1; blobMaskInput.convertTo(blobMaskInput_32FC1, CV_32FC1, 1.0/255.0);
 	blobMaskInput_32FC1 = blobMaskInput_32FC1.mul(col_p, 1.0);
 	blobMaskInput_32FC1.convertTo(blobMaskInput, CV_8UC1, 255.0);
 	
 	blobMaskInput = blobMaskInput > 128;
 	
-	//			imshow("blob bias", blobMaskInput);
+	imshow("blob bias", blobMaskInput);
 }
 
 
@@ -677,6 +705,49 @@ void GestureEngine::RunEngine() {
 			
 			Scalar mn,stdv;
 			meanStdDev(depthf,mn,stdv,blobMaskInput);
+			blb[2] = mn[0]; //average depth of blob
+			
+			/*{	//trying a single gaussian skin-color model
+				Mat samples = Mat::zeros(countNonZero(blobMaskInput),2,CV_32FC1);
+				Mat_<float>& samplesM = (Mat_<float>&)samples;
+				int count = 0;
+				for (int x=0; x<blobMaskInput.cols; x++) {
+					for (int y=0; y<blobMaskInput.rows; y++) {
+						if(blobMaskInput.at<uchar>(y,x) > 0) {
+							Vec3b HSVv = hsv.at<Vec3b>(y,x);
+							//samples(Range(count,count+1),Range::all()) 
+//							samples.row(count) += (Mat_<float>(1,2) << (float)HSVv[0] , (float)HSVv[1]);
+							samplesM(count,0) = (float)HSVv[0];
+							samplesM(count,1) = (float)HSVv[1];
+							count++;
+						}
+					}
+				}
+				Scalar _mean(mean(samples.col(0))[0],mean(samples.col(1))[0]);
+				samples = samples - _mean;
+				Mat cov(2,2,CV_32FC1);
+				for(int i=0;i<count;i++) {
+					Mat sample = samples.row(i);
+					Mat sTs = sample.t() * sample;
+					addWeighted(sTs, 1.0/(double)count, cov, 1.0, 0.0, cov);
+				}
+				
+				Mat_<float> X = (Mat_<float>(1,2) << 100,100); 
+				Mat_<float> X_bar = (Mat_<float>(1,2) << _mean[0],_mean[1]);
+				Mat_<float> X_m_X_bar = X - X_bar; 
+				Mat inv_cov = cov.inv();
+				double alpha = (1.0/(double)count) * (1.0/(2.0*CV_PI)) * 1.0/sqrt(determinant(cov));
+//				Mat inexpM = (X_m_X_bar * inv_cov * X_m_X_bar.t());
+//				double inexp = inexpM.at<float>(0,0);
+//				double p = alpha * exp(-1.0/2.0 * inexp);
+				
+				vector<Mat> hsvv(3); split(hsv,hsvv);
+				Mat imFlat(hsv.rows*hsv.cols,2,CV_32FC1); 
+				hsvv[0].reshape(1,hsvv[0].rows*hsvv.cols).convertTo(imFlat.col(0),CV_32FC1);
+				hsvv[1].reshape(1,hsvv[1].rows*hsvv.cols).convertTo(imFlat.col(1),CV_32FC1);
+				
+				cout << p << endl;
+			}			*/	
 			
 			//cout << "min: " << minval << ", max: " << maxval << ", mean: " << mn[0] << endl;
 			
@@ -716,10 +787,14 @@ void GestureEngine::RunEngine() {
 					CheckRegistered(blb, LABEL_GARBAGE, mn);
 //				}
 //			}
+		} else {
+			register_ctr = MAX((register_ctr - 1),0);
+			register_secondbloc_ctr = MAX((register_secondbloc_ctr - 1),0);
 		}
+
 		
-		stringstream ss; ss << "samples: " << dataMat.rows;
-		putText(outC, ss.str(), Point(30,outC.rows - 30), CV_FONT_HERSHEY_PLAIN, 2.0, Scalar(0,0,255), 1);
+//		stringstream ss; ss << "samples: " << dataMat.rows;
+//		putText(outC, ss.str(), Point(30,outC.rows - 30), CV_FONT_HERSHEY_PLAIN, 2.0, Scalar(0,0,255), 1);
 
 		imshow("blobs", outC);
 		
