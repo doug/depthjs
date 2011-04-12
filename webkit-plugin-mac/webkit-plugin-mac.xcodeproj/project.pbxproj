@@ -21,7 +21,6 @@
 		93F690C71321789600F53A8A /* DLog.mm in Sources */ = {isa = PBXBuildFile; fileRef = 93F690C61321789600F53A8A /* DLog.mm */; };
 		93F691821321A45600F53A8A /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93F691811321A45600F53A8A /* JavaScriptCore.framework */; };
 		D713093013235B55001594A0 /* gesture_engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D713092E13235B55001594A0 /* gesture_engine.cpp */; };
-		D7CC1ABA1325B7EC001FB6D2 /* data-samples-labels.yaml in Resources */ = {isa = PBXBuildFile; fileRef = D7CC1AB91325B7EC001FB6D2 /* data-samples-labels.yaml */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,7 +74,6 @@
 		D713092E13235B55001594A0 /* gesture_engine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gesture_engine.cpp; sourceTree = "<group>"; };
 		D713092F13235B55001594A0 /* FreenectDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FreenectDevice.h; sourceTree = "<group>"; };
 		D713093213235BCB001594A0 /* gesture_engine.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gesture_engine.hpp; sourceTree = "<group>"; };
-		D7CC1AB91325B7EC001FB6D2 /* data-samples-labels.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "data-samples-labels.yaml"; path = "../new_cv/NewCV/build/Debug/data-samples-labels.yaml"; sourceTree = SOURCE_ROOT; };
 		DD92D38A0106425D02CA0E72 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -115,7 +113,6 @@
 		0259C582FE90428111CA0C5A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				D7CC1AB91325B7EC001FB6D2 /* data-samples-labels.yaml */,
 				8D1AC9730486D14A00FE50C9 /* Info.plist */,
 				8D1AC97F0486D23B00FE50C9 /* InfoPlist.strings */,
 			);
@@ -249,7 +246,6 @@
 			files = (
 				8D1AC9800486D23B00FE50C9 /* InfoPlist.strings in Resources */,
 				938563E3130E61AF000F4333 /* Info.plist in Resources */,
-				D7CC1ABA1325B7EC001FB6D2 /* data-samples-labels.yaml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

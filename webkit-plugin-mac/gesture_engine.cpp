@@ -139,7 +139,7 @@ public:
 	
 	void RunEngine();
 	bool getRunning() { return running; }
-	int InitializeFreenect(const char* );
+	int InitializeFreenect();
 };
 
 vector<int> GestureEngine::_refineSegments(const Mat& img, 
@@ -578,7 +578,7 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 //	send_image(outC);
 }
 
-int GestureEngine::InitializeFreenect(const char* data) {
+int GestureEngine::InitializeFreenect() {
 	try {
 		device = &freenect.createDevice(0);
 		device->startVideo();
@@ -587,9 +587,11 @@ int GestureEngine::InitializeFreenect(const char* data) {
 	catch (std::runtime_error e) {
 		return 0;
 	}
+  /*
 	if(!LoadModelData(data)) return 0;
 	if(!TrainModel()) return 0;
-	
+	*/
+  
 	return 1;
 }
 
@@ -782,4 +784,4 @@ void kill_gesture_engine() {
 
 bool is_gesture_engine_dead() { return !ge.getRunning(); }
 
-int init_gesture_engine(const char* data) { return ge.InitializeFreenect(data); }
+int init_gesture_engine() { return ge.InitializeFreenect(); }

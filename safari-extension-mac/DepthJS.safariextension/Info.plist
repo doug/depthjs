@@ -42,23 +42,23 @@
 		<dict>
 			<key>Start</key>
 			<array>
-				<string>third_party/jquery-1.4.4.min.js</string>
-				<string>third_party/underscore-min.js</string>
-				<string>content_script/root.js</string>
+				<string>extension-common/third_party/jquery-1.4.4.min.js</string>
+				<string>extension-common/third_party/underscore-min.js</string>
+				<string>extension-common/background/root.js</string>
 				<string>safari.js</string>
-				<string>content_script/event_link.js</string>
-				<string>content_script/event_handlers.js</string>
-				<string>content_script/depthose.js</string>
-				<string>content_script/panner.js</string>
-				<string>content_script/selector_box.js</string>
-				<string>third_party/vfx/zflow/zflow.js</string>
-				<string>content_script/init.js</string>
+				<string>extension-common/content_script/event_link.js</string>
+				<string>extension-common/content_script/event_handlers.js</string>
+				<string>extension-common/content_script/depthose.js</string>
+				<string>extension-common/content_script/panner.js</string>
+				<string>extension-common/content_script/selector_box.js</string>
+				<string>extension-common/third_party/vfx/zflow/zflow.js</string>
+				<string>extension-common/content_script/init.js</string>
 			</array>
 		</dict>
 		<key>Stylesheets</key>
 		<array>
-			<string>third_party/vfx/zflow/zflow.css</string>
-			<string>css/selectorBox.css</string>
+			<string>extension-common/third_party/vfx/zflow/zflow.css</string>
+			<string>extension-common/css/selectorBox.css</string>
 		</array>
 	</dict>
 	<key>Description</key>

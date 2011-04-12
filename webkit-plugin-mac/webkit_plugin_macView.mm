@@ -211,8 +211,7 @@ NSString* jsRefToTypeString(JSContextRef& ctx, JSValueRef& t) {
   if (!haveInitDevice) {
     DLog(@"[DepthJS] Device not yet init; initing");
     hostPlugin = self;
-	NSString* pathToData = [[NSBundle bundleWithIdentifier:@"edu.mit.media.depthjs"] pathForResource:@"data-samples-labels" ofType:@"yaml"];
-	int success = init_gesture_engine([pathToData cStringUsingEncoding:NSASCIIStringEncoding]);
+    int success = init_gesture_engine();
     haveInitDevice = success;
     if (haveInitDevice) {
       DLog(@"[DepthJS] Successfully inited Kinect; Starting ocv thread");
