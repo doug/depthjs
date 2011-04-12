@@ -31,28 +31,28 @@ DepthJS.state = null;
 DepthJS.lastRegisterTime = null;
 
 DepthJS.eventHandlers.onSwipeLeft = function() {
-   // history.back();
+  history.back();
 };
 
 DepthJS.eventHandlers.onSwipeRight = function() {
   // We interpret as "forward".
-  // history.forward();
+  history.forward();
 };
 
 DepthJS.eventHandlers.onSwipeDown = function() {
   // We interpret as "scroll down 75% of window".
   // var scrollAmount = Math.floor($(window).height() * 0.75);
-  // $("html, body").animate({
-  //   scrollTop: ($(document).scrollTop() + scrollAmount)
-  // });
+  $("html, body").animate({
+    scrollTop: ($(document).scrollTop() + scrollAmount)
+  });
 };
 
 DepthJS.eventHandlers.onSwipeUp = function() {
   // We interpret as "scroll up 75% of window".
   // var scrollAmount = Math.floor($(window).height() * 0.75);
-  // $("html, body").animate({
-  //   scrollTop: ($(document).scrollTop() - scrollAmount)
-  // });
+  $("html, body").animate({
+    scrollTop: ($(document).scrollTop() - scrollAmount)
+  });
 };
 
 DepthJS.eventHandlers.onHandPointer = function(){
@@ -84,18 +84,15 @@ DepthJS.eventHandlers.onSelectorBoxMode = function() {
 DepthJS.eventHandlers.onRegister = function(data) {
   if (DepthJS.verbose) console.log("DepthJS: User registered their hand");
   $(window).trigger("touchstart");
+
   if (data.mode == "twohands") {
-    console.log("Ignoring in two hands for now");
-    return;
-  }
-  if (data.mode == "theforce") {
-    DepthJS.registerMode = "selectorBox";
-  } else if (data.mode == "twohands") {
     DepthJS.registerMode = "depthose";
-  } else if (data.mode == "openhand") {
-    DepthJS.registerMode = "panner";
-  } else {
-    console.log(["DID NOT UNDERSTAND MODE: ", data.mode]);
+  } else { // if (data.mode == "theforce") {
+    DepthJS.registerMode = "selectorBox";
+  //} else if (data.mode == "openhand") { // does not ever happen for now
+    //DepthJS.registerMode = "panner";
+  //} else {
+    //console.log(["DID NOT UNDERSTAND MODE: ", data.mode]);
   }
   DepthJS.lastRegisterTime = new Date();
   DepthJS.state = DepthJS.registerMode;
@@ -114,7 +111,7 @@ DepthJS.eventHandlers.onUnregister = function() {
 DepthJS.eventHandlers.onHandClick = function() {
   if (DepthJS.lastRegisterTime == null) return;
   if (new Date() - DepthJS.lastRegisterTime < 1500) return;
-  
+
   if (DepthJS.state == "selectorBoxPopup") {
     DepthJS.selectorBoxPopup.openHighlightedLink();
   } else if (DepthJS.state == "selectorBox") {
@@ -127,10 +124,8 @@ DepthJS.eventHandlers.onHandClick = function() {
   // setTimeout(DepthJS.eventHandlers.onUnregister, 200);
 };
 
-// Right now users can either push or pull
 DepthJS.eventHandlers.onPull = function() {
-  DepthJS.state = "depthose";
-  DepthJS.depthose.start();
+  DepthJS.eventHandlers.onHandClick();
 };
 
 (function() {
@@ -171,4 +166,4 @@ DepthJS.eventHandlers.onMove = function(data) {
   }
 };
 })();
-}
+} // if (window.top === window) {
