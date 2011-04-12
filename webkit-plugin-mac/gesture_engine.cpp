@@ -483,8 +483,8 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 			
 			if(register_secondbloc_ctr < 30) {
 				cout << "register pointer" << endl;
-				stringstream ss; ss << "\"mode\":\""<< GetStringForGestureCode(recognized_gesture) <<"\"";
-				send_event("Register", ss.str());
+//				stringstream ss; ss << "\"mode\":\""<< GetStringForGestureCode(recognized_gesture) <<"\"";
+				send_event("Register", ""); //ss.str());
 				
 				mode = recognized_gesture;
 			} else {
@@ -503,11 +503,11 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 			//cout << "move: " << ss.str() << endl;
 			send_event("Move", ss.str());
 					
-			hc_stack.at(hc_stack_ptr) = hcr_ctr;
-			hc_stack_ptr = (hc_stack_ptr + 1) % hc_stack.size();
+//			hc_stack.at(hc_stack_ptr) = hcr_ctr;
+//			hc_stack_ptr = (hc_stack_ptr + 1) % hc_stack.size();
 
 			if (positionQueue.size() > 20) {	//store last 20 positions in the queue
-				if(positionQueue.front().z - blb[2] > 30) {	//compare to oldest position in queue
+				if(positionQueue.front().z - (mn[0] * 2.0) > 20) {	//compare to oldest position in queue
 					cout << "Push" << endl; appear.x = -1;
 					send_event("Push", "");
 					positionQueue.clear();
@@ -548,34 +548,38 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 //				double timediff = ((double)getTickCount()-appearTS)/getTickFrequency();
 //				if (timediff > .2 && timediff < 1.0) {
 					//enough time passed from appearence
+
+			for(uint i=0;i<positionQueue.size()-1;i++) {
+				line(outC, Point(positionQueue[i].x,positionQueue[i].y), Point(positionQueue[i+1].x,positionQueue[i+1].y), Scalar(0,0,255), 3);	
+			}
 			
-			if (positionQueue.size() > 10) {
+			if (positionQueue.size() > 15) {
 				appear = positionQueue.front(); 
-				line(outC, Point(appear.x,appear.y), cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
-				if (appear.x - blb[0] > 100) {
-					cout << "right"<<endl; appear.x = -1;
-					send_event("SwipeRight", "");
-					register_ctr = 0;
-					positionQueue.clear();
-				} else 
-				if (appear.x - blb[0] < -100) {
-					cout << "left" <<endl; appear.x = -1;
-					send_event("SwipeLeft", "");
-					register_ctr = 0;
-					positionQueue.clear();
-				} else 
-				if (appear.y - blb[1] > 100) {
-					cout << "up" << endl; appear.x = -1;
-					send_event("SwipeUp", "");
-					register_ctr = 0;
-					positionQueue.clear();
-				} else 
-				if (appear.y - blb[1] < -100) {
-					cout << "down" << endl; appear.x = -1;
-					send_event("SwipeDown", "");
-					register_ctr = 0;
-					positionQueue.clear();
-				}
+//				line(outC, Point(appear.x,appear.y), cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
+//				if (appear.x - blb[0] > 100) {
+//					cout << "right"<<endl; appear.x = -1;
+//					send_event("SwipeRight", "");
+//					register_ctr = 0;
+//					positionQueue.clear();
+//				} else 
+//				if (appear.x - blb[0] < -100) {
+//					cout << "left" <<endl; appear.x = -1;
+//					send_event("SwipeLeft", "");
+//					register_ctr = 0;
+//					positionQueue.clear();
+//				} else 
+//				if (appear.y - blb[1] > 100) {
+//					cout << "up" << endl; appear.x = -1;
+//					send_event("SwipeUp", "");
+//					register_ctr = 0;
+//					positionQueue.clear();
+//				} else 
+//				if (appear.y - blb[1] < -100) {
+//					cout << "down" << endl; appear.x = -1;
+//					send_event("SwipeDown", "");
+//					register_ctr = 0;
+//					positionQueue.clear();
+//				}
 				positionQueue.pop_front();
 			}
 							
@@ -599,6 +603,7 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 			mode = -1;
 			cout << "unregister" << endl;
 			send_event("Unregister", "");
+			positionQueue.clear();
 		}		
 //	}
 //	send_image(outC);
@@ -790,6 +795,7 @@ void GestureEngine::RunEngine() {
 		} else {
 			register_ctr = MAX((register_ctr - 1),0);
 			register_secondbloc_ctr = MAX((register_secondbloc_ctr - 1),0);
+			positionQueue.clear();
 		}
 
 		
