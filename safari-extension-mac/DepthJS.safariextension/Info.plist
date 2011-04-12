@@ -44,7 +44,7 @@
 			<array>
 				<string>extension-common/third_party/jquery-1.4.4.min.js</string>
 				<string>extension-common/third_party/underscore-min.js</string>
-				<string>extension-common/background/root.js</string>
+				<string>extension-common/content_script/root.js</string>
 				<string>safari.js</string>
 				<string>extension-common/content_script/event_link.js</string>
 				<string>extension-common/content_script/event_handlers.js</string>
