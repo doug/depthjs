@@ -506,7 +506,7 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 //			hc_stack.at(hc_stack_ptr) = hcr_ctr;
 //			hc_stack_ptr = (hc_stack_ptr + 1) % hc_stack.size();
 
-			if (positionQueue.size() > 20) {	//store last 20 positions in the queue
+			if (positionQueue.size() > 15) {	//store last 20 positions in the queue
 				if(positionQueue.front().z - (mn[0] * 2.0) > 20) {	//compare to oldest position in queue
 					cout << "Push" << endl; appear.x = -1;
 					send_event("Push", "");
@@ -555,6 +555,7 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 			
 			if (positionQueue.size() > 15) {
 				appear = positionQueue.front(); 
+				
 //				line(outC, Point(appear.x,appear.y), cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
 //				if (appear.x - blb[0] > 100) {
 //					cout << "right"<<endl; appear.x = -1;
@@ -597,14 +598,6 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 //		register_ctr = MAX((register_ctr - 1),0);
 //		register_secondbloc_ctr = MAX((register_secondbloc_ctr - 1),0);
 		
-		if (register_ctr <= 15 && registered) {	//lower threshold of hysterisis
-			midBlob.x = midBlob.y = midBlob.z = -1;
-			registered = false;
-			mode = -1;
-			cout << "unregister" << endl;
-			send_event("Unregister", "");
-			positionQueue.clear();
-		}		
 //	}
 //	send_image(outC);
 }
@@ -664,8 +657,8 @@ void GestureEngine::BiasHandColor(Mat &blobMaskInput) 		//(very simple) bias wit
 	Mat col_p(_col_p.size(),CV_32FC1);
 	warpAffine(_col_p, col_p, _t, col_p.size());
 	GaussianBlur(col_p, col_p, Size(11.0,11.0), 2.5);
-	imshow("hand color",col_p);
-	imshow("rgb",rgbMat);
+//	imshow("hand color",col_p);
+//	imshow("rgb",rgbMat);
 	
 	Mat blobMaskInput_32FC1; blobMaskInput.convertTo(blobMaskInput_32FC1, CV_32FC1, 1.0/255.0);
 	blobMaskInput_32FC1 = blobMaskInput_32FC1.mul(col_p, 1.0);
@@ -673,7 +666,7 @@ void GestureEngine::BiasHandColor(Mat &blobMaskInput) 		//(very simple) bias wit
 	
 	blobMaskInput = blobMaskInput > 128;
 	
-	imshow("blob bias", blobMaskInput);
+//	imshow("blob bias", blobMaskInput);
 }
 
 
@@ -798,6 +791,15 @@ void GestureEngine::RunEngine() {
 			positionQueue.clear();
 		}
 
+		if (register_ctr <= 15 && registered) {	//lower threshold of hysterisis
+			midBlob.x = midBlob.y = midBlob.z = -1;
+			registered = false;
+			mode = -1;
+			cout << "unregister" << endl;
+			send_event("Unregister", "");
+			positionQueue.clear();
+		}		
+		
 		
 //		stringstream ss; ss << "samples: " << dataMat.rows;
 //		putText(outC, ss.str(), Point(30,outC.rows - 30), CV_FONT_HERSHEY_PLAIN, 2.0, Scalar(0,0,255), 1);
