@@ -24,13 +24,13 @@ DepthJS.selectorBox.hide = function() {
 DepthJS.selectorBox.move = function(x, y) {
   x = (x - 50) / 50.0;
   y = (y - 50) / 50.0;
-  
+
   // Expode out for a smaller range in Kinect-hand space
   x *= 5;
   y *= 5;
   x = Math.min(1, Math.max(-1, x));
   y = Math.min(1, Math.max(-1, y));
-  
+
   var hwidth = $(window).width() * 0.5;
   var hheight = $(window).height() * 0.5;
   x =  hwidth*x + hwidth;
@@ -156,13 +156,17 @@ DepthJS.selectorBoxPopup.move = function(x, y) {
   }
   var $closestLink = $("#DepthJS_popupItem" + closestLinkIndex);
   $closestLink.addClass("DepthJS_selectorBoxPopupItemHighlight");
-  
+
   DepthJS.selectorBoxPopup.lastHighlightedLinkIndex = closestLinkIndex;
   DepthJS.selectorBoxPopup.$lastHighlightedLink = $closestLink;
 };
 
-DepthJS.selectorBoxPopup.openHighlightedLink = function(){
+DepthJS.selectorBoxPopup.openHighlightedLink = function() {
   var $links = DepthJS.selectorBoxPopup.$links;
+  if ($links == null) {
+    console.log("No links stored / not opening highlighted link");
+    return;
+  }
   var lastHighlightedLinkIndex = DepthJS.selectorBoxPopup.lastHighlightedLinkIndex;
 
   if (lastHighlightedLinkIndex < 0 || lastHighlightedLinkIndex > $links.length) return;
@@ -176,6 +180,8 @@ DepthJS.selectorBoxPopup.openHighlightedLink = function(){
 };
 
 DepthJS.selectorBoxPopup.hide = function(){
+  DepthJS.selectorBox.$links = null;
+  DepthJS.selectorBoxPopup.lastHighlightedLinkIndex = undefined;
   $("#DepthJS_selectorBoxPopup").fadeOut(300, function(){
     $("#DepthJS_selectorBoxPopup").remove();
   });

@@ -124,6 +124,9 @@ DepthJS.eventHandlers.onHandClick = function() {
   // setTimeout(DepthJS.eventHandlers.onUnregister, 200);
 };
 
+DepthJS.eventHandlers.onPush = function() {
+  DepthJS.eventHandlers.onHandClick();
+};
 DepthJS.eventHandlers.onPull = function() {
   DepthJS.eventHandlers.onHandClick();
 };
