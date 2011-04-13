@@ -473,7 +473,11 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 		if(blb[4] > 5000)
 			register_secondbloc_ctr = MIN((register_secondbloc_ctr + 1),60);
 		
-		if (register_ctr > 30 && !registered) { //upper threshold of hysterisis
+		if (register_ctr == 5 && !registered) {
+			send_event("Detecting", "");
+		}
+	
+		if (register_ctr > 20 && !registered) { //upper threshold of hysterisis
 			registered = true;
 			appear.x = -1;
 			lastMove.x = blb[0]; lastMove.y = blb[1]; lastMove.z = blb[2];
@@ -535,7 +539,7 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 //			}
 		}
 //	} else {
-		if(!registered) {
+		if(!registered && positionQueue.size() > 1) {
 			//not registered, look for gestures
 //			if(appear.x<0) {
 //				//first appearence of blob
@@ -553,37 +557,57 @@ void GestureEngine::CheckRegistered(vector<int>& blb, int recognized_gesture, Sc
 				line(outC, Point(positionQueue[i].x,positionQueue[i].y), Point(positionQueue[i+1].x,positionQueue[i+1].y), Scalar(0,0,255), 3);	
 			}
 			
-			if (positionQueue.size() > 15) {
-				appear = positionQueue.front(); 
-				
-//				line(outC, Point(appear.x,appear.y), cv::Point(blb[0],blb[1]), Scalar(0,0,255), 3);
-//				if (appear.x - blb[0] > 100) {
-//					cout << "right"<<endl; appear.x = -1;
-//					send_event("SwipeRight", "");
-//					register_ctr = 0;
-//					positionQueue.clear();
-//				} else 
-//				if (appear.x - blb[0] < -100) {
-//					cout << "left" <<endl; appear.x = -1;
-//					send_event("SwipeLeft", "");
-//					register_ctr = 0;
-//					positionQueue.clear();
-//				} else 
-//				if (appear.y - blb[1] > 100) {
-//					cout << "up" << endl; appear.x = -1;
-//					send_event("SwipeUp", "");
-//					register_ctr = 0;
-//					positionQueue.clear();
-//				} else 
-//				if (appear.y - blb[1] < -100) {
-//					cout << "down" << endl; appear.x = -1;
-//					send_event("SwipeDown", "");
-//					register_ctr = 0;
-//					positionQueue.clear();
-//				}
-				positionQueue.pop_front();
+			//fit a least-squares line 
+			Mat_<Point2i> ptsM(positionQueue.size(),1);
+			Point2f total;
+			for (uint i=0; i<positionQueue.size(); i++) {
+				ptsM(i,0) = Point2i(positionQueue[i].x,positionQueue[i].y);
 			}
-							
+
+			Scalar _ptsm = mean((Mat)ptsM);
+//			cout << norm(positionQueue.back() - Point3i(_ptsm[0],_ptsm[1],_ptsm[2])) << endl;
+			if(norm(positionQueue.back() - Point3i(_ptsm[0],_ptsm[1],_ptsm[2])) > 100) 
+			{
+			
+				Vec4f v4_line;
+				fitLine((Mat)ptsM, v4_line, CV_DIST_L2, 0, 0.01, 0.01);
+				Point2f p0(v4_line[2],v4_line[3]); Point2f p1 = p0 + Point2f(v4_line[0],v4_line[1])*100;
+				line(outC, p0, p1, Scalar(0,255,255), 3);
+//			cout << v4_line[0] << "," << v4_line[1] << "," << v4_line[2] << "," << v4_line[3] << endl;
+			
+//			if (positionQueue.size() > 9) {
+				appear = positionQueue.front(); 
+//				cout << positionQueue.front() << positionQueue.back() << endl;
+				if (fabs(v4_line[0]) > 0.9 && fabs(v4_line[0]) > fabs(v4_line[1]) && positionQueue.front().x > positionQueue.back().x) {
+					cout << "right"<<endl; appear.x = -1;
+					send_event("SwipeRight", "");
+					register_ctr = 0;
+					positionQueue.clear();
+				} else 
+				if (fabs(v4_line[0]) > 0.9 && fabs(v4_line[0]) > fabs(v4_line[1]) && positionQueue.front().x < positionQueue.back().x) {
+					cout << "left" <<endl; appear.x = -1;
+					send_event("SwipeLeft", "");
+					register_ctr = 0;
+					positionQueue.clear();
+				} else 
+				if (fabs(v4_line[1]) > 0.9 &&  fabs(v4_line[1]) > fabs(v4_line[0])  && positionQueue.front().y > positionQueue.back().y) {
+					cout << "up" << endl; appear.x = -1;
+					send_event("SwipeUp", "");
+					register_ctr = 0;
+					positionQueue.clear();
+				} else 
+				if (fabs(v4_line[1]) > 0.9 && fabs(v4_line[1]) > fabs(v4_line[0]) && positionQueue.front().y < positionQueue.back().y) {
+					cout << "down" << endl; appear.x = -1;
+					send_event("SwipeDown", "");
+					register_ctr = 0;
+					positionQueue.clear();
+				}
+//				positionQueue.pop_front();
+//			}
+			}
+			
+			if (positionQueue.size() > 15)
+				positionQueue.pop_front();
 //				}
 //				if(timediff >= 1.0) {
 //					cout << "a ghost..."<<endl;
@@ -791,7 +815,7 @@ void GestureEngine::RunEngine() {
 			positionQueue.clear();
 		}
 
-		if (register_ctr <= 15 && registered) {	//lower threshold of hysterisis
+		if (register_ctr < 20 && registered) {	//lower threshold of hysterisis
 			midBlob.x = midBlob.y = midBlob.z = -1;
 			registered = false;
 			mode = -1;
