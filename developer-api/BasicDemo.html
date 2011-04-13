@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+  <title>DepthJS Basic Demo</title>
+  <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+  <script type="text/javascript">google.load("jquery", "1", {uncompressed:true});</script>
+  <!-- jQuery is required for the depth.js plugin / it works in no conflict mode -->
+  <script src="depth.js"></script>
+  <script>
+    /**
+     * Just set the functions you want in the global DepthJS object.
+     * DepthJS with empty functions is already created in depth.js (take a look at the file),
+     * so you don't need to define every function. If you want to use just a few functions, this
+     * is the preferred method:
+     *
+     * DepthJS.onKinectInit = function() { console.log("hello kinect"); }
+     * DepthJS.onMove = function(x,y,z) { console.log("got movement"); }
+     *
+     * In this trivial example, we listen for each event using the event handling callbacks,
+     * and then use jQuery to set the divs defined in the body with the event details.
+     */
+    DepthJS = {
+      onKinectInit: function() {
+        $("#status").text("DepthJS + Kinect detected+!@");
+        $("#registration").text("Hand not in view");
+      },
+      onRegister: function(x, y, z, data) {
+        $("#registration").text("Hand in view" + (data == null ? "" : ": " + data));
+        $("#x").text("x: " + x);
+        $("#y").text("y: " + y);
+        $("#z").text("z: " + z);
+      },
+      onUnregister: function() {
+        $("#registration").text("Hand not in view");
+        $("#x").text("");
+        $("#y").text("");
+        $("#z").text("");
+      },
+      onMove: function(x, y, z) {
+        $("#x").text("x: " + x);
+        $("#y").text("y: " + y);
+        $("#z").text("z: " + z);
+      },
+      onSwipeLeft: function() {
+        $("#misc").text("swipe left");
+      },
+      onSwipeRight: function() {
+        $("#misc").text("swipe right");
+      },
+      onSwipeDown: function() {
+        $("#misc").text("swipe down");
+      },
+      onSwipeUp: function() {
+        $("#misc").text("swipe up");
+      },
+      onPush: function() {
+        $("#misc").text("push");
+      },
+      onPull: function() {
+        $("#misc").text("pull");
+      }
+    };
+  </script>
+</head>
+<body>
+
+<div>
+  <p><h2>Hi! This is a super duper basic DepthJS demo. Take a look at the source of this file to see how it
+    works, and how you can include <a href="depth.js">depth.js</a> in any of your web pages and work with Kinect events!</h2></p>
+  <p>As always, the <a href="http://depthjs.media.mit.edu">DepthJS home page</a> has all the latest info. You can also check out the source
+  code at the <a href="http://github.com/doug/depthjs">DepthJS github repo</a>.</p>
+  <br><br>
+</div>
+<div><h1><b>DepthJS Console</b></h1></div>
+<div id="status">No Kinect / DepthJS detected</div>
+<div id="registration"></div>
+<div id="x"></div>
+<div id="y"></div>
+<div id="z"></div>
+<div id="misc"></div>
+</body>
+</html>

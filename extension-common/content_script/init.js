@@ -3,8 +3,8 @@ $(function() {
   if (window.top === window) {
     // The parent frame is the top-level frame, not an iframe.
     console.log(["Initing DepthJS", DepthJS]);
-    DepthJS.selectorBox.init();
     DepthJS.eventLink.initPort();
+    DepthJS.selectorBox.init();
     DepthJS.depthose.init();
 
     // Let us know its running
