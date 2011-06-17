@@ -131,6 +131,7 @@ NPError NPP_DestroyStream(NPP instance, NPStream* stream, NPReason reason) {
 }
 
 int16_t NPP_HandleEvent(NPP instance, void* event) {
+#ifdef __APPLE__
   EventRecord* carbonEvent = (EventRecord*)event;
   if (carbonEvent && carbonEvent->what != 0) {
     std::cout << "DepthJS Plugin: NPP_HandleEvent type: " << carbonEvent->what << "\n";
@@ -139,6 +140,7 @@ int16_t NPP_HandleEvent(NPP instance, void* event) {
   NPCocoaEvent* cocoaEvent = (NPCocoaEvent*)event;
   std::cout << "DepthJS: NPP_HandleEvent type: " << cocoaEvent->type << "\n";
   */
+#endif
   return 0;
 }
 
