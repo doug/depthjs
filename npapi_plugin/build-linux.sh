@@ -7,6 +7,7 @@ g++ -Wno-write-strings -lresolv \
   -I/usr/local/include/libusb-1.0 -I/usr/local/include/libfreenect \
   `pkg-config --cflags libusb-1.0` \
   `pkg-config --cflags opencv` \
+  `pkg-config --libs --static opencv` \
   -lz \
   -Wall \
   -o depthjs \
