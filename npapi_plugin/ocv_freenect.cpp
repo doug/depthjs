@@ -54,7 +54,8 @@ void depth_cb(freenect_device *dev, void *depth, uint32_t timestamp)
 
   //copy to ocv buf...
   //memcpy(depthMat.data, depth, FREENECT_DEPTH_SIZE);
-  memcpy(depthMat.datastart, depth, FREENECT_DEPTH_11BIT_SIZE);
+  //memcpy(depthMat.datastart, depth, FREENECT_DEPTH_11BIT_SIZE);
+  memcpy(depthMat.datastart, depth, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_11BIT).bytes);
 
   got_frames++;
   pthread_cond_signal(&frame_cond);
@@ -67,7 +68,8 @@ void rgb_cb(freenect_device *dev, void *rgb, uint32_t timestamp)
   got_frames++;
   //copy to ocv_buf..
   //memcpy(rgbMat.data, rgb, FREENECT_RGB_SIZE);
-  memcpy(rgbMat.datastart, rgb, FREENECT_VIDEO_RGB_SIZE);
+  //memcpy(rgbMat.datastart, rgb, FREENECT_VIDEO_RGB_SIZE);
+  memcpy(rgbMat.datastart, rgb, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_VIDEO_RGB).bytes);
 
   pthread_cond_signal(&frame_cond);
   pthread_mutex_unlock(&buf_mutex);
@@ -130,8 +132,10 @@ int initFreenect() {
   //freenect_set_rgb_callback(f_dev, rgb_cb);
   //freenect_set_rgb_format(f_dev, FREENECT_FORMAT_RGB);
   freenect_set_video_callback(f_dev, rgb_cb);
-  freenect_set_video_format(f_dev, FREENECT_VIDEO_RGB);
-  freenect_set_depth_format(f_dev, FREENECT_DEPTH_11BIT);
+  //freenect_set_video_format(f_dev, FREENECT_VIDEO_RGB);
+  //freenect_set_depth_format(f_dev, FREENECT_DEPTH_11BIT);
+  freenect_set_video_mode(f_dev, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_VIDEO_RGB));
+  freenect_set_depth_mode(f_dev, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_11BIT));
 
   freenect_start_depth(f_dev);
   freenect_start_video(f_dev);
