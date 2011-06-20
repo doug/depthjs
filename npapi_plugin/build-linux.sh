@@ -1,13 +1,13 @@
 #!/bin/sh
 echo "Assuming homebrew install of libusb and libfreenect"
-mkdir -p depthjs.plugin/Contents/MacOS
-cp -f Info.plist depthjs.plugin/Contents
-g++ -Wno-write-strings -lresolv \
+g++ -fPIC -shared -Wno-write-strings -lresolv \
   -I/usr/local/include \
   -I/usr/local/include/libusb-1.0 -I/usr/local/include/libfreenect \
   `pkg-config --cflags libusb-1.0` \
   `pkg-config --cflags opencv` \
   `pkg-config --libs --static opencv` \
+  -L/usr/local/lib \
+  -lfreenect \
   -lz \
   -Wall \
   -o depthjs \
