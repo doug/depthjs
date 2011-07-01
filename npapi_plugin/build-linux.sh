@@ -10,6 +10,6 @@ g++ -fPIC -shared -Wno-write-strings -lresolv \
   -lfreenect \
   -lz \
   -Wall \
-  -o depthjs \
+  -o depthjs.so \
    np_entry.cc npp_entry.cc plugin.cc depthjs.cc \
    ocv_freenect.cpp bg_fg_blobs.cpp
