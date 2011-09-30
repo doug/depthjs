@@ -4,6 +4,8 @@
 <dict>
 	<key>Author</key>
 	<string>MIT Media Lab</string>
+	<key>Builder Version</key>
+	<string>6534.50</string>
 	<key>CFBundleDisplayName</key>
 	<string>DepthJS</string>
 	<key>CFBundleIdentifier</key>

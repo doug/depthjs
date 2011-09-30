@@ -20,6 +20,11 @@
 		93F690C71321789600F53A8A /* DLog.mm in Sources */ = {isa = PBXBuildFile; fileRef = 93F690C61321789600F53A8A /* DLog.mm */; };
 		93F691821321A45600F53A8A /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93F691811321A45600F53A8A /* JavaScriptCore.framework */; };
 		D713093013235B55001594A0 /* gesture_engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D713092E13235B55001594A0 /* gesture_engine.cpp */; };
+		D798BD64143600F7006BB73B /* openni_backend.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D798BD63143600F7006BB73B /* openni_backend.cpp */; };
+		D798BDFC14361163006BB73B /* HandMessageListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D798BDFB14361163006BB73B /* HandMessageListener.cpp */; };
+		D798BE09143611F4006BB73B /* libOpenNI.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D798BE06143611F4006BB73B /* libOpenNI.dylib */; };
+		D798BE0A143611F4006BB73B /* libXnVHandGenerator_1_4_1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D798BE07143611F4006BB73B /* libXnVHandGenerator_1_4_1.dylib */; };
+		D798BE0B143611F4006BB73B /* libXnVNite_1_4_1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D798BE08143611F4006BB73B /* libXnVNite_1_4_1.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,6 +77,13 @@
 		D713092E13235B55001594A0 /* gesture_engine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gesture_engine.cpp; sourceTree = "<group>"; };
 		D713092F13235B55001594A0 /* FreenectDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FreenectDevice.h; sourceTree = "<group>"; };
 		D713093213235BCB001594A0 /* gesture_engine.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gesture_engine.hpp; sourceTree = "<group>"; };
+		D798BD62143600F7006BB73B /* openni_backend.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = openni_backend.hpp; sourceTree = "<group>"; };
+		D798BD63143600F7006BB73B /* openni_backend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = openni_backend.cpp; sourceTree = "<group>"; };
+		D798BDFA14361163006BB73B /* HandMessageListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HandMessageListener.h; sourceTree = "<group>"; };
+		D798BDFB14361163006BB73B /* HandMessageListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HandMessageListener.cpp; sourceTree = "<group>"; };
+		D798BE06143611F4006BB73B /* libOpenNI.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libOpenNI.dylib; path = usr/local/lib/libOpenNI.dylib; sourceTree = SDKROOT; };
+		D798BE07143611F4006BB73B /* libXnVHandGenerator_1_4_1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libXnVHandGenerator_1_4_1.dylib; path = ../../../Documents/OpenniTry/libXnVHandGenerator_1_4_1.dylib; sourceTree = SOURCE_ROOT; };
+		D798BE08143611F4006BB73B /* libXnVNite_1_4_1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libXnVNite_1_4_1.dylib; path = ../../../Documents/OpenniTry/libXnVNite_1_4_1.dylib; sourceTree = SOURCE_ROOT; };
 		DD92D38A0106425D02CA0E72 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -86,6 +98,9 @@
 				938DB6FE130F3D7D008C37B1 /* libz.dylib in Frameworks */,
 				938DB702130F43F0008C37B1 /* Accelerate.framework in Frameworks */,
 				93F691821321A45600F53A8A /* JavaScriptCore.framework in Frameworks */,
+				D798BE09143611F4006BB73B /* libOpenNI.dylib in Frameworks */,
+				D798BE0A143611F4006BB73B /* libXnVHandGenerator_1_4_1.dylib in Frameworks */,
+				D798BE0B143611F4006BB73B /* libXnVNite_1_4_1.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,6 +110,9 @@
 		0259C574FE90428111CA0C5A /* webkit_plugin_mac */ = {
 			isa = PBXGroup;
 			children = (
+				D798BE06143611F4006BB73B /* libOpenNI.dylib */,
+				D798BE07143611F4006BB73B /* libXnVHandGenerator_1_4_1.dylib */,
+				D798BE08143611F4006BB73B /* libXnVNite_1_4_1.dylib */,
 				32DBCF9E0370C38000C91783 /* Classes */,
 				32DBCF9F0370C38200C91783 /* Other Sources */,
 				0259C582FE90428111CA0C5A /* Resources */,
@@ -176,6 +194,8 @@
 		32DBCF9F0370C38200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				D798BDFA14361163006BB73B /* HandMessageListener.h */,
+				D798BDFB14361163006BB73B /* HandMessageListener.cpp */,
 				D713093213235BCB001594A0 /* gesture_engine.hpp */,
 				D713092E13235B55001594A0 /* gesture_engine.cpp */,
 				D713092F13235B55001594A0 /* FreenectDevice.h */,
@@ -185,6 +205,8 @@
 				938564A7130E6EE0000F4333 /* bg_fg_blobs.hpp */,
 				938563DC130E61AF000F4333 /* Info.plist */,
 				32DBCF980370C29C00C91783 /* webkit-plugin-mac_Prefix.pch */,
+				D798BD62143600F7006BB73B /* openni_backend.hpp */,
+				D798BD63143600F7006BB73B /* openni_backend.cpp */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -273,6 +295,8 @@
 				938564A8130E6EE0000F4333 /* bg_fg_blobs.cpp in Sources */,
 				93F690C71321789600F53A8A /* DLog.mm in Sources */,
 				D713093013235B55001594A0 /* gesture_engine.cpp in Sources */,
+				D798BD64143600F7006BB73B /* openni_backend.cpp in Sources */,
+				D798BDFC14361163006BB73B /* HandMessageListener.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -303,7 +327,10 @@
 				HEADER_SEARCH_PATHS = "./include/**";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Internet Plug-Ins";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../Documents/OpenniTry\"",
+				);
 				OTHER_LDFLAGS = (
 					"-lstdc++",
 					"\"$(SRCROOT)/lib/libfreenect_sync.a\"",
@@ -352,7 +379,10 @@
 				HEADER_SEARCH_PATHS = "./include/**";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Internet Plug-Ins";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../Documents/OpenniTry\"",
+				);
 				OTHER_LDFLAGS = (
 					"-lstdc++",
 					"\"$(SRCROOT)/lib/libfreenect_sync.a\"",
@@ -405,6 +435,8 @@
 					"-I${SOURCE_ROOT}/include/opencv",
 					"-I${SOURCE_ROOT}/include/opencv2",
 					"-I${SOURCE_ROOT}/include/libfreenect",
+					"-I/usr/local/include/ni",
+					"-I/Users/royshilkrot/Downloads/NITE-Bin-MacOSX-v1.4.1.2/Include/",
 				);
 				PREBINDING = NO;
 				SDKROOT = macosx10.6;

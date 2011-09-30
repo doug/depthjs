@@ -11,7 +11,8 @@
 #import <string.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 //#include "ocv_freenect.hpp"
-#include "gesture_engine.hpp"
+//#include "gesture_engine.hpp"
+#include "openni_backend.hpp"
 
 // PRIVATE METHODS ---------------------------------------------------------------------------------
 
@@ -149,7 +150,8 @@ bool SendEventToBrowser(const string& _eventJson) {
   ocvThread = [NSThread currentThread];
   [ocvThread setName:@"ocvMainLoop"];
 //  ocvFreenectThread(NULL);
-	gesture_engine(NULL);
+//	gesture_engine(NULL);
+	openni_backend(NULL);
 }
 
 @end
@@ -211,7 +213,8 @@ NSString* jsRefToTypeString(JSContextRef& ctx, JSValueRef& t) {
   if (!haveInitDevice) {
     DLog(@"[DepthJS] Device not yet init; initing");
     hostPlugin = self;
-    int success = init_gesture_engine();
+    //int success = init_gesture_engine();
+	int success = init_openni_backend();
     haveInitDevice = success;
     if (haveInitDevice) {
       DLog(@"[DepthJS] Successfully inited Kinect; Starting ocv thread");
@@ -231,10 +234,11 @@ NSString* jsRefToTypeString(JSContextRef& ctx, JSValueRef& t) {
   if (hostPlugin == self) {
     hostPlugin = NULL;
 //    killOcvFreenect();
-	kill_gesture_engine();
+//	kill_gesture_engine();
+	  kill_openni_backend();
     if (ocvThread != nil) [ocvThread cancel];
     ocvThread = nil;
-    while (!is_gesture_engine_dead()) {
+    while (!is_openni_backend_dead()) {
       [NSThread sleepForTimeInterval:0.01];
     }
   }
