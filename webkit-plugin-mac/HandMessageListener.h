@@ -33,11 +33,11 @@ public:
 //		m_pInnerFlowRouter = new XnVFlowRouter;
 		m_pPushDetector = new XnVPushDetector;
 		m_pSwipeDetector = new XnVSwipeDetector;
-		m_pSwipeDetector->SetMotionSpeedThreshold(0.8);
+		m_pSwipeDetector->SetMotionSpeedThreshold(0.8); //swipes should be faster then regular movement
 //		m_pSteadyDetector = new XnVSteadyDetector;		
 //		m_pWaveDetector = new XnVWaveDetector;
 		m_pCircleDetector = new XnVCircleDetector;
-		m_pCircleDetector->SetMinRadius(80);
+		m_pCircleDetector->SetMinRadius(80); //circles should be big enough to prevent confusion with random movement
 		
 //		m_pInnerFlowRouter->SetActive(m_pPushDetector);
 		
@@ -51,6 +51,8 @@ public:
 		//m_pWaveDetector->RegisterWave(this, &Wave_Waved);
 		m_pSwipeDetector->RegisterSwipeLeft(this, &Swipe_Left);
 		m_pSwipeDetector->RegisterSwipeRight(this, &Swipe_Right);
+		m_pSwipeDetector->RegisterSwipeUp(this, &Swipe_Up);
+		m_pSwipeDetector->RegisterSwipeDown(this, &Swipe_Down);
 	}
 	
 	void Update(XnVMessage* pMessage)
@@ -68,6 +70,12 @@ public:
 	}
 	static void XN_CALLBACK_TYPE Swipe_Right(XnFloat fVelocity, XnFloat fAngle, void* pUserCxt) {
 		send_event("SwipeRight", "");
+	}
+	static void XN_CALLBACK_TYPE Swipe_Up(XnFloat fVelocity, XnFloat fAngle, void* pUserCxt) {
+		send_event("SwipeUp", "");
+	}
+	static void XN_CALLBACK_TYPE Swipe_Down(XnFloat fVelocity, XnFloat fAngle, void* pUserCxt) {
+		send_event("SwipeDown", "");
 	}
 	
 	// Push detector
