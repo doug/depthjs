@@ -14,6 +14,10 @@
 #include <XnCppWrapper.h>
 #include <XnHash.h>
 #include <XnLog.h>
+#include <XnUSB.h>
+
+#define VID_MICROSOFT 0x45e
+#define PID_NUI_MOTOR 0x02b0
 
 // Header for NITE
 #include "XnVNite.h"
@@ -79,10 +83,11 @@ void XN_CALLBACK_TYPE NoHands(void* UserCxt);
 
 class OpenNIBackend {
 public:
-	OpenNIBackend():g_SessionState(NOT_IN_SESSION),running(true) {}
+	OpenNIBackend():g_SessionState(NOT_IN_SESSION),running(true),terminated(false) {}
 	
 	void run() {
-		printf("start openni backend thread");
+		printf("start openni backend thread\n");
+		terminated = false;
 		while (running) {
 			XnMapOutputMode mode;
 			g_DepthGenerator.GetMapOutputMode(mode);
@@ -91,12 +96,48 @@ public:
 			// Update NITE tree
 			g_pSessionManager->Update(&g_Context);
 		}
-		printf("end openni backend thread");
+		terminated = true;
+		printf("end openni backend thread\n");
 	}
-	void stop() { running = false; }
-	bool isDead() { return !running; }
-	int init() {
+	void stop() { printf("stopping openni backend...\n"); running = false;}
+	bool isDead() { return terminated; }
 	
+	int setKinectAngle() {
+		XN_USB_DEV_HANDLE dev;
+		
+		int angle = 20;
+		
+		XnStatus rc = XN_STATUS_OK;
+		
+		rc = xnUSBInit();
+		CHECK_RC(rc,"init usb device");
+		
+		rc = xnUSBOpenDevice(VID_MICROSOFT, PID_NUI_MOTOR, NULL, NULL, &dev);
+		CHECK_RC(rc,"open usb device");
+		
+		uint8_t empty[0x1];
+		angle = angle * 2;
+        
+		rc = xnUSBSendControl(dev,
+							  XN_USB_CONTROL_TYPE_VENDOR,
+							  0x31,
+							  (XnUInt16)angle,
+							  0x0,
+							  empty,
+							  0x0, 0);
+		CHECK_RC(rc,"send usb command");
+		
+		rc = xnUSBCloseDevice(dev);
+		CHECK_RC(rc,"close usb device");
+		
+		return rc;
+	}
+	
+	int init() {
+		running = true;
+		terminated = false;
+		setKinectAngle();
+		
 		XnStatus rc = XN_STATUS_OK;
 		xn::EnumerationErrors errors;
 		
@@ -144,11 +185,12 @@ public:
 		rc = g_Context.StartGeneratingAll();
 		CHECK_RC(rc, "StartGenerating");
 		
+		return rc == XN_STATUS_OK;
 	}
 	
 	SessionState g_SessionState;
 private:
-	bool running;
+	bool running,terminated;
 	
 	// OpenNI objects
 	xn::Context g_Context;
@@ -188,7 +230,7 @@ void XN_CALLBACK_TYPE NoHands(void* UserCxt)
 
 OpenNIBackend onib;
 
-int openni_backend(void* _arg) { onib.run(); }
+int openni_backend(void* _arg) { onib.run(); return 0; }
 void kill_openni_backend() { onib.stop(); }
 bool is_openni_backend_dead() { return onib.isDead(); }
 int init_openni_backend() { return onib.init(); }

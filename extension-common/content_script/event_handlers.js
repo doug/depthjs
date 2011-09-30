@@ -142,17 +142,18 @@ DepthJS.eventHandlers.onMove = function(data) {
     return;
   }
 
-  data.x = 100-data.x;
+//  data.x = 100-data.x;
 
-  if (accumulatedX == null) {
+//  if (accumulatedX == null) {
     accumulatedX = data.x;
     accumulatedY = data.y;
     accumulatedZ = data.z;
+    /* //no smoothing!
   } else {
     accumulatedX = accumulatedX * smoothing + data.x * (1-smoothing);
     accumulatedY = accumulatedY * smoothing + data.y * (1-smoothing);
     accumulatedZ = accumulatedZ * smoothing + data.z * (1-smoothing);
-  }
+  } */
 
   if (DepthJS.state == "panner"){
     DepthJS.panner.move(accumulatedX, accumulatedY, accumulatedZ);

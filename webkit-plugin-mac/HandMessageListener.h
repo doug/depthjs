@@ -32,10 +32,12 @@ public:
 	HandPointControl(xn::DepthGenerator depthGenerator, XnVSessionManager* sessionManager):m_DepthGenerator(depthGenerator),m_SessionManager(sessionManager) {
 //		m_pInnerFlowRouter = new XnVFlowRouter;
 		m_pPushDetector = new XnVPushDetector;
-//		m_pSwipeDetector = new XnVSwipeDetector;
+		m_pSwipeDetector = new XnVSwipeDetector;
+		m_pSwipeDetector->SetMotionSpeedThreshold(0.8);
 //		m_pSteadyDetector = new XnVSteadyDetector;		
 //		m_pWaveDetector = new XnVWaveDetector;
 		m_pCircleDetector = new XnVCircleDetector;
+		m_pCircleDetector->SetMinRadius(80);
 		
 //		m_pInnerFlowRouter->SetActive(m_pPushDetector);
 		
@@ -47,7 +49,8 @@ public:
 		m_pPushDetector->RegisterPush(this, &Push_Pushed);
 		m_pCircleDetector->RegisterCircle(this, &ACircle);
 		//m_pWaveDetector->RegisterWave(this, &Wave_Waved);
-		
+		m_pSwipeDetector->RegisterSwipeLeft(this, &Swipe_Left);
+		m_pSwipeDetector->RegisterSwipeRight(this, &Swipe_Right);
 	}
 	
 	void Update(XnVMessage* pMessage)
@@ -57,6 +60,14 @@ public:
 		m_pPushDetector->Update(pMessage);
 //		m_pWaveDetector->Update(pMessage);
 		m_pCircleDetector->Update(pMessage);
+		m_pSwipeDetector->Update(pMessage);
+	}
+	
+	static void XN_CALLBACK_TYPE Swipe_Left(XnFloat fVelocity, XnFloat fAngle, void* pUserCxt) {
+		send_event("SwipeLeft", "");
+	}
+	static void XN_CALLBACK_TYPE Swipe_Right(XnFloat fVelocity, XnFloat fAngle, void* pUserCxt) {
+		send_event("SwipeRight", "");
 	}
 	
 	// Push detector
@@ -101,9 +112,10 @@ public:
 		m_DepthGenerator.ConvertRealWorldToProjective(1, &ptProjective, &ptProjective);
 //		printf(" -> (%f,%f,%f)\n", ptProjective.X, ptProjective.Y, ptProjective.Z);
 		
+		//move to [0->100,0->100,0->2048]
 		stringstream ss;
-		ss  << "\"x\":"  << (int)ptProjective.X
-			<< ",\"y\":" << (int)ptProjective.Y
+		ss  << "\"x\":"  << (int)(100.0*ptProjective.X/640.0)
+			<< ",\"y\":" << (int)(100.0*ptProjective.Y/480.0)
 			<< ",\"z\":" << (int)ptProjective.Z;
 		//cout << "move: " << ss.str() << endl;
 		send_event("Move", ss.str());		
@@ -122,7 +134,7 @@ private:
 	
 //	XnVBroadcaster m_Broadcaster;
 	XnVPushDetector* m_pPushDetector;
-//	XnVSwipeDetector* m_pSwipeDetector;
+	XnVSwipeDetector* m_pSwipeDetector;
 //	XnVSteadyDetector* m_pSteadyDetector;		
 //	XnVFlowRouter* m_pInnerFlowRouter;
 //	
