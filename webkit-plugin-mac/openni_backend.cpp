@@ -74,7 +74,7 @@ void XN_CALLBACK_TYPE SessionEnding(void* UserCxt);
 void XN_CALLBACK_TYPE NoHands(void* UserCxt);
 
 // xml to initialize OpenNI
-#define SAMPLE_XML_PATH "/Users/royshilkrot/Downloads/NITE-Bin-MacOSX-v1.4.1.2/Data/Sample-Tracking.xml"
+#define SAMPLE_XML_PATH "../../NITE-Bin-MacOSX-v1.4.1.2/Data/Sample-Tracking.xml"
 
 
 class OpenNIBackend {
