@@ -4,16 +4,15 @@ DepthJS is a browser extension (currently Chrome & Safari) that allows the Micro
 
 Current Status
 --------------
-Pre-alpha. Really; you may want to wait a bit or help contribute (for real). Hand detection is reasonably robust, but recognizing gestures is less reliable.
+Moving to OpenNI/NITE based backend, forsaking OpenCV for now. Gesture recognition is thus far better than what we had before.
+Finger-based gestures will soon follow as a few projects parallel to DepthJS will merge in coming months.
 
-So far we can recognize the following:
+Current gesture language:
+- Wave to start hand tracking and get "blue pointer".
+- Push to click.
+- Circle to end tracking and remove "blue pointer".
 
-- Presence of hand (registration)
-- Removal of hand (unregistration)
-- Hand movement
-- Large swipe up/down/left/right
-
-Our previous hand gesture implemented sucked. We are working (slowly) on a new implementation and associated UX.
+Note: OpenNI & NITE should be downloaded and linked appropriately to your build.
 
 Components
 ----------
