@@ -26,8 +26,8 @@ DepthJS.selectorBox.move = function(x, y) {
   y = (y - 50) / 50.0;
   
   // Expode out for a smaller range in Kinect-hand space
-  x *= 5;
-  y *= 5;
+  x *= 1.5;
+  y *= 1.5;
   x = Math.min(1, Math.max(-1, x));
   y = Math.min(1, Math.max(-1, y));
   

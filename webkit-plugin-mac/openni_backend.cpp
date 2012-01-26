@@ -89,8 +89,8 @@ public:
 		printf("start openni backend thread\n");
 		terminated = false;
 		while (running) {
-			XnMapOutputMode mode;
-			g_DepthGenerator.GetMapOutputMode(mode);
+//			XnMapOutputMode mode;
+//			g_DepthGenerator.GetMapOutputMode(mode);
 			// Read next available data
 			g_Context.WaitOneUpdateAll(g_DepthGenerator);
 			// Update NITE tree

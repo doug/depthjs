@@ -15,8 +15,8 @@
   "permissions": ["tabs", "http://*/*", "https://*/*","notifications"],
 
   "plugins": [
-     { "path": "plugin/depthjs.so" },
-     { "path": "plugin/depthjs.plugin" }
+//     { "path": "plugin/depthjs.so" },
+     { "path": "plugin/depthjsplugin.plugin" }
   ],
 
   "browser_action": {

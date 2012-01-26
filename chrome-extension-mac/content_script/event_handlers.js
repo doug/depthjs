@@ -31,28 +31,28 @@ DepthJS.state = null;
 DepthJS.lastRegisterTime = null;
 
 DepthJS.eventHandlers.onSwipeLeft = function() {
-   // history.back();
+  history.back();
 };
 
 DepthJS.eventHandlers.onSwipeRight = function() {
   // We interpret as "forward".
-  // history.forward();
+  history.forward();
 };
 
 DepthJS.eventHandlers.onSwipeDown = function() {
   // We interpret as "scroll down 75% of window".
-  // var scrollAmount = Math.floor($(window).height() * 0.75);
-  // $("html, body").animate({
-  //   scrollTop: ($(document).scrollTop() + scrollAmount)
-  // });
+  var scrollAmount = Math.floor($(window).height() * 0.75);
+  $("html, body").animate({
+    scrollTop: ($(document).scrollTop() + scrollAmount)
+  });
 };
 
 DepthJS.eventHandlers.onSwipeUp = function() {
   // We interpret as "scroll up 75% of window".
-  // var scrollAmount = Math.floor($(window).height() * 0.75);
-  // $("html, body").animate({
-  //   scrollTop: ($(document).scrollTop() - scrollAmount)
-  // });
+  var scrollAmount = Math.floor($(window).height() * 0.75);
+  $("html, body").animate({
+    scrollTop: ($(document).scrollTop() - scrollAmount)
+  });
 };
 
 DepthJS.eventHandlers.onHandPointer = function(){
@@ -114,7 +114,7 @@ DepthJS.eventHandlers.onUnregister = function() {
 DepthJS.eventHandlers.onHandClick = function() {
   if (DepthJS.lastRegisterTime == null) return;
   if (new Date() - DepthJS.lastRegisterTime < 1500) return;
-  
+
   if (DepthJS.state == "selectorBoxPopup") {
     DepthJS.selectorBoxPopup.openHighlightedLink();
   } else if (DepthJS.state == "selectorBox") {
@@ -127,34 +127,36 @@ DepthJS.eventHandlers.onHandClick = function() {
   // setTimeout(DepthJS.eventHandlers.onUnregister, 200);
 };
 
-// Right now users can either push or pull
+DepthJS.eventHandlers.onPush = function() {
+  DepthJS.eventHandlers.onHandClick();
+};
 DepthJS.eventHandlers.onPull = function() {
-  DepthJS.state = "depthose";
-  DepthJS.depthose.start();
+  DepthJS.eventHandlers.onHandClick();
 };
 
 (function() {
 var accumulatedX = null;
 var accumulatedY = null;
 var accumulatedZ = null;
-var smoothing = 0.95;
+var smoothing = 0.9;
 DepthJS.eventHandlers.onMove = function(data) {
   if (data.x == null || data.y == null || data.z == null) {
     if (DepthJS.verbose) console.log(["Could not understand data", data]);
     return;
   }
 
-  data.x = 100-data.x;
+  //data.x = 100-data.x;
 
   if (accumulatedX == null) {
     accumulatedX = data.x;
     accumulatedY = data.y;
     accumulatedZ = data.z;
+     //no smoothing!
   } else {
     accumulatedX = accumulatedX * smoothing + data.x * (1-smoothing);
     accumulatedY = accumulatedY * smoothing + data.y * (1-smoothing);
     accumulatedZ = accumulatedZ * smoothing + data.z * (1-smoothing);
-  }
+  } 
 
   if (DepthJS.state == "panner"){
     DepthJS.panner.move(accumulatedX, accumulatedY, accumulatedZ);

@@ -152,7 +152,9 @@ DepthJS.npBackend.connect = function() {
 };
 
 DepthJS.npBackend.receiveEvent = function (msg) {
+  msg = JSON.parse(msg);
   if (msg == null || msg.type == null) {
+    console.log("ERROR: message is null or format unknown: " + msg);
     return;
   }
   DepthJS.logSortaVerbose(msg.type, msg);
