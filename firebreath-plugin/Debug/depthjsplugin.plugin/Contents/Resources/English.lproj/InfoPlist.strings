@@ -1,0 +1,4 @@
+/* Localized versions of Info.plist keys */
+
+CFBundleName = "depthjsplugin.plugin";
+NSHumanReadableCopyright = "Copyright 2012 MIT Media Lab";

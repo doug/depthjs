@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="*" Name="${FBSTRING_PluginName}" Language="1033" Version="${FBSTRING_PLUGIN_VERSION}" Manufacturer="${FBSTRING_CompanyName}" UpgradeCode="{9f5516bd-8108-5341-ba9d-49d28a08ab5f}">
+        <Package InstallerVersion="200" Compressed="yes" Description="Installer for the ${PLUGIN_NAME} plugin" InstallScope="perUser" />
+        <Upgrade Id="{9f5516bd-8108-5341-ba9d-49d28a08ab5f}">
+            <UpgradeVersion
+                Property="OLD_VERSION_FOUND"
+                Minimum="0.0.1" IncludeMinimum="yes"
+                Maximum="${FBSTRING_PLUGIN_VERSION}" IncludeMaximum="yes"
+                OnlyDetect="no" IgnoreRemoveFailure="yes"
+                MigrateFeatures="yes" />
+        </Upgrade>
+		<Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
+        <InstallExecuteSequence>
+            <RemoveExistingProducts After="InstallInitialize" />
+            <InstallExecute After="RemoveExistingProducts" />
+        </InstallExecuteSequence>
+        <Media Id="1" Cabinet="${PLUGIN_NAME}.cab" EmbedCab="yes" />
+
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="${FB_WIX_INSTALL_LOCATION}">
+                <Directory Id="CompanyDir" Name="${COMPANY_NAME}">
+                    <Component Id="CompanyDirComp" Guid="*">
+                        <RemoveFolder Id="RemoveCompanyDir" On="uninstall" />
+                        <RegistryValue
+                            Root="HKCU"
+                            Key="SOFTWARE\${COMPANY_NAME}"
+                            Name="Uninstall"
+                            Type="string"
+                            Value="${FBSTRING_PLUGIN_VERSION}"
+                            KeyPath="yes" />
+                    </Component>
+                    <Directory Id="PluginNameDir" Name="${PLUGIN_NAME}">
+                        <Component Id="PluginNameDirComp" Guid="*">
+                            <RemoveFolder Id="RemovePluginNameDir" On="uninstall" />
+                            <RegistryValue
+                                Root="HKCU"
+                                Key="SOFTWARE\${COMPANY_NAME}\${PLUGIN_NAME}"
+                                Name="Uninstall"
+                                Type="string"
+                                Value="${FBSTRING_PLUGIN_VERSION}"
+                                KeyPath="yes" />
+                        </Component>
+                        <Directory Id="INSTALLDIR" Name="${FBSTRING_PLUGIN_VERSION}">
+                            <Component Id="InstallDirComp" Guid="*">
+                                <RemoveFolder Id="RemoveInstallDir" On="uninstall" />
+                                <RegistryValue
+                                    Root="HKCU"
+                                    Key="SOFTWARE\${COMPANY_NAME}\${PLUGIN_NAME}\${FBSTRING_PLUGIN_VERSION}"
+                                    Name="Uninstall"
+                                    Type="string"
+                                    Value="${FBSTRING_PLUGIN_VERSION}"
+                                    KeyPath="yes" />
+                            </Component>
+
+                            <!-- Put Additional files here: -->
+                            <!-- example:
+                            <Component Id="UniqueComponentId" Guid="*">
+                                <File Id="uniqueFileId" KeyPath="yes" Source="SourceDir\filename.ext" />
+                            </Component>
+                            /example -->
+                            <!--  -->
+                        </Directory>
+                    </Directory>
+                </Directory>
+            </Directory>
+        </Directory>
+
+        <Feature Id="MainPluginFeature" Title="${FBSTRING_ProductName}" Level="1">
+            <ComponentRef Id="InstallDirComp"/>
+            <ComponentRef Id="PluginNameDirComp"/>
+            <ComponentRef Id="CompanyDirComp"/>
+            <ComponentGroupRef Id="PluginDLLGroup"/>
+        </Feature>
+    </Product>
+</Wix>
