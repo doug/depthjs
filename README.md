@@ -48,7 +48,16 @@ Safari needs it's own browser plugin & browser extension. webkit-plugin-mac/ con
 Safari is currently our active development browser because of XCode & GDB. It will work before Chrome at any given moment.
 
 CHROME:
-Chrome extensions support native code, which needs to be compiled. Now under firebreat-plugin/. Refer to http://www.firebreath.org/display/documentation/Building+FireBreath+Plugins for instructions (they have tutorials and videos, and the process is rather simple).
+Chrome extensions support native code, which needs to be compiled. Now under firebreat-plugin/. 
+To install/compile:  (Refer to http://www.firebreath.org/display/documentation/Building+FireBreath+Plugins for instructions, they have tutorials and videos, and the process is rather simple)
+- Download Firebreath: http://www.firebreath.org/display/documentation/Download
+- cd ${DEPTHJS_DIR}/firebreath-plugin/
+- mkdir build
+- cd build
+- ${FIREBREATH_DIR}/prepmac.sh .    # make sure you run this from the DepthJS/firebreath-plugin/build directory
+- make
+
+(you must have CMake 2.6+ installed)
 
 The chrome extension is located in chrome-extension-mac/.
 The plugin is precompiled under chrome-extension-mac/plugin/.
