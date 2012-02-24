@@ -50,8 +50,8 @@ Safari is currently our active development browser because of XCode & GDB. It wi
 CHROME:
 Chrome extensions support native code, which needs to be compiled. Now under firebreat-plugin/. 
 To install/compile:  (Refer to http://www.firebreath.org/display/documentation/Building+FireBreath+Plugins for instructions, they have tutorials and videos, and the process is rather simple)
+Start by downloading Firebreath: http://www.firebreath.org/display/documentation/Download
 
-	Download Firebreath: http://www.firebreath.org/display/documentation/Download
 	cd ${DEPTHJS_DIR}/firebreath-plugin/
 	mkdir build
 	cd build
