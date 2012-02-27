@@ -11,7 +11,7 @@ build/*
 *.pbxuser
 *.mode1v3
 *.perspectivev3
-webkit-plugin-mac/build
+# webkit-plugin-mac/build  # precompiled version should be up at the repo
 
 # old skool
 .svn
