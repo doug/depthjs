@@ -20,6 +20,9 @@ IF(WIN32)
 	# this is where NITE msi installers usually put the files
 	SET(NITE_INCLUDE_SEARCH_PATHS "C:/Program Files/NITE/Include/" "D:/Program Files/NITE/Include/")
 	SET(NITE_LIB_SEARCH_PATHS "C:/Program Files/NITE/Lib/" "D:/Program Files/NITE/Lib/")
+ELSE(WIN32)
+	SET(NITE_INCLUDE_SEARCH_PATHS ${NITE_INCLUDE_SEARCH_PATHS} "/usr/local/include" "/usr/include")
+	set(NITE_LIB_SEARCH_PATHS "${NITE_LIB_SEARCH_PATHS}" "/usr/local/lib" "/usr/lib")
 ENDIF(WIN32)
 
 MESSAGE(STATUS "Try to look here: ${NITE_INCLUDE_SEARCH_PATHS}")
@@ -28,13 +31,13 @@ MESSAGE(STATUS "Try to look here: ${NITE_INCLUDE_SEARCH_PATHS}")
 find_path(NITE_INCLUDE_DIR
   NAMES XnVNite.h
   HINTS ${NITE_INCLUDE_SEARCH_PATHS} 
-  PATH_SUFFIXES "ni"
+  PATH_SUFFIXES "nite"
 )
 
 if(NITE_INCLUDE_DIR STREQUAL "NITE_INCLUDE_DIR-NOTFOUND")
 	message(STATUS "Looking for NITE in default dirs")
 	find_path(NITE_INCLUDE_DIR NAMES XnVNite.h 
-	  PATH_SUFFIXES "ni"
+	  PATH_SUFFIXES "nite"
 	)
 endif()
 
@@ -47,7 +50,7 @@ find_library(NITE_LIBRARY
 if(NITE_LIBRARY STREQUAL "NITE_LIBRARY-NOTFOUND")
 	message(STATUS "can't find NITE library, looking more aggressively")
 	foreach(NITE_LOOKUP_PATH ${NITE_LIB_SEARCH_PATHS})
-		file(GLOB NITE_LIBRARY "${NITE_LOOKUP_PATH}/XnVNITE*lib")
+		file(GLOB NITE_LIBRARY "${NITE_LOOKUP_PATH}/*XnVNITE*")
 		message(STATUS "looking in ${NITE_LOOKUP_PATH} resulted in ${NITE_LIBRARY}")
 		if(NOT ${NITE_LIBRARY} STREQUAL "")
 			#found NITE library
