@@ -16,7 +16,8 @@
 
   "plugins": [
 //     { "path": "plugin/depthjs.so" },
-     { "path": "plugin/depthjsplugin.plugin" }
+//     { "path": "plugin/depthjsplugin.plugin" }
+	{ "path": "plugin/npdepthjsplugin.dll" }
   ],
 
   "browser_action": {
