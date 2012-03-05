@@ -52,9 +52,7 @@ To install/compile:  (Refer to http://www.firebreath.org/display/documentation/B
 Start by downloading Firebreath: http://www.firebreath.org/display/documentation/Download
 
 	cd ${DEPTHJS_DIR}/firebreath-plugin/
-	mkdir build
-	cd build
-	${FIREBREATH_DIR}/prepmac.sh .    # make sure you run this from the DepthJS/firebreath-plugin/build directory
+	${FIREBREATH_DIR}/prepmac.sh .    # make sure you run this from the DepthJS/firebreath-plugin directory
 	make
 
 (you must have CMake 2.6+ installed)
