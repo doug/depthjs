@@ -5,6 +5,8 @@
 *.swp
 app/bin/*
 *.pyc
+new_cv/*
+cv/*
 
 # xcode noise
 build/*
@@ -12,6 +14,10 @@ build/*
 *.mode1v3
 *.perspectivev3
 # webkit-plugin-mac/build  # precompiled version should be up at the repo
+firebreath-plugin/build/*
+firebreath-plugin/Debug/*
+firebreath-plugin/FireBreath.build/*
+webkit-plugin-mac/build/*
 
 # old skool
 .svn

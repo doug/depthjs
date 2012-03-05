@@ -1,0 +1,23 @@
+<OpenNI>
+	<Licenses>
+		<License vendor="PrimeSense" key="insert key here"/>
+	</Licenses>
+	<Log writeToConsole="true" writeToFile="false">
+		<!-- 0 - Verbose, 1 - Info, 2 - Warning, 3 - Error (default) -->
+		<LogLevel value="3"/>
+		<Masks>
+			<Mask name="ALL" on="false"/>
+		</Masks>
+		<Dumps>
+		</Dumps>
+	</Log>
+	<ProductionNodes>
+		<Node type="Depth">
+			<Configuration>
+				<Mirror on="true"/>
+			</Configuration>
+		</Node>
+		<Node type="Gesture" />
+		<Node type="Hands" />
+	</ProductionNodes>
+</OpenNI>

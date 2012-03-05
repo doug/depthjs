@@ -24,10 +24,8 @@ find_library(QUARTZ_CORE_FRAMEWORK QuartzCore)
 find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)
 
 include_directories(${CORE_FOUNDATION_FRAMEWORK})
-include_directories("/Users/royshilkrot/Downloads/NITE-Bin-MacOSX-v1.4.1.2/Include")
-include_directories("/Users/royshilkrot/Downloads/OpenNI-Bin-MacOSX-v1.3.2.3/Include")
  
-set(OPENNI_XML_FILE "/Users/royshilkrot/Downloads/NITE-Bin-MacOSX-v1.4.1.2/Data/Sample-Tracking.xml")
+set(OPENNI_XML_FILE "Sample-Tracking.xml")
 set_source_files_properties(
 	${OPENNI_XML_FILE}
 	PROPERTIES
@@ -55,7 +53,6 @@ target_link_libraries(${PROJECT_NAME}
 	${OPENGL_FRAMEWORK}
 	${QUARTZ_CORE_FRAMEWORK}
 	${CORE_FOUNDATION_FRAMEWORK}
-	/Users/royshilkrot/Downloads/OpenNI-Bin-MacOSX-v1.3.2.3/Lib/libOpenNI.dylib
-	/Users/royshilkrot/Downloads/NITE-Bin-MacOSX-v1.4.1.2/Bin/libXnVNite_1_4_1.dylib
-	/Users/royshilkrot/Downloads/NITE-Bin-MacOSX-v1.4.1.2/Bin/libXnVHandGenerator_1_4_1.dylib
+	${OpenNI_LIBS}
+	${NITE_LIBS}
     )
