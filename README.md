@@ -21,7 +21,7 @@ Note: OpenNI & NITE should be downloaded and linked appropriately to your build.
 
 Components
 ----------
-DepthJS is very modular. The Kinect driver and computer vision are written on top of libfreenect & OpenCV in C++. This component can output the raw RGB image, the raw depth map (filtered for the hand), as well as the high-level events that the computer vision recognizes. A native browser plugin (think Flash) wraps this Kinect code, which directly interacts with a Javascript browser plugin.  Fortunately in Chrome extensions can contain native code, so it will be easy for anyone to install it. Safari requires a bit more work with a plugin installer & needing to go to the extension "store," if Apple will even permit this.
+DepthJS is very modular. The Kinect driver and computer vision are written on top of OpenNI and NITE. This component can output the raw RGB image, the raw depth map (filtered for the hand), as well as the high-level events that the computer vision recognizes. A native browser plugin (think Flash) wraps this Kinect code, which directly interacts with a Javascript browser plugin.  Fortunately in Chrome extensions can contain native code, so it will be easy for anyone to install it. Safari requires a bit more work with a plugin installer & needing to go to the extension "store," if Apple will even permit this.
 
 Event handlers in the browser extension may be placed globally, in content scripts injected into each web page, or pushed via the content script to local DOM elements written by 3rd parties.
 
@@ -33,51 +33,50 @@ http://www.openni.org/Downloads/OpenNIModules.aspx
 
 Platforms
 ---------
-Right now we only support Macs. All dependencies are statically compiled and in the repo (except OpenNI/NITE who don't provide static libs).
+Macs are supported. All dependencies are statically compiled and in the repo (except OpenNI/NITE who don't provide static libs).
 
-Linux likely automatically works, although we don't distribute pre-compiled dependencies for it (yet).
+Linux should compile nicely, although we don't distribute pre-compiled dependencies for it (yet).
 
-Windows will work for Chrome and Firefox through the FireBreat plugin, but Internet Explorer will probably not be supported (unless someone would like to create an ActiveX plugin).
+Windows now works for Chrome through the FireBreath plugin, Firefox to follow, but Internet Explorer will probably not be supported (unless someone would like to create an ActiveX plugin out of the firebreath framework).
 
 Browsers
 --------
-SAFARI:
+### SAFARI:
 Safari needs it's own browser plugin & browser extension. webkit-plugin-mac/ contains the plugin, and the extension is in safari-extension-mac/. Unfortunately it does not like soft links, so you must in your terminal run <pre>cd safari-extension-mac/DepthJS.safariextension && ./createHardLinks.sh</pre> Build & run the Xcode project in webkit-plugin-mac, then once inside Safari, enable developer tools & extensions, and finally add the extension under safari-extension-mac/ in Extension Builder. If you click on Inspect Global Pages, you'll see output confirming if it could connect to the Kinect or not (it should be plugged in).
 
 Safari is currently our active development browser because of XCode & GDB. It will work before Chrome at any given moment.
 
-CHROME:
+### CHROME:
 Chrome extensions support native code, which needs to be compiled. Now under firebreat-plugin/. 
 To install/compile:  (Refer to http://www.firebreath.org/display/documentation/Building+FireBreath+Plugins for instructions, they have tutorials and videos, and the process is rather simple)
 Start by downloading Firebreath: http://www.firebreath.org/display/documentation/Download
 
 (you must have CMake 2.6+ installed, OpenNI and NITE)
 
-### Mac building
+#### Mac building
 	cd ${DEPTHJS_DIR}/firebreath-plugin/
 	${FIREBREATH_DIR}/prepmac.sh .    # make sure you run this from the DepthJS/firebreath-plugin directory
 	cd build
 	make
 
-### Windows building
+#### Windows building
 	cd ${DEPTHJS_DIR}/firebreath-plugin/
 	${FIREBREATH_DIR}/prep2010.cmd .	# optionally set "-DOpenNI_INCLUDE_DIRS=<...>", "-DOpenNI_LIBS=<...>", "-DNITE_INCLUDE_DIRS=<...>" and "-DNITE_LIBS=<..>"
 	start build\FireBreath.sln			# at this point Visual Studio will open and you should be able to compile the plugin
-	copy_binary_win32.bat
 
 (Visual Studio is a prerequisite)
 
 The chrome extension is located in chrome-extension/.
 The plugin is precompiled under chrome-extension/plugin/.
 
-Go on chrome://extensions and use "Load upacked extension..." to manually load DepthJS as an extension, and you should be good to go.
+Go on chrome://extensions and use "Load upacked extension..." to manually load DepthJS as an extension (use the chrome-extension directory), and you should be good to go. Use the error console to fish for errors.
 
-FIREFOX:
+### FIREFOX:
 We're in the process of creating a FF extension around the Firebreath NPAPI plugin.
 
 Future work
 -----------
 In addition to the obvious improvements to our gesture recognition, we need to make the install process easier for end-users.
 
-Most of our concern is to make everything truly cross-platform cross-browser, and make this a reference implementation of a Kinect browser plugin.
-One-click install is at second-priority right now, so if anyone wants to pitch in and do this - please let us know!
+Most of our concern is to make everything truly cross-platform cross-browser, and make this an open-source reference implementation of a Kinect browser plugin.
+One-click install is at second-priority right now, so if anyone wants to pitch in and do this - they are welcome!
