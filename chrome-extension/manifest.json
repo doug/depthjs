@@ -15,9 +15,7 @@
   "permissions": ["tabs", "http://*/*", "https://*/*","notifications"],
 
   "plugins": [
-//     { "path": "plugin/depthjs.so" },
-//     { "path": "plugin/depthjsplugin.plugin" }
-	{ "path": "plugin/npdepthjsplugin.dll" }
+	{ path: plugin/npdepthjsplugin.dll }
   ],
 
   "browser_action": {
@@ -44,3 +42,4 @@
       "run_at": "document_end" }
   ]
 }
+

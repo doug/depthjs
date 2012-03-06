@@ -55,6 +55,14 @@ else()
 endif()
 include_directories(${NITE_INCLUDE_DIRS})
 
+add_executable(simple_templater simple_templater.cpp)
+set_target_properties(simple_templater
+	PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "setting output directory for simple_templater to ${CMAKE_CURRENT_SOURCE_DIR}")
+
+#    { "path": "plugin/depthjs.so" },
+#	{ "path": "plugin/depthjsplugin.plugin" }
+#	{ "path": "plugin/npdepthjsplugin.dll" }
 
 # This will include Win/projectDef.cmake, X11/projectDef.cmake, Mac/projectDef 
 # depending on the platform

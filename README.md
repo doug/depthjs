@@ -51,14 +51,24 @@ Chrome extensions support native code, which needs to be compiled. Now under fir
 To install/compile:  (Refer to http://www.firebreath.org/display/documentation/Building+FireBreath+Plugins for instructions, they have tutorials and videos, and the process is rather simple)
 Start by downloading Firebreath: http://www.firebreath.org/display/documentation/Download
 
+(you must have CMake 2.6+ installed, OpenNI and NITE)
+
+### Mac building
 	cd ${DEPTHJS_DIR}/firebreath-plugin/
 	${FIREBREATH_DIR}/prepmac.sh .    # make sure you run this from the DepthJS/firebreath-plugin directory
+	cd build
 	make
 
-(you must have CMake 2.6+ installed)
+### Windows building
+	cd ${DEPTHJS_DIR}/firebreath-plugin/
+	${FIREBREATH_DIR}/prep2010.cmd .	# optionally set "-DOpenNI_INCLUDE_DIRS=<...>", "-DOpenNI_LIBS=<...>", "-DNITE_INCLUDE_DIRS=<...>" and "-DNITE_LIBS=<..>"
+	start build\FireBreath.sln			# at this point Visual Studio will open and you should be able to compile the plugin
+	copy_binary_win32.bat
 
-The chrome extension is located in chrome-extension-mac/.
-The plugin is precompiled under chrome-extension-mac/plugin/.
+(Visual Studio is a prerequisite)
+
+The chrome extension is located in chrome-extension/.
+The plugin is precompiled under chrome-extension/plugin/.
 
 Go on chrome://extensions and use "Load upacked extension..." to manually load DepthJS as an extension, and you should be good to go.
 

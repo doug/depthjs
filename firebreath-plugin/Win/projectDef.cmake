@@ -29,6 +29,12 @@ set (SOURCES
 
 add_windows_plugin(${PROJECT_NAME} SOURCES)
 
+add_custom_command(TARGET ${PROJECT_NAME} 
+	POST_BUILD 
+	COMMAND copy_binary_win32.bat
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+
 # This is an example of how to add a build step to sign the plugin DLL before
 # the WiX installer builds.  The first filename (certificate.pfx) should be
 # the path to your pfx file.  If it requires a passphrase, the passphrase
