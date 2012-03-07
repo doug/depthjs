@@ -59,12 +59,12 @@ Start by downloading Firebreath: http://www.firebreath.org/display/documentation
 
 #### Mac building
 	cd ${DEPTHJS_DIR}/firebreath-plugin/
-	${FIREBREATH_DIR}/prepmac.sh .    # make sure you run this from the DepthJS/firebreath-plugin directory
+	${FIREBREATH_DIR}/prepmac.sh . build/   # make sure you run this from the DepthJS/firebreath-plugin directory
 	open build/FireBreath.xcodeproj		# at the point XCode will open, build the project and you should be all set
 
 #### Windows building
 	cd ${DEPTHJS_DIR}/firebreath-plugin/
-	${FIREBREATH_DIR}/prep2010.cmd .	# optionally set "-DOpenNI_INCLUDE_DIRS=<...>", "-DOpenNI_LIBS=<...>", "-DNITE_INCLUDE_DIRS=<...>" and "-DNITE_LIBS=<..>"
+	${FIREBREATH_DIR}/prep2010.cmd . build/	# optionally set "-DOpenNI_INCLUDE_DIRS=<...>", "-DOpenNI_LIBS=<...>", "-DNITE_INCLUDE_DIRS=<...>" and "-DNITE_LIBS=<..>"
 	start build\FireBreath.sln			# at this point Visual Studio will open and you should be able to compile the plugin
 
 (Visual Studio is a prerequisite)
