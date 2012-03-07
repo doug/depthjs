@@ -79,6 +79,7 @@ endif()
 set(NITE_LIBRARIES ${NITE_LIBRARY} )
 set(NITE_LIBS ${NITE_LIBRARY} )
 set(NITE_INCLUDE_DIRS ${NITE_INCLUDE_DIR} )
+set(NITE_DIR "${NITE_INCLUDE_DIR}/../" )
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set ???_FOUND to TRUE

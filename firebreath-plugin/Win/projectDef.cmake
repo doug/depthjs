@@ -6,6 +6,8 @@
 # Windows template platform definition CMake file
 # Included from ../CMakeLists.txt
 
+file(WRITE "Win/ResourceRecoveryWin.h" "char* _NITE_DIR=\"${NITE_DIR}/Data/\";")
+
 # remember that the current source dir is the project root; this file is in Win/
 file (GLOB PLATFORM RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     Win/[^.]*.cpp
@@ -29,9 +31,11 @@ set (SOURCES
 
 add_windows_plugin(${PROJECT_NAME} SOURCES)
 
+add_dependencies(${PROJECT_NAME} simple_templater)
+
 add_custom_command(TARGET ${PROJECT_NAME} 
 	POST_BUILD 
-	COMMAND copy_binary_win32.bat
+	COMMAND copy_binary_win32.bat ${CMAKE_CFG_INTDIR}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 

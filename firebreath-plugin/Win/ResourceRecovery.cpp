@@ -1,5 +1,6 @@
 #include <string>
+#include "ResourceRecoveryWin.h"
 
 std::string getResourcesDirectory() {
-	return "./";
+	return _NITE_DIR;
 }
