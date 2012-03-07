@@ -46,6 +46,12 @@ set(LOCALIZED "Mac/bundle_template/Localized.r")
 
 add_mac_plugin(${PROJECT_NAME} ${PLIST} ${STRINGS} ${LOCALIZED} SOURCES)
 
+add_custom_command(TARGET ${PROJECT_NAME}
+	POST_BUILD
+	COMMAND cp ../chrome-extension/manifest.json.MACOSX ../chrome-extension/manifest.json
+			cp ${CMAKE_CURRENT_BINARY_DIR}/depthjsplugin.plugin ../chrome-extension/plugin/
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	)
 
 # add library dependencies here; leave ${PLUGIN_INTERNAL_DEPS} there unless you know what you're doing!
 target_link_libraries(${PROJECT_NAME}

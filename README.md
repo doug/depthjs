@@ -4,15 +4,19 @@ DepthJS is a browser extension (currently Chrome & Safari) that allows the Micro
 
 Current Status
 --------------
-January 2012:
+#### March 2012:
+Windows plugin now works with Chrome. 
+Use Firebreath to build (see instructions below), or try to use the precompiled version (but then you must rename/copy chrome-extension/manifest.json.WIN32 to chrome-extension/manifest.json).
+
+#### January 2012:
 Moving to FireBreath NPAPI plugins for Chrome + Firefox. Mac/Safari verion remains as it is (under webkit-plugin-mac and safari-extension-mac).
 Mac version of the new NPAPI plugin already exists for Chrome, tested and working. You should just be able to go on to chrome://extensions and add it to your browser. Now working on Linux and Windows support.
 
-September 2011:
+#### September 2011:
 Moving to OpenNI/NITE based backend, forsaking OpenCV for now. Gesture recognition is thus far better than what we had before.
 Finger-based gestures will soon follow as a few projects parallel to DepthJS will merge in coming months.
 
-Current gesture language:
+#### Current gesture language:
 - Wave to start hand tracking and get "blue pointer".
 - Push to click.
 - Circle to end tracking and remove "blue pointer".
@@ -56,8 +60,7 @@ Start by downloading Firebreath: http://www.firebreath.org/display/documentation
 #### Mac building
 	cd ${DEPTHJS_DIR}/firebreath-plugin/
 	${FIREBREATH_DIR}/prepmac.sh .    # make sure you run this from the DepthJS/firebreath-plugin directory
-	cd build
-	make
+	open build/FireBreath.xcodeproj		# at the point XCode will open, build the project and you should be all set
 
 #### Windows building
 	cd ${DEPTHJS_DIR}/firebreath-plugin/

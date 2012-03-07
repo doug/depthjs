@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+
+  "name": "DepthJS",
+
+  "description": "Connecting depth-aware cameras to Javascript",
+
+  "background_page": "background.html",
+
+  "icons": {
+    "16": "images/logo_16x16.png",
+    "128": "images/logo_128x128.png"
+  },
+
+  "permissions": ["tabs", "http://*/*", "https://*/*","notifications"],
+
+  "plugins": [
+	{ "path": "plugin/depthjsplugin.plugin" }
+  ],
+
+  "browser_action": {
+    "default_icon": "images/logo_128x128.png",
+    "popup": "popup.html",
+    "default_title": "DepthJS"
+  },
+
+  "content_scripts": [
+    { "matches": ["http://*/*"],
+      "css": ["third_party/vfx/zflow/zflow.css",
+              "css/selectorBox.css"],
+      "js": ["third_party/jquery-1.4.4.min.js",
+             "third_party/underscore-min.js",
+             "content_script/root.js",
+             "content_script/depthose.js",
+             "third_party/vfx/zflow/zflow.js",
+             "content_script/panner.js",
+             "content_script/selector_box.js",
+             "content_script/event_handlers.js",
+             "content_script/event_link.js",
+             "chrome.js",
+             "content_script/init.js"],
+      "run_at": "document_end" }
+  ]
+}
