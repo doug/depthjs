@@ -7,6 +7,10 @@
  *
  */
 
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
+#endif
+
 #ifndef __OPTIMIZE__
 
 #define DLog(args...) _DLog(__FILE__,__PRETTY_FUNCTION__,__LINE__,args);

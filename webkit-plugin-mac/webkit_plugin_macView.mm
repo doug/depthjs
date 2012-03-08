@@ -8,11 +8,13 @@
 
 #import "webkit_plugin_macView.h"
 #import <stdlib.h>
-#import <string.h>
+#import <string>
 #import <JavaScriptCore/JavaScriptCore.h>
-//#include "ocv_freenect.hpp"
-//#include "gesture_engine.hpp"
-#include "openni_backend.hpp"
+#import "openni_backend.hpp"
+#import "DLog.h"
+#import <WebKit/WebKit.h>
+
+using namespace std;
 
 // PRIVATE METHODS ---------------------------------------------------------------------------------
 
@@ -52,6 +54,11 @@ bool SendEventToBrowser(const string& _eventJson) {
   }
   [pool release];  // Release the objects in the pool.
   return success;
+}
+
+void send_event(const string& etype, const string& edata) {
+	string ss = "{\"type\":\"" + etype + "\",\"data\":{" + edata + "}}";
+	SendEventToBrowser(ss);
 }
 
 @implementation webkit_plugin_macView

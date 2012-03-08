@@ -7,6 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import <WebKit/WebPlugInViewFactory.h>
 
 @interface webkit_plugin_macView : NSView <WebPlugInViewFactory>
 {
