@@ -1,11 +1,13 @@
 {
+  "manifest_version": 2,
+
   "version": "1.0.0",
 
   "name": "DepthJS",
 
   "description": "Connecting depth-aware cameras to Javascript",
 
-  "background_page": "background.html",
+  "background": {"page":"background.html"},
 
   "icons": {
     "16": "images/logo_16x16.png",
@@ -20,7 +22,7 @@
 
   "browser_action": {
     "default_icon": "images/logo_128x128.png",
-    "popup": "popup.html",
+    "default_popup": "popup.html",
     "default_title": "DepthJS"
   },
 
