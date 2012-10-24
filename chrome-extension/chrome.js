@@ -240,7 +240,7 @@ DepthJS.browser.readdContentScriptListeners = function() {
 })();
 
 DepthJS.browser.sendMessageToPopup = function(msg) {
-  chrome.extension.sendRequest({action: msg});
+  chrome.extension.sendMessage({action: msg});
 };
 
 DepthJS.browser.sendMessageToActiveTab = function(message) {
@@ -263,7 +263,7 @@ DepthJS.browser.sendMessageToActiveTab = function(message) {
 };
 
 DepthJS.browser.sendMessageToBackground = function(messageType, data) {
-  chrome.extension.sendRequest({action: messageType, data: data});
+  chrome.extension.sendMessage({action: messageType, data: data});
 };
 
 } // if (DepthJS)
