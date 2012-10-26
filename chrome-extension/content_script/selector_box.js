@@ -24,13 +24,13 @@ DepthJS.selectorBox.hide = function() {
 DepthJS.selectorBox.move = function(x, y) {
   x = (x - 50) / 50.0;
   y = (y - 50) / 50.0;
-  
+
   // Expode out for a smaller range in Kinect-hand space
   x *= 1.5;
   y *= 1.5;
   x = Math.min(1, Math.max(-1, x));
   y = Math.min(1, Math.max(-1, y));
-  
+
   var hwidth = $(window).width() * 0.5;
   var hheight = $(window).height() * 0.5;
   x =  hwidth*x + hwidth;
@@ -156,7 +156,7 @@ DepthJS.selectorBoxPopup.move = function(x, y) {
   }
   var $closestLink = $("#DepthJS_popupItem" + closestLinkIndex);
   $closestLink.addClass("DepthJS_selectorBoxPopupItemHighlight");
-  
+
   DepthJS.selectorBoxPopup.lastHighlightedLinkIndex = closestLinkIndex;
   DepthJS.selectorBoxPopup.$lastHighlightedLink = $closestLink;
 };
