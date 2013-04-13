@@ -33,10 +33,11 @@ add_windows_plugin(${PROJECT_NAME} SOURCES)
 
 add_dependencies(${PROJECT_NAME} simple_templater)
 
+get_filename_component(CMAKE_CURRENT_LIST_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
 add_custom_command(TARGET ${PROJECT_NAME} 
 	POST_BUILD 
 	COMMAND copy_binary_win32.bat ${CMAKE_CFG_INTDIR}
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../"
 	)
 
 # This is an example of how to add a build step to sign the plugin DLL before
