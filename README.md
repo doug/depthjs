@@ -53,8 +53,9 @@ Mac/Linux: Make sure you have the following directory existing and writeable:
 	/var/lib/ni/
 	
 Install each OpenNI (in order) library using the install script. 
-Mac/Linux: You may want to change the install directories to /usr/local/* instead of /usr/*
+Mac/Linux: You may want to change the install directories to /usr/local/* instead of /usr/*.
 Check that all the modules are registered:
+
 	# niReg -l
 	
 	566 INFO       New log started on 2013-04-14 08:05:29
@@ -99,11 +100,6 @@ If everything is installed properly you should be able to run the NiTE examples.
 
 Browsers
 --------
-### SAFARI:
-Safari needs it's own browser plugin & browser extension. webkit-plugin-mac/ contains the plugin, and the extension is in safari-extension-mac/. Unfortunately it does not like soft links, so you must in your terminal run <pre>cd safari-extension-mac/DepthJS.safariextension && ./createHardLinks.sh</pre> Build & run the Xcode project in webkit-plugin-mac, then once inside Safari, enable developer tools & extensions, and finally add the extension under safari-extension-mac/ in Extension Builder. If you click on Inspect Global Pages, you'll see output confirming if it could connect to the Kinect or not (it should be plugged in).
-
-Safari is no longer the active development browser, because in 10.7 apple changed the policy for NPAPI plugins so they cannot be run as a singleton in the background.
-
 ### CHROME:
 Chrome extensions support native code, which needs to be compiled. Now under firebreath-plugin/. 
 To install/compile:  (Refer to http://www.firebreath.org/display/documentation/Building+FireBreath+Plugins for instructions, they have tutorials and videos, and the process is rather simple)
@@ -127,6 +123,11 @@ The chrome extension is located in chrome-extension/.
 The plugin is precompiled under chrome-extension/plugin/.
 
 Go on chrome://extensions and use "Load upacked extension..." to manually load DepthJS as an extension (use the chrome-extension directory), and you should be good to go. Use the error console to fish for errors.
+
+### SAFARI:
+Safari is no longer the active development browser, because in 10.7 apple changed the policy for NPAPI plugins so they cannot be run as a singleton in the background.
+
+History: Safari needs it's own browser plugin & browser extension. webkit-plugin-mac/ contains the plugin, and the extension is in safari-extension-mac/. Unfortunately it does not like soft links, so you must in your terminal run <pre>cd safari-extension-mac/DepthJS.safariextension && ./createHardLinks.sh</pre> Build & run the Xcode project in webkit-plugin-mac, then once inside Safari, enable developer tools & extensions, and finally add the extension under safari-extension-mac/ in Extension Builder. If you click on Inspect Global Pages, you'll see output confirming if it could connect to the Kinect or not (it should be plugged in).
 
 ### FIREFOX:
 Help us create a FF extension around the Firebreath NPAPI plugin!
