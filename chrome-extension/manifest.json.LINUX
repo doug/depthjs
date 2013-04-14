@@ -5,7 +5,11 @@
 
   "description": "Connecting depth-aware cameras to Javascript",
 
-  "background_page": "background.html",
+  "manifest_version": 2,
+
+  "background": {
+    "page": "background.html"
+  },
 
   "icons": {
     "16": "images/logo_16x16.png",

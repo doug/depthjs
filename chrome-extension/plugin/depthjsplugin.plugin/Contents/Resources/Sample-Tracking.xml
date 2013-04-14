@@ -1,6 +1,6 @@
 <OpenNI>
 	<Licenses>
-		<License vendor="PrimeSense" key="insert key here"/>
+		<License vendor="PrimeSense" key="0KOIk2JeIBYClPWVnMoRKn5cdYr="/>
 	</Licenses>
 	<Log writeToConsole="true" writeToFile="false">
 		<!-- 0 - Verbose, 1 - Info, 2 - Warning, 3 - Error (default) -->

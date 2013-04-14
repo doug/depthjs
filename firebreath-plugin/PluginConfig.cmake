@@ -37,9 +37,9 @@ set(FBSTRING_FileDescription "The native plugin part of the DepthJS project")
 set(FBSTRING_PLUGIN_VERSION "1.0.0.0")
 set(FBSTRING_LegalCopyright "Copyright 2012 MIT Media Lab")
 set(FBSTRING_PluginFileName "np${PLUGIN_NAME}.dll")
-set(FBSTRING_ProductName "DepthJS Plugin")
+set(FBSTRING_ProductName "DepthJSPlugin")
 set(FBSTRING_FileExtents "")
-set(FBSTRING_PluginName "DepthJS Plugin")
+set(FBSTRING_PluginName "DepthJSPlugin")
 set(FBSTRING_MIMEType "application/x-depthjsplugin")
 
 # Uncomment this next line if you're not planning on your plugin doing

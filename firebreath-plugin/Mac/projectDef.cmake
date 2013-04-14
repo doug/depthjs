@@ -48,8 +48,8 @@ add_mac_plugin(${PROJECT_NAME} ${PLIST} ${STRINGS} ${LOCALIZED} SOURCES)
 
 add_custom_command(TARGET ${PROJECT_NAME}
 	POST_BUILD
-	COMMAND cp ../chrome-extension/manifest.json.MACOSX ../chrome-extension/manifest.json
-	COMMAND cp -R ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/depthjsplugin.plugin ../chrome-extension/plugin/
+	COMMAND simple_templater ../chrome-extension/manifest.json.MACOSX "!!PRODUCT_NAME!!" "${FBSTRING_ProductName}" ../chrome-extension/manifest.json
+	COMMAND cp -R "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${FBSTRING_ProductName}.plugin" ../chrome-extension/plugin/
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 

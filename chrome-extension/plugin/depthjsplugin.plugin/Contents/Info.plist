@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>BuildMachineOSBuild</key>
-	<string>11E53</string>
+	<string>11G63b</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
@@ -11,7 +11,7 @@
 	<key>CFBundleGetInfoString</key>
 	<string>depthjsplugin 1.0.0.0, Copyright 2012 MIT Media Lab</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.depthjspluginLib.DepthJS Plugin</string>
+	<string>com.depthjspluginLib.DepthJSPlugin</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
@@ -43,7 +43,7 @@
 	<key>DTCompiler</key>
 	<string></string>
 	<key>DTPlatformBuild</key>
-	<string>4E3002</string>
+	<string>4H127</string>
 	<key>DTPlatformVersion</key>
 	<string>GM</string>
 	<key>DTSDKBuild</key>
@@ -51,9 +51,9 @@
 	<key>DTSDKName</key>
 	<string>macosx10.7</string>
 	<key>DTXcode</key>
-	<string>0433</string>
+	<string>0460</string>
 	<key>DTXcodeBuild</key>
-	<string>4E3002</string>
+	<string>4H127</string>
 	<key>WebPluginDescription</key>
 	<string>The native plugin part of the DepthJS project</string>
 	<key>WebPluginMIMETypes</key>
@@ -69,6 +69,6 @@
 		</dict>
 	</dict>
 	<key>WebPluginName</key>
-	<string>DepthJS Plugin</string>
+	<string>DepthJSPlugin</string>
 </dict>
 </plist>
