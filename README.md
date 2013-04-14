@@ -1,6 +1,6 @@
 DepthJS
 =======
-DepthJS is a browser extension (currently Chrome & Safari) that allows the Microsoft Kinect to talk to any web page. It provides the low-level raw access to the Kinect as well as high-level hand gesture events to simplify development.
+DepthJS is an open-source browser extension and plugin (currently working for Chrome) that allows the Microsoft Kinect to talk to any web page. It provides the low-level raw access to the Kinect as well as high-level hand gesture events to simplify development.
 
 Current Status
 --------------
@@ -12,7 +12,7 @@ Windows plugin now works with Chrome.
 Use Firebreath to build (see instructions below), or try to use the precompiled version (but then you must rename/copy chrome-extension/manifest.json.WIN32 to chrome-extension/manifest.json).
 
 #### January 2012:
-Moving to FireBreath NPAPI plugins for Chrome + Firefox. Mac/Safari verion remains as it is (under webkit-plugin-mac and safari-extension-mac).
+Moving to FireBreath NPAPI plugins for Chrome + Firefox. Mac/Safari version remains as it is (under webkit-plugin-mac and safari-extension-mac).
 Mac version of the new NPAPI plugin already exists for Chrome, tested and working. You should just be able to go on to chrome://extensions and add it to your browser. Now working on Linux and Windows support.
 
 #### September 2011:
@@ -48,10 +48,12 @@ Windows now works for Chrome through the FireBreath plugin, Firefox to follow, b
 Prerequisites
 --------
 Download the (historic) OpenNI libs from: http://www.openni.org/openni-sdk/openni-sdk-history-2/. Get OpenNI, Sensor driver and NiTE.
-Download the SensorKinect (if you plan on using Kinect) lib from: https://github.com/avin2/SensorKinect/tree/unstable/Bin
-Make sure you have the following directory existing and writeable:
+Download the SensorKinect (if you plan on using Kinect) lib from: https://github.com/avin2/SensorKinect/tree/unstable/Bin.
+Mac/Linux: Make sure you have the following directory existing and writeable:
 	/var/lib/ni/
-Install each OpenNI (in order) library using the install.sh script. You may want to change the install directories to /usr/local/* instead of /usr/*
+	
+Install each OpenNI (in order) library using the install script. 
+Mac/Linux: You may want to change the install directories to /usr/local/* instead of /usr/*
 Check that all the modules are registered:
 	# niReg -l
 	
@@ -100,7 +102,7 @@ Browsers
 ### SAFARI:
 Safari needs it's own browser plugin & browser extension. webkit-plugin-mac/ contains the plugin, and the extension is in safari-extension-mac/. Unfortunately it does not like soft links, so you must in your terminal run <pre>cd safari-extension-mac/DepthJS.safariextension && ./createHardLinks.sh</pre> Build & run the Xcode project in webkit-plugin-mac, then once inside Safari, enable developer tools & extensions, and finally add the extension under safari-extension-mac/ in Extension Builder. If you click on Inspect Global Pages, you'll see output confirming if it could connect to the Kinect or not (it should be plugged in).
 
-Safari is no longer the active development browser because of XCode & GDB. In 10.7 apple changed the policy for NPAPI plugins which cannot be run as a singleton in the background anymore.
+Safari is no longer the active development browser, because in 10.7 apple changed the policy for NPAPI plugins so they cannot be run as a singleton in the background.
 
 ### CHROME:
 Chrome extensions support native code, which needs to be compiled. Now under firebreath-plugin/. 
@@ -127,7 +129,7 @@ The plugin is precompiled under chrome-extension/plugin/.
 Go on chrome://extensions and use "Load upacked extension..." to manually load DepthJS as an extension (use the chrome-extension directory), and you should be good to go. Use the error console to fish for errors.
 
 ### FIREFOX:
-We're in the process of creating a FF extension around the Firebreath NPAPI plugin.
+Help us create a FF extension around the Firebreath NPAPI plugin!
 
 Future work
 -----------
