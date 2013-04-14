@@ -4,6 +4,9 @@ DepthJS is a browser extension (currently Chrome & Safari) that allows the Micro
 
 Current Status
 --------------
+#### April 2013:
+Updated to Chrome extension standards: https://developer.chrome.com/extensions/ 
+
 #### March 2012:
 Windows plugin now works with Chrome. 
 Use Firebreath to build (see instructions below), or try to use the precompiled version (but then you must rename/copy chrome-extension/manifest.json.WIN32 to chrome-extension/manifest.json).
@@ -32,8 +35,7 @@ Event handlers in the browser extension may be placed globally, in content scrip
 FLOW DIAGRAM:
 Kinect =====> Browser plugin/native code =====> Browser extension ===(Javascript+DOM events)==> Any web page
 
-Note: As of now we are using OpenNI/NITE for tracking and gesture rec. Download the precompiled libs from: 
-http://www.openni.org/Downloads/OpenNIModules.aspx
+Note: As of now we are using OpenNI/NITE for tracking and gesture rec. 
 
 Platforms
 ---------
@@ -43,15 +45,65 @@ Linux should compile nicely, although we don't distribute pre-compiled dependenc
 
 Windows now works for Chrome through the FireBreath plugin, Firefox to follow, but Internet Explorer will probably not be supported (unless someone would like to create an ActiveX plugin out of the firebreath framework).
 
+Prerequisites
+--------
+Download the (historic) OpenNI libs from: http://www.openni.org/openni-sdk/openni-sdk-history-2/. Get OpenNI, Sensor driver and NiTE.
+Download the SensorKinect (if you plan on using Kinect) lib from: https://github.com/avin2/SensorKinect/tree/unstable/Bin
+Make sure you have the following directory existing and writeable:
+	/var/lib/ni/
+Install each OpenNI (in order) library using the install.sh script. You may want to change the install directories to /usr/local/* instead of /usr/*
+Check that all the modules are registered:
+	# niReg -l
+	
+	566 INFO       New log started on 2013-04-14 08:05:29
+	600 INFO       OpenNI version is 1.5.2 (Build 23)-MacOSX (Dec 28 2011 17:54:41)
+	608 INFO       --- Filter Info --- Minimum Severity: NONE
+	OpenNI version is 1.5.2.23.
+
+	Registered modules:
+
+	(compiled with OpenNI 1.5.2.23):
+	Script: OpenNI/OpenNI/1.5.2.23
+	/usr/local/lib/libXnVFeatures_1_4_1.dylib (compiled with OpenNI 1.3.2.3):
+		Scene: PrimeSense/XnVSceneAnalyzer/1.4.1.2
+		...
+	/usr/local/lib/libXnVHandGenerator_1_4_1.dylib (compiled with OpenNI 1.3.2.3):
+		Gesture: PrimeSense/XnVGestureGenrator/1.4.1.2
+		...
+	/usr/local/lib/libnimMockNodes.dylib (compiled with OpenNI 1.5.2.23):
+		ProductionNode: OpenNI/Mock/1.5.2.23
+		...
+	/usr/local/lib/libnimCodecs.dylib (compiled with OpenNI 1.5.2.23):
+		Codec: OpenNI/16zP/1.5.2.23
+		...
+
+	/usr/local/lib/libnimRecorder.dylib (compiled with OpenNI 1.5.2.23):
+		Recorder: OpenNI/Recorder/1.5.2.23
+		...
+
+	/usr/local/lib/libXnDeviceSensorV2.dylib (compiled with OpenNI 1.3.2.3):
+		Device: PrimeSense/SensorV2/5.0.3.4
+		...
+
+	/usr/local/lib/libXnDeviceFile.dylib (compiled with OpenNI 1.3.2.3):
+		Player: PrimeSense/File/5.0.3.4
+
+	/usr/local/lib/libXnDeviceSensorV2KM.dylib (compiled with OpenNI 1.3.2.3):
+		Device: PrimeSense/SensorKinect/5.0.3.4
+		...
+
+If everything is installed properly you should be able to run the NiTE examples.
+
+
 Browsers
 --------
 ### SAFARI:
 Safari needs it's own browser plugin & browser extension. webkit-plugin-mac/ contains the plugin, and the extension is in safari-extension-mac/. Unfortunately it does not like soft links, so you must in your terminal run <pre>cd safari-extension-mac/DepthJS.safariextension && ./createHardLinks.sh</pre> Build & run the Xcode project in webkit-plugin-mac, then once inside Safari, enable developer tools & extensions, and finally add the extension under safari-extension-mac/ in Extension Builder. If you click on Inspect Global Pages, you'll see output confirming if it could connect to the Kinect or not (it should be plugged in).
 
-Safari is currently our active development browser because of XCode & GDB. It will work before Chrome at any given moment.
+Safari is no longer the active development browser because of XCode & GDB. In 10.7 apple changed the policy for NPAPI plugins which cannot be run as a singleton in the background anymore.
 
 ### CHROME:
-Chrome extensions support native code, which needs to be compiled. Now under firebreat-plugin/. 
+Chrome extensions support native code, which needs to be compiled. Now under firebreath-plugin/. 
 To install/compile:  (Refer to http://www.firebreath.org/display/documentation/Building+FireBreath+Plugins for instructions, they have tutorials and videos, and the process is rather simple)
 Start by downloading Firebreath: http://www.firebreath.org/display/documentation/Download
 
